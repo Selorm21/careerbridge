@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import StudentDashboard from './pages/StudentDashboard'
@@ -43,7 +44,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={session ? (role === 'employer' ? <Navigate to="/employer" /> : <Navigate to="/student" />) : <Navigate to="/login" />} />
+      <Route path="/" element={session ? (role === 'employer' ? <Navigate to="/employer" /> : <Navigate to="/student" />) : <Landing />} />
       <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
       <Route path="/signup" element={!session ? <Signup /> : <Navigate to="/" />} />
       <Route path="/student" element={session && role === 'student' ? <StudentDashboard /> : <Navigate to="/login" />} />
