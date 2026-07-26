@@ -14,6 +14,7 @@ import Analytics from './pages/Analytics'
 import ScheduleInterview from './pages/ScheduleInterview'
 import CoordinatorDashboard from './pages/CoordinatorDashboard'
 import AdminDashboard from './pages/AdminDashboard'
+import ResumeBuilder from './pages/ResumeBuilder'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -61,6 +62,7 @@ function App() {
       <Route path="/post-job" element={session && role === 'employer' ? <PostJob /> : <Navigate to="/login" />} />
       <Route path="/browse-jobs" element={session ? <BrowseJobs /> : <Navigate to="/login" />} />
       <Route path="/student-profile" element={session && role === 'student' ? <StudentProfile /> : <Navigate to="/login" />} />
+      <Route path="/resume-builder" element={session && role === 'student' ? <ResumeBuilder /> : <Navigate to="/login" />} />
       <Route path="/applicants/:jobId" element={session && role === 'employer' ? <ViewApplicants /> : <Navigate to="/login" />} />
       <Route path="/analytics" element={session ? <Analytics /> : <Navigate to="/login" />} />
       <Route path="/schedule/:applicationId" element={session && role === 'employer' ? <ScheduleInterview /> : <Navigate to="/login" />} />
