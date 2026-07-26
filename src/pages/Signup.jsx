@@ -30,6 +30,13 @@ export default function Signup() {
     setLoading(false)
   }
 
+  const roles = [
+    { value: 'student', icon: '🎓', label: 'Student' },
+    { value: 'employer', icon: '🏢', label: 'Employer' },
+    { value: 'coordinator', icon: '🎓', label: 'University Coordinator' },
+    { value: 'admin', icon: '⚙️', label: 'Admin' }
+  ]
+
   return (
     <div style={S.page}>
       <style>{`
@@ -75,14 +82,12 @@ export default function Signup() {
           <div style={S.field}>
             <label style={S.label}>I am a</label>
             <div style={S.roleRow}>
-              <div className="roleCard" style={{...S.roleCard, ...(role === 'student' ? S.roleCardActive : {})}} onClick={() => setRole('student')}>
-                <div style={S.roleIcon}>🎓</div>
-                <div style={S.roleLabel}>Student</div>
-              </div>
-              <div className="roleCard" style={{...S.roleCard, ...(role === 'employer' ? S.roleCardActive : {})}} onClick={() => setRole('employer')}>
-                <div style={S.roleIcon}>🏢</div>
-                <div style={S.roleLabel}>Employer</div>
-              </div>
+              {roles.map(r => (
+                <div key={r.value} className="roleCard" style={{...S.roleCard, ...(role === r.value ? S.roleCardActive : {})}} onClick={() => setRole(r.value)}>
+                  <div style={S.roleIcon}>{r.icon}</div>
+                  <div style={S.roleLabel}>{r.label}</div>
+                </div>
+              ))}
             </div>
           </div>
           <button className="btnP" style={S.btn} type="submit" disabled={loading}>
@@ -97,11 +102,11 @@ export default function Signup() {
 }
 
 const S = {
-  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', position: 'relative', overflow: 'hidden', fontFamily: "'Inter', sans-serif", padding: '20px' },
+  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', position: 'relative', overflow: 'hidden', fontFamily: "'Inter', sans-serif" },
   blob1: { position: 'absolute', top: '-100px', right: '-100px', width: '340px', height: '340px', borderRadius: '50%', background: 'radial-gradient(circle, #DBEAFE 0%, transparent 70%)' },
   blob2: { position: 'absolute', bottom: '-120px', left: '-100px', width: '320px', height: '320px', borderRadius: '50%', background: 'radial-gradient(circle, #D1FAE5 0%, transparent 70%)' },
   backLink: { position: 'absolute', top: '28px', left: '40px', fontSize: '14px', fontWeight: '700', color: '#2563EB', textDecoration: 'none', zIndex: 2 },
-  card: { background: '#fff', padding: '40px 40px', borderRadius: '20px', width: '100%', maxWidth: '440px', boxShadow: '0 24px 60px -12px rgba(15,23,42,0.15)', position: 'relative', zIndex: 1 },
+  card: { background: '#fff', padding: '40px 40px', borderRadius: '20px', width: '100%', maxWidth: '480px', boxShadow: '0 24px 60px -12px rgba(15,23,42,0.15)', position: 'relative', zIndex: 1 },
   logo: { fontSize: '22px', fontWeight: '800', color: '#2563EB', marginBottom: '10px', letterSpacing: '-0.5px' },
   title: { fontSize: '22px', fontWeight: '800', marginBottom: '5px', color: '#0F172A' },
   sub: { color: '#94A3B8', fontSize: '14px', marginBottom: '24px' },
@@ -113,7 +118,7 @@ const S = {
   roleCardActive: { border: '1.5px solid #2563EB', background: '#EFF6FF' },
   roleIcon: { fontSize: '24px', marginBottom: '6px' },
   roleLabel: { fontSize: '13px', fontWeight: '600', color: '#374151' },
-  btn: { width: '100%', padding: '13px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '14.5px', fontWeight: '700', cursor: 'pointer', marginTop: '8px', boxShadow: '0 6px 16px rgba(37,99,235,0.25)' },
+  btn: { width: '100%', padding: '13px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '14.5px', fontWeight: '700', cursor: 'pointer', marginTop: '8px', boxShadow: '0 4px 12px rgba(37,99,235,0.3)' },
   error: { background: '#FEF2F2', color: '#DC2626', padding: '11px 14px', borderRadius: '10px', fontSize: '13px', marginBottom: '18px', fontWeight: '500' },
   successBox: { background: '#ECFDF5', color: '#059669', padding: '11px 14px', borderRadius: '10px', fontSize: '13px', marginBottom: '18px', fontWeight: '500' },
   footer: { textAlign: 'center', fontSize: '13.5px', color: '#94A3B8', marginTop: '22px' },
