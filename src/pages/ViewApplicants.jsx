@@ -127,7 +127,6 @@ export default function ViewApplicants() {
                 </div>
 
                 <div style={S.divider}></div>
-
                 <div style={S.statusRow}>
                   <div style={S.statusRowLabel}>Update status:</div>
                   <div style={S.statusBtns}>
@@ -147,8 +146,17 @@ export default function ViewApplicants() {
                         {updating === app.id ? '...' : btn.label}
                       </button>
                     ))}
+                    <button
+                      className="statusBtn"
+                      style={{...S.statusBtn, background: '#F5F3FF', color: '#7C3AED', border: '1px solid #DDD6FE'}}
+                      onClick={() => navigate(`/schedule/${app.id}`)}
+                    >
+                      📅 Schedule Interview
+                    </button>
                   </div>
                 </div>
+
+                
               </div>
             )
           })}

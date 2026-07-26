@@ -84,6 +84,9 @@ export default function EmployerDashboard() {
             <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/browse-jobs')}>
               <span style={S.sideNavIcon}>🔍</span> Browse All Jobs
             </div>
+            <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/analytics')}>
+              <span style={S.sideNavIcon}>📊</span> Analytics
+            </div>
           </nav>
 
           <div style={S.statsBox}>
@@ -184,7 +187,7 @@ export default function EmployerDashboard() {
                       <span style={S.qaIcon}>💼</span>
                       <span style={S.qaLabel}>My Listings</span>
                     </div>
-                    <div style={S.quickAction}>
+                    <div style={S.quickAction} onClick={() => navigate('/analytics')}>
                       <span style={S.qaIcon}>📊</span>
                       <span style={S.qaLabel}>Analytics</span>
                     </div>

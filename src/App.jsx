@@ -10,6 +10,9 @@ import PostJob from './pages/PostJob'
 import BrowseJobs from './pages/BrowseJobs'
 import StudentProfile from './pages/StudentProfile'
 import ViewApplicants from './pages/ViewApplicants'
+import Analytics from './pages/Analytics'
+import ScheduleInterview from './pages/ScheduleInterview'
+import CoordinatorDashboard from './pages/CoordinatorDashboard'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -40,11 +43,16 @@ function App() {
     setLoading(false)
   }
 
-  if (loading) return <div style={{padding:'40px',textAlign:'center'}}>Loading...</div>
+  if (loading) return <div style={{padding:'40px',textAlign:'center',fontFamily:'Inter,sans-serif',color:'#94A3B8'}}>Loading...</div>
 
   return (
     <Routes>
-      <Route path="/" element={session ? (role === 'employer' ? <Navigate to="/employer" /> : <Navigate to="/student" />) : <Landing />} />
+      <Route path="/" element={session ? (
+        role === 'employer' ? <Navigate to="/employer" /> :
+        role === 'coordinator' ? <Navigate to="/coordinator" /> :
+        role === 'admin' ? <Navigate to="/admin" /> :
+        <Navigate to="/student" />
+      ) : <Landing />} />
       <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
       <Route path="/signup" element={!session ? <Signup /> : <Navigate to="/" />} />
       <Route path="/student" element={session && role === 'student' ? <StudentDashboard /> : <Navigate to="/login" />} />
@@ -53,6 +61,9 @@ function App() {
       <Route path="/browse-jobs" element={session ? <BrowseJobs /> : <Navigate to="/login" />} />
       <Route path="/student-profile" element={session && role === 'student' ? <StudentProfile /> : <Navigate to="/login" />} />
       <Route path="/applicants/:jobId" element={session && role === 'employer' ? <ViewApplicants /> : <Navigate to="/login" />} />
+      <Route path="/analytics" element={session ? <Analytics /> : <Navigate to="/login" />} />
+      <Route path="/schedule/:applicationId" element={session && role === 'employer' ? <ScheduleInterview /> : <Navigate to="/login" />} />
+      <Route path="/coordinator" element={session && role === 'coordinator' ? <CoordinatorDashboard /> : <Navigate to="/login" />} />
     </Routes>
   )
 }

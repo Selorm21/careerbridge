@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 
 export default function Landing() {
   const navigate = useNavigate()
@@ -17,8 +17,9 @@ export default function Landing() {
     return () => { window.removeEventListener('scroll', onScroll); obs.disconnect() }
   }, [])
 
-  const setRef = k => el => { refs.current[k] = el }
+  const setRef = useCallback(k => el => { refs.current[k] = el }, [])
   const v = k => visible[k] ? 'show' : ''
+  const scrollTo = (k) => { const el = refs.current[k]; if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
 
   return (
     <div style={S.page}>
@@ -50,14 +51,33 @@ export default function Landing() {
         .ctaBtn{transition:all .25s ease}
         .ctaBtn:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(0,0,0,.18)!important}
         .gradientBg{background:linear-gradient(120deg,#1D4ED8,#2563EB,#3B82F6,#2563EB);background-size:300% 300%;animation:gradientMove 8s ease infinite}
+        .btnPrimary:focus,.btnGhost:focus,.navLink:focus{outline:3px solid rgba(37,99,235,0.18);outline-offset:3px}
+        .btnPrimary:focus{box-shadow:0 8px 24px rgba(37,99,235,0.2)}
+
+        /* Responsive tweaks */
+        @media(max-width: 980px){
+          .heroInner{grid-template-columns:1fr !important; padding:36px 20px 60px !important}
+          .heroImg{height:360px !important}
+          .h1{font-size:34px !important}
+          .lead{max-width:100% !important}
+          .navBar{padding:12px 20px !important}
+          .navRight{gap:12px !important}
+        }
+        @media(max-width:560px){
+          .heroImg{height:240px !important}
+          .btnPrimary,.btnGhost{padding:12px 18px !important; font-size:14px !important}
+          .statsRow{display:none}
+        }
       `}</style>
 
 
-<nav className="navBar" style={{...S.nav, ...(scrolled ? S.navScrolled : {})}}>
+      <nav className="navBar" style={{...S.nav, ...(scrolled ? S.navScrolled : {})}} aria-label="Main navigation">
         <div style={S.logo}>CareerBridge</div>
         <div style={S.navRight}>
+          <span className="navLink" style={S.navLink} onClick={() => scrollTo('how')}>How it works</span>
+          <span className="navLink" style={S.navLink} onClick={() => scrollTo('feat')}>Features</span>
           <span className="navLink" style={S.navLink} onClick={() => navigate('/login')}>Log in</span>
-          <button className="btnPrimary" style={S.navCta} onClick={() => navigate('/signup')}>Sign up</button>
+          <button className="btnPrimary" style={S.navCta} onClick={() => navigate('/signup')} aria-label="Sign up">Sign up</button>
         </div>
       </nav>
 
@@ -83,12 +103,12 @@ export default function Landing() {
           </div>
           <div style={S.heroRight}>
             <div className="imgFloat" style={S.imgWrap}>
-              <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=640&q=80" alt="Student preparing for opportunities" style={S.heroImg} />
-              <div style={S.float1}>
+              <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=640&q=80" alt="Student preparing for opportunities" role="img" loading="lazy" style={S.heroImg} />
+              <div style={S.float1} aria-hidden="true">
                 <div style={S.floatIcon}>✓</div>
                 <div><div style={S.floatTitle}>Application sent</div><div style={S.floatSub}>Software Engineer Intern</div></div>
               </div>
-              <div style={S.float2}>
+              <div style={S.float2} aria-hidden="true">
                 <div style={{...S.floatIcon, background:'#ECFDF5', color:'#059669'}}>94%</div>
                 <div><div style={S.floatTitle}>AI match score</div><div style={S.floatSub}>Strong fit for this role</div></div>
               </div>
@@ -135,7 +155,7 @@ export default function Landing() {
         <div className="gradientBg" style={S.ctaBanner}>
           <h2 style={S.ctaTitle}>Ready to find your next opportunity?</h2>
           <p style={S.ctaSub}>Join CareerBridge today — completely free for students.</p>
-          <button className="ctaBtn" style={S.ctaBtn} onClick={() => navigate('/signup')}>Create your account</button>
+          <button className="ctaBtn" style={S.ctaBtn} onClick={() => navigate('/signup')} aria-label="Create your CareerBridge account">Create your account</button>
         </div>
       </section>
 
