@@ -168,6 +168,9 @@ export default function StudentDashboard() {
             <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/student-profile')}>
               <span style={S.sideNavIcon}>👤</span> My Profile
             </div>
+            <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/resume-builder')}>
+              <span style={S.sideNavIcon}>📄</span> Resume Builder
+            </div>
             <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/analytics')}>
               <span style={S.sideNavIcon}>📊</span> Analytics
             </div>
@@ -291,7 +294,7 @@ export default function StudentDashboard() {
                       <div style={S.quickAction} onClick={() => navigate('/browse-jobs')}><span style={S.qaIcon}>🔍</span><span style={S.qaLabel}>Browse Jobs</span></div>
                       <div style={S.quickAction} onClick={() => navigate('/student-profile')}><span style={S.qaIcon}>✏️</span><span style={S.qaLabel}>Edit Profile</span></div>
                       <div style={S.quickAction} onClick={() => setActiveTab('applications')}><span style={S.qaIcon}>📋</span><span style={S.qaLabel}>Applications</span></div>
-                      <div style={S.quickAction} onClick={() => setActiveTab('interviews')}><span style={S.qaIcon}>📅</span><span style={S.qaLabel}>Interviews</span></div>
+                      <div style={S.quickAction} onClick={() => navigate('/resume-builder')}><span style={S.qaIcon}>📄</span><span style={S.qaLabel}>Resume</span></div>
                     </div>
                   </div>
                 </div>
@@ -334,7 +337,7 @@ export default function StudentDashboard() {
                        <div style={S.interviewTitle}>
                           {new Date(interview.interview_date) < new Date() ? '✓ Interview Completed' : '📅 Interview Scheduled'}
                         </div> 
-                        <div style={S.interviewRow}><span style={S.interviewIcon}>🗓</span><span>{new Date(interview.interview_date).toLocaleDateString('en', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}</span></div>
+                        <div style={S.interviewRow}><span style={S.interviewIcon}>🗓</span><span>{new Date(interview.interview_date).toLocaleDateString('en', { weekday:'long', year:'numeric', month:'short', day:'numeric' })}</span></div>
                         <div style={S.interviewRow}><span style={S.interviewIcon}>⏰</span><span>{interview.interview_time}</span></div>
                         <div style={S.interviewRow}><span style={S.interviewIcon}>📍</span><span>{interview.location}</span></div>
                         {interview.notes && <div style={S.interviewRow}><span style={S.interviewIcon}>📝</span><span>{interview.notes}</span></div>}
@@ -375,7 +378,7 @@ export default function StudentDashboard() {
                         {new Date(interview.interview_date) < new Date() ? '✓ Completed' : '📅 Scheduled'}
                       </span> 
                     </div>
-                    <div style={S.interviewRow}><span style={S.interviewIcon}>🗓</span><span style={{fontWeight:'600'}}>{new Date(interview.interview_date).toLocaleDateString('en', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}</span></div>
+                    <div style={S.interviewRow}><span style={S.interviewIcon}>🗓</span><span style={{fontWeight:'600'}}>{new Date(interview.interview_date).toLocaleDateString('en', { weekday:'long', year:'numeric', month:'short', day:'numeric' })}</span></div>
                     <div style={S.interviewRow}><span style={S.interviewIcon}>⏰</span><span>{interview.interview_time}</span></div>
                     <div style={S.interviewRow}><span style={S.interviewIcon}>📍</span><span>{interview.location}</span></div>
                     {interview.notes && <div style={S.interviewRow}><span style={S.interviewIcon}>📝</span><span>{interview.notes}</span></div>}
@@ -429,7 +432,7 @@ const S = {
   page: { minHeight: '100vh', background: '#F1F5F9', fontFamily: "'Inter', -apple-system, sans-serif" },
   layout: { display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100vh' },
 
-  mobileNav: { display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #F0F2F5', justifyContent: 'space-around', padding: '10px 0 16px', zIndex: 100, boxShadow: '0 -4px 12px rgba(15,23,42,0.08)' },
+  mobileNav: { display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #F0F2F5', justifyContent: 'space-around', padding: '10px 0 16px', zIndex: 1000 },
   mobileNavItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', padding: '0 8px' },
   mobileNavIcon: { fontSize: '20px' },
   mobileNavLabel: { fontSize: '10.5px', fontWeight: '700', color: '#94A3B8' },
@@ -438,7 +441,7 @@ const S = {
   sidebarTop: { padding: '28px 24px 20px' },
   sidebarLogo: { fontSize: '18px', fontWeight: '800', color: '#fff', letterSpacing: '-0.5px', marginBottom: '28px' },
   avatarWrap: { display: 'flex', alignItems: 'center', gap: '12px' },
-  avatar: { width: '42px', height: '42px', borderRadius: '50%', background: 'linear-gradient(135deg, #2563EB, #3B82F6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '800', flexShrink: 0 },
+  avatar: { width: '42px', height: '42px', borderRadius: '50%', background: 'linear-gradient(135deg, #2563EB, #3B82F6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '800' },
   avatarName: { fontSize: '14px', fontWeight: '700', color: '#F1F5F9' },
   avatarRole: { fontSize: '11.5px', color: '#64748B', fontWeight: '500' },
 
@@ -455,13 +458,13 @@ const S = {
   strengthPct: { fontSize: '12px', fontWeight: '700', color: '#F1F5F9' },
   strengthTip: { fontSize: '12px', color: '#3B82F6', marginTop: '6px', cursor: 'pointer', fontWeight: '600' },
 
-  logoutBtn: { margin: '0 12px 24px', padding: '11px', background: 'transparent', border: '1px solid #1E293B', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#64748B', textAlign: 'left' },
+  logoutBtn: { margin: '0 12px 24px', padding: '11px', background: 'transparent', border: '1px solid #1E293B', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#94A3B8' },
 
   main: { padding: '32px 36px', overflowY: 'auto', paddingBottom: '80px' },
   topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px' },
   heading: { fontSize: '22px', fontWeight: '800', color: '#0F172A', marginBottom: '4px' },
   headSub: { fontSize: '14px', color: '#94A3B8' },
-  browseBtn: { padding: '11px 22px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '700', boxShadow: '0 4px 12px rgba(37,99,235,0.25)', transition: 'all .2s ease' },
+  browseBtn: { padding: '11px 22px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '700', boxShadow: '0 4px 12px rgba(37,99,235,0.3)' },
 
   metricsRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px', marginBottom: '24px' },
   metCard: { background: '#fff', borderRadius: '14px', padding: '20px', border: '1px solid #F0F2F5', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' },
@@ -487,7 +490,7 @@ const S = {
   recSkillChip: { background: '#ECFDF5', color: '#059669', padding: '2px 8px', borderRadius: '20px', fontSize: '10.5px', fontWeight: '600' },
   recApplyBtn: { fontSize: '12.5px', color: '#2563EB', fontWeight: '700', marginTop: '8px' },
 
-  appRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 14px', borderRadius: '10px', border: '1px solid #F8FAFC', marginBottom: '8px', background: '#FAFAFA' },
+  appRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 14px', borderRadius: '10px', border: '1px solid #F8FAFC', marginBottom: '8px', background: '#FAFBFC' },
   appLeft: {},
   appTitle: { fontSize: '14px', fontWeight: '700', color: '#0F172A', marginBottom: '3px' },
   appMeta: { fontSize: '12px', color: '#94A3B8', marginBottom: '3px' },
