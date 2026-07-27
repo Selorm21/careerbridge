@@ -26,100 +26,82 @@ export default function Landing() {
       <style>{`
         @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
         @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
-        @keyframes floatRev{0%,100%{transform:translateY(0)}50%{transform:translateY(14px)}}
-        @keyframes pulseDot{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
         .reveal{opacity:0}
         .reveal.show{animation:fadeUp .8s cubic-bezier(.16,1,.3,1) forwards}
         .imgFloat{animation:float 7s ease-in-out infinite}
-        .dot{animation:pulseDot 2s ease-in-out infinite}
         .navBar{transition:all .3s ease}
         .navLink{transition:opacity .2s ease;cursor:pointer}
         .navLink:hover{opacity:.65}
         .btnPrimary{transition:all .25s cubic-bezier(.16,1,.3,1)}
-        .btnPrimary:hover{transform:translateY(-3px) scale(1.015);box-shadow:0 16px 32px rgba(37,99,235,.35)!important}
-        .btnGhost{transition:all .25s ease}
-        .btnGhost:hover{background:#EFF6FF;border-color:#93C5FD}
-        .card{transition:transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s ease,border-color .35s ease}
-        .card:hover{transform:translateY(-8px);box-shadow:0 24px 48px rgba(15,23,42,.1);border-color:#DBEAFE}
+        .btnPrimary:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(0,0,0,.15)!important}
+        .card{transition:transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s ease}
+        .card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,.12)}
         .roleBtn{transition:all .2s ease;cursor:pointer}
         .roleBtn.active{background:#2563EB;color:#fff}
-        .roleBtn:hover:not(.active){background:#F0F1F3}
+        .roleBtn:hover:not(.active){background:#F3F4F6}
         .statBlock{transition:transform .25s ease}
         .statBlock:hover{transform:translateY(-3px)}
-        .ctaBtn{transition:all .25s ease}
-        .ctaBtn:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(0,0,0,.18)!important}
         .testimonialCard{transition:all .3s ease}
-        .testimonialCard:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(15,23,42,.08)}
-        .placementCard{transition:all .3s ease}
-        .placementCard:hover{transform:translateY(-4px);box-shadow:0 16px 32px rgba(15,23,42,.12)}
+        .testimonialCard:hover{transform:translateY(-4px);box-shadow:0 16px 32px rgba(0,0,0,.1)}
 
-        /* Responsive tweaks */
-        @media(max-width: 980px){
-          .heroInner{grid-template-columns:1fr !important; padding:36px 20px 60px !important}
-          .heroImg{height:360px !important}
-          .h1{font-size:34px !important}
-          .lead{max-width:100% !important}
-          .navBar{padding:12px 20px !important}
-          .navRight{gap:12px !important}
+        @media(max-width: 1024px){
+          .heroInner{grid-template-columns:1fr !important; padding:40px 24px 60px !important}
+          .heroImg{height:320px !important}
+          .h1{font-size:36px !important}
           .statsGrid{grid-template-columns:1fr 1fr !important}
           .featuresGrid{grid-template-columns:1fr 1fr !important}
-          .placementGrid{grid-template-columns:1fr !important}
           .testimonialGrid{grid-template-columns:1fr !important}
         }
-        @media(max-width:560px){
-          .heroImg{height:240px !important}
-          .btnPrimary,.btnGhost{padding:12px 18px !important; font-size:14px !important}
-          .statsRow{display:none}
-          .statsGrid{grid-template-columns:1fr !important}
+        @media(max-width:640px){
+          .navBar{padding:12px 16px !important}
+          .navCenter{display:none !important}
+          .heroInner{padding:24px 16px 40px !important}
           .h1{font-size:28px !important}
-          .roleButtons{flex-direction:column}
-          .searchBar{flex-direction:column}
+          .statsGrid{grid-template-columns:1fr 1fr !important}
+          .featuresGrid{grid-template-columns:1fr !important}
+          .lead{font-size:15px !important}
         }
       `}</style>
 
       {/* Navigation */}
-      <nav className="navBar" style={{...S.nav, ...(scrolled ? S.navScrolled : {})}} aria-label="Main navigation">
+      <nav className="navBar" style={{...S.nav, ...(scrolled ? S.navScrolled : {})}}>
         <div style={S.navLeft}>
           <div style={S.logo}>CareerBridge</div>
         </div>
-        <div style={S.navCenter}>
-          <span className="navLink" style={S.navLink} onClick={() => navigate('/')}>Home</span>
-          <span className="navLink" style={S.navLink} onClick={() => navigate('/browse')}>Browse Jobs</span>
+        <div style={S.navCenter} className="navCenter">
+          <span className="navLink" style={S.navLink}>Home</span>
+          <span className="navLink" style={S.navLink}>Browse Jobs</span>
           <span className="navLink" style={S.navLink}>For Universities</span>
           <span className="navLink" style={S.navLink}>For Employers</span>
           <span className="navLink" style={S.navLink}>Analytics</span>
         </div>
         <div style={S.navRight}>
           <button style={S.loginBtn} onClick={() => navigate('/login')}>Log in</button>
-          <button className="btnPrimary" style={S.navCta} onClick={() => navigate('/signup')}>Sign up</button>
+          <button className="btnPrimary" style={S.signupBtn} onClick={() => navigate('/signup')}>Sign up</button>
         </div>
       </nav>
 
       {/* Hero Section */}
       <section style={S.hero}>
-        {/* Trust Badge */}
         <div style={S.trustBadge}>
           Trusted by 500+ universities
         </div>
 
-        <div style={S.heroInner}>
+        <div style={S.heroInner} className="heroInner">
           <div style={S.heroLeft}>
             <h1 style={S.h1}>Where students, universities & employers <span style={S.h1Accent}>connect</span></h1>
             <p style={S.lead}>CareerBridge is the all-in-one platform that links ambitious students with leading employers, powered by real university partnerships and actionable analytics.</p>
             
             {/* Search Bar */}
-            <div style={S.searchBar} className="searchBar">
-              <div style={S.searchInput}>
-                <span style={{fontSize: '18px'}}>🔍</span>
-                <input type="text" placeholder="Search roles, companies, skills..." style={S.searchInputField} />
-              </div>
+            <div style={S.searchBar}>
+              <input type="text" placeholder="Search roles, companies, skills..." style={S.searchInputField} />
               <button style={S.getStartedBtn} onClick={() => navigate('/signup')}>Get Started</button>
             </div>
 
             {/* User Role Selector */}
             <div style={S.roleSection}>
               <span style={S.roleLabel}>I am a:</span>
-              <div style={S.roleButtons} className="roleButtons">
+              <div style={S.roleButtons}>
                 {['Student', 'University', 'Employer'].map(role => (
                   <button
                     key={role}
@@ -142,7 +124,7 @@ export default function Landing() {
           {/* Hero Image */}
           <div style={S.heroRight}>
             <div className="imgFloat" style={S.imgWrap}>
-              <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=640&q=80" alt="Student preparing for opportunities" role="img" loading="lazy" style={S.heroImg} />
+              <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=640&q=80" alt="Student preparing for opportunities" role="img" loading="lazy" style={S.heroImg} className="heroImg" />
             </div>
           </div>
         </div>
@@ -150,32 +132,33 @@ export default function Landing() {
 
       {/* Stats Section */}
       <section style={S.statsSection}>
-        <div style={S.statsGrid}>
+        <div style={S.statsGrid} className="statsGrid">
           <div className={`reveal ${v('stats')}`} ref={setRef('stats')} data-k="stats" style={S.statCard}>
             <div style={S.statNum}>2.4M+</div>
             <div style={S.statLabel}>Active job listings</div>
           </div>
-          <div className={`reveal ${v('stats')}`} style={{...S.statCard, animationDelay: '0.08s'}}>
+          <div className={`reveal ${v('stats')}`} style={{...S.statCard, animationDelay: '0.1s'}}>
             <div style={S.statNum}>500+</div>
             <div style={S.statLabel}>University partners</div>
           </div>
-          <div className={`reveal ${v('stats')}`} style={{...S.statCard, animationDelay: '0.16s'}}>
+          <div className={`reveal ${v('stats')}`} style={{...S.statCard, animationDelay: '0.2s'}}>
             <div style={S.statNum}>18K</div>
             <div style={S.statLabel}>Hiring employers</div>
           </div>
-          <div className={`reveal ${v('stats')}`} style={{...S.statCard, animationDelay: '0.24s'}}>
+          <div className={`reveal ${v('stats')}`} style={{...S.statCard, animationDelay: '0.3s'}}>
             <div style={S.statNum}>92%</div>
             <div style={S.statLabel}>Placement rate</div>
           </div>
         </div>
       </section>
 
-      {/* Core Features Section */}
-      <section style={S.coreSection}>
-        <div className={`reveal ${v('core')}`} ref={setRef('core')} data-k="core" style={S.sectionHead}>
+      {/* Features Section */}
+      <section style={S.featuresSection}>
+        <div className={`reveal ${v('feat')}`} ref={setRef('feat')} data-k="feat" style={S.sectionHead}>
           <h2 style={S.h2}>Everything you need to bridge the gap</h2>
           <p style={S.sectionSub}>A single platform that brings together job discovery, partnerships, and insights.</p>
         </div>
+
         <div style={S.featuresGrid} className="featuresGrid">
           {[
             { icon: '🔍', t: 'Smart Job Search', d: 'Filter thousands of roles by degree, skills and location with AI-matched recommendations.' },
@@ -183,131 +166,10 @@ export default function Landing() {
             { icon: '🤝', t: 'Employer Connections', d: 'Post roles, screen verified candidates and build a pipeline directly from campus.' },
             { icon: '📊', t: 'Powerful Analytics', d: 'Real-time reporting on applications, placements and hiring trends across your network.' }
           ].map((f, i) => (
-            <div key={i} className={`card reveal ${v('core')}`} style={{...S.featureCard, animationDelay: `${i * 0.12}s`}}>
+            <div key={i} className={`card reveal ${v('feat')}`} style={{...S.featureCard, animationDelay: `${i * 0.1}s`}}>
               <div style={S.featureIcon}>{f.icon}</div>
               <div style={S.featureTitle}>{f.t}</div>
               <div style={S.featureDesc}>{f.d}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Placement Proof Section */}
-      <section style={S.placementSection}>
-        <div style={S.placementBadge}>Placement proof</div>
-        <div className={`reveal ${v('place')}`} ref={setRef('place')} data-k="place" style={S.sectionHead}>
-          <h2 style={S.h2}>Trusted outcomes from real coordinator workflows</h2>
-          <p style={S.sectionSub}>A successful placement is more than a match — it is a record of follow-up, employer context, and student progress that builds confidence for everyone involved.</p>
-        </div>
-
-        <div style={S.placementGrid} className="placementGrid">
-          {/* Student Placement Card */}
-          <div className={`placementCard reveal ${v('place')}`} style={{...S.placementCard, animationDelay: '0s'}}>
-            <div style={S.placementHeader}>
-              <div style={S.studentAvatar}>SM</div>
-              <div>
-                <div style={S.studentName}>Sarah Mitchell</div>
-                <div style={S.studentRole}>Software Engineering · Year 4</div>
-              </div>
-              <div style={S.placedBadge}>Placed</div>
-            </div>
-            <div style={S.placementDetails}>
-              <div style={S.detailRow}>
-                <div style={S.detailLabel}>EMPLOYER</div>
-                <div style={S.detailValue}>Nimbus Labs</div>
-              </div>
-              <div style={S.detailRow}>
-                <div style={S.detailLabel}>ROLE</div>
-                <div style={S.detailValue}>Software Engineer Intern · Full-Time</div>
-              </div>
-              <div style={S.detailRow}>
-                <div style={S.detailLabel}>COORDINATOR NOTE</div>
-                <div style={S.detailValue}>Onboarding follow-up recorded for June 4, 2026.</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Placement Status Card */}
-          <div className={`placementCard reveal ${v('place')}`} style={{...S.placementCard, animationDelay: '0.12s'}}>
-            <div style={S.statusTitle}>
-              <span style={S.checkIcon}>✓</span>
-              Placement confirmed
-            </div>
-            <p style={S.statusDesc}>Coordinator actions keep the record current and actionable.</p>
-            
-            <div style={S.statusUpdate}>
-              <div style={S.updateIcon}>✓</div>
-              <div>
-                <div style={S.updateTitle}>Note saved</div>
-                <div style={S.updateDesc}>The latest coordinator note was added to Sarah's placement timeline.</div>
-              </div>
-            </div>
-
-            <div style={S.statusDetail}>
-              <div style={S.detailLabel}>FOLLOW-UP DATE</div>
-              <div style={S.detailValue}>June 4, 2026</div>
-            </div>
-
-            <div style={S.statusDetail}>
-              <div style={S.detailLabel}>STATUS</div>
-              <div style={S.detailValue}>Placed · Confirmed Full-Time Offer</div>
-            </div>
-          </div>
-
-          {/* Recent Notes Card */}
-          <div className={`placementCard reveal ${v('place')}`} style={{...S.placementCard, animationDelay: '0.24s'}}>
-            <div style={S.statusTitle}>
-              <span style={{fontSize: '18px'}}>📝</span>
-              Recent notes
-            </div>
-            <p style={S.statusDesc}>Latest coordinator updates on this placement.</p>
-
-            <div style={S.noteItem}>
-              <div style={S.noteTitle}>Coordinator note saved</div>
-              <div style={S.notePriority}>Normal</div>
-              <div style={S.noteDesc}>Onboarding follow-up recorded and assigned for June 4, 2026.</div>
-            </div>
-
-            <div style={S.noteItem}>
-              <div style={S.noteTitle}>Offer packet pending</div>
-              <div style={S.notePriority}>Normal</div>
-              <div style={S.noteDesc}>Awaiting signed copy from employer contact.</div>
-            </div>
-
-            <div style={S.noteItem}>
-              <div style={S.noteTitle}>Placement confirmed</div>
-              <div style={S.notePriority}>Low</div>
-              <div style={S.noteDesc}>Sarah accepted the full-time offer with Nimbus Labs.</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Feature Highlights for Each Role */}
-      <section style={S.highlightSection}>
-        <div className={`reveal ${v('high')}`} ref={setRef('high')} data-k="high" style={S.sectionHead}>
-          <h2 style={S.h2}>One platform, every career journey</h2>
-          <p style={S.sectionSub}>From student readiness to placement success, CareerBridge keeps every step connected with clear workflows, trusted outcomes, and coordinator visibility.</p>
-        </div>
-        <div style={S.highlightGrid}>
-          {[
-            { icon: '👨‍🎓', t: 'For students', d: 'Land your first role with confidence through guided applications, interview prep, and placement tracking.', features: ['AI resume feedback', 'One-click apply', 'Interview prep'] },
-            { icon: '🏢', t: 'For employers', d: 'Hire better talent faster with streamlined candidate review and placement-ready workflows.', features: ['Smart candidate ranking', 'Bulk application review', 'ATS integration'] },
-            { icon: '🤖', t: 'AI-powered support', d: 'Our matching engine learns from successful placements to improve every recommendation.', features: ['Semantic skill matching', 'Career forecasting', 'Placement insights'] }
-          ].map((h, i) => (
-            <div key={i} className={`card reveal ${v('high')}`} style={{...S.highlightCard, animationDelay: `${i * 0.12}s`}}>
-              <div style={S.highlightIcon}>{h.icon}</div>
-              <div style={S.highlightTitle}>{h.t}</div>
-              <div style={S.highlightDesc}>{h.d}</div>
-              <div style={S.featuresList}>
-                {h.features.map((feat, j) => (
-                  <div key={j} style={S.featureItem}>
-                    <span style={S.checkmark}>✓</span>
-                    <span>{feat}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={S.ctaLink}>{h.t === 'For students' ? 'Free tools for students →' : h.t === 'For employers' ? 'Start hiring →' : 'Explore AI insights →'}</div>
             </div>
           ))}
         </div>
@@ -319,13 +181,29 @@ export default function Landing() {
           <h2 style={S.h2}>Loved by the whole community</h2>
           <p style={S.sectionSub}>Students, coordinators and recruiters share why they choose CareerBridge.</p>
         </div>
+
         <div style={S.testimonialGrid} className="testimonialGrid">
           {[
-            { name: 'Amara Okafor', role: 'Computer Science Graduate', text: 'I landed my first graduate role within two weeks. The matching was spot on for my degree.', stars: 5 },
-            { name: 'Daniel Rivera', role: 'University Coordinator', text: 'Managing 300 placements used to be a spreadsheet nightmare. Now it\'s all in one place.', stars: 5 },
-            { name: 'Priya Sharma', role: 'Talent Acquisition Lead', text: 'The quality of pre-verified candidates from partner universities cut our hiring time in half.', stars: 5 }
+            { 
+              name: 'Amara Okafor', 
+              role: 'Computer Science Graduate', 
+              text: 'I landed my first graduate role within two weeks. The matching was spot on for my degree.',
+              stars: 5 
+            },
+            { 
+              name: 'Daniel Rivera', 
+              role: 'University Coordinator', 
+              text: 'Managing 300 placements used to be a spreadsheet nightmare. Now it\'s all in one place.',
+              stars: 5 
+            },
+            { 
+              name: 'Priya Sharma', 
+              role: 'Talent Acquisition Lead', 
+              text: 'The quality of pre-verified candidates from partner universities cut our hiring time in half.',
+              stars: 5 
+            }
           ].map((t, i) => (
-            <div key={i} className={`testimonialCard reveal ${v('testi')}`} style={{...S.testimonial, animationDelay: `${i * 0.12}s`}}>
+            <div key={i} className={`testimonialCard reveal ${v('testi')}`} style={{...S.testimonial, animationDelay: `${i * 0.1}s`}}>
               <div style={S.stars}>{'★'.repeat(t.stars)}</div>
               <p style={S.testimonialText}>"{t.text}"</p>
               <div style={S.testimonialAuthor}>
@@ -343,11 +221,11 @@ export default function Landing() {
       {/* CTA Banner */}
       <section style={S.ctaSection}>
         <div style={S.ctaBanner}>
-          <h2 style={S.ctaTitle}>Ready to bridge your career?</h2>
+          <h2 style={S.ctaTitle}>Ready to<br/>bridge your<br/>career?</h2>
           <p style={S.ctaSub}>Join thousands of students, universities and employers already building better futures together.</p>
           <div style={S.ctaButtons}>
-            <button className="ctaBtn" style={S.ctaBtnPrimary} onClick={() => navigate('/signup')}>Create free account</button>
-            <button className="ctaBtn" style={S.ctaBtnSecondary} onClick={() => navigate('/login')}>Log in</button>
+            <button style={S.ctaBtnPrimary} onClick={() => navigate('/signup')}>Create free account</button>
+            <button style={S.ctaBtnSecondary} onClick={() => navigate('/login')}>Log in</button>
           </div>
         </div>
       </section>
@@ -388,130 +266,89 @@ const S = {
   page: { fontFamily: "'Inter', -apple-system, sans-serif", overflowX: 'hidden', color: '#0F172A', background: '#FFFFFF' },
   
   /* Navigation */
-  nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 48px', position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid #E2E8F0' },
-  navScrolled: { boxShadow: '0 1px 3px rgba(15,23,42,0.1)', background: 'rgba(255,255,255,0.98)' },
+  nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 48px', position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid #E5E7EB' },
+  navScrolled: { boxShadow: '0 1px 2px rgba(0,0,0,0.05)' },
   navLeft: { display: 'flex', alignItems: 'center', gap: '32px' },
-  logo: { fontSize: '18px', fontWeight: '800', color: '#0F172A', letterSpacing: '-0.5px' },
-  navCenter: { display: 'flex', gap: '28px', flex: 1, justifyContent: 'center' },
-  navLink: { fontSize: '14px', fontWeight: '500', color: '#4B5563' },
-  navRight: { display: 'flex', alignItems: 'center', gap: '16px' },
-  loginBtn: { padding: '10px 20px', background: 'transparent', color: '#4B5563', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
-  navCta: { padding: '10px 24px', background: '#0F172A', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
+  logo: { fontSize: '16px', fontWeight: '800', color: '#0F172A' },
+  navCenter: { display: 'flex', gap: '32px', alignItems: 'center' },
+  navLink: { fontSize: '13px', fontWeight: '500', color: '#6B7280' },
+  navRight: { display: 'flex', alignItems: 'center', gap: '12px' },
+  loginBtn: { padding: '10px 18px', background: 'transparent', color: '#4B5563', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600' },
+  signupBtn: { padding: '10px 20px', background: '#0F172A', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' },
 
-  /* Hero Section */
-  trustBadge: { textAlign: 'left', fontSize: '13px', fontWeight: '500', color: '#64748B', paddingTop: '0', marginBottom: '24px' },
-  hero: { position: 'relative', overflow: 'hidden', padding: '60px 48px' },
-  heroInner: { display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '56px', maxWidth: '1280px', margin: '0 auto', alignItems: 'center', position: 'relative', zIndex: 1 },
-  heroLeft: { animation: 'fadeUp 0.8s cubic-bezier(.16,1,.3,1) forwards' },
-  h1: { fontSize: '52px', fontWeight: '800', lineHeight: '1.1', marginBottom: '20px', letterSpacing: '-1.5px' },
+  /* Hero */
+  trustBadge: { textAlign: 'left', fontSize: '12px', fontWeight: '500', color: '#6B7280', paddingTop: '0', marginBottom: '20px' },
+  hero: { padding: '60px 48px 80px' },
+  heroInner: { display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '56px', maxWidth: '1280px', margin: '0 auto', alignItems: 'center' },
+  heroLeft: {},
+  h1: { fontSize: '52px', fontWeight: '900', lineHeight: '1.1', marginBottom: '20px', letterSpacing: '-1.5px', color: '#0F172A' },
   h1Accent: { color: '#2563EB' },
-  lead: { fontSize: '17px', color: '#64748B', lineHeight: '1.7', marginBottom: '32px', maxWidth: '520px' },
+  lead: { fontSize: '16px', color: '#6B7280', lineHeight: '1.75', marginBottom: '32px', maxWidth: '520px' },
 
   /* Search Bar */
-  searchBar: { display: 'flex', gap: '12px', marginBottom: '36px', alignItems: 'center' },
-  searchInput: { display: 'flex', alignItems: 'center', gap: '12px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '14px 20px', flex: 1 },
-  searchInputField: { border: 'none', outline: 'none', fontSize: '14px', color: '#4B5563', width: '100%', background: 'transparent' },
-  getStartedBtn: { padding: '14px 28px', background: '#0F172A', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
+  searchBar: { display: 'flex', gap: '12px', marginBottom: '32px', alignItems: 'center' },
+  searchInputField: { border: '1px solid #D1D5DB', outline: 'none', fontSize: '13px', color: '#4B5563', padding: '12px 16px', borderRadius: '8px', flex: 1, background: '#FFFFFF' },
+  getStartedBtn: { padding: '12px 24px', background: '#0F172A', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap' },
 
-  /* User Role Section */
+  /* Role Section */
   roleSection: { marginBottom: '20px' },
-  roleLabel: { display: 'block', fontSize: '13px', fontWeight: '600', color: '#4B5563', marginBottom: '10px' },
-  roleButtons: { display: 'flex', gap: '12px' },
-  roleBtn: { padding: '10px 20px', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '13px', fontWeight: '600', background: '#fff', color: '#4B5563' },
+  roleLabel: { fontSize: '12px', fontWeight: '600', color: '#4B5563', marginBottom: '8px', display: 'block' },
+  roleButtons: { display: 'flex', gap: '10px' },
+  roleBtn: { padding: '8px 16px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '12px', fontWeight: '600', background: '#fff', color: '#4B5563', cursor: 'pointer' },
   roleBtnActive: { background: '#2563EB', color: '#fff', border: '1px solid #2563EB' },
-  roleBtnInactive: { background: '#fff', color: '#4B5563', border: '1px solid #E2E8F0' },
-  roleDesc: { fontSize: '13px', color: '#94A3B8', fontWeight: '500' },
+  roleBtnInactive: { background: '#fff', color: '#4B5563', border: '1px solid #D1D5DB' },
+  roleDesc: { fontSize: '12px', color: '#9CA3AF', fontWeight: '500' },
 
+  /* Hero Image */
   heroRight: { position: 'relative' },
   imgWrap: { position: 'relative' },
-  heroImg: { width: '100%', height: '420px', objectFit: 'cover', borderRadius: '18px', boxShadow: '0 20px 40px rgba(15,23,42,0.15)', display: 'block' },
+  heroImg: { width: '100%', height: '420px', objectFit: 'cover', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', display: 'block' },
 
-  /* Stats Section */
-  statsSection: { padding: '48px 48px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' },
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '32px', maxWidth: '1280px', margin: '0 auto' },
+  /* Stats */
+  statsSection: { padding: '56px 48px', background: '#F9FAFB', borderTop: '1px solid #E5E7EB', borderBottom: '1px solid #E5E7EB' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '48px', maxWidth: '1280px', margin: '0 auto' },
   statCard: { textAlign: 'center' },
-  statNum: { fontSize: '36px', fontWeight: '800', color: '#0F172A', marginBottom: '6px' },
-  statLabel: { fontSize: '14px', color: '#64748B', fontWeight: '500' },
+  statNum: { fontSize: '32px', fontWeight: '900', color: '#0F172A', marginBottom: '6px' },
+  statLabel: { fontSize: '13px', color: '#6B7280', fontWeight: '500' },
 
-  /* Core Features */
-  coreSection: { maxWidth: '1280px', margin: '0 auto', padding: '80px 48px' },
+  /* Features */
+  featuresSection: { maxWidth: '1280px', margin: '0 auto', padding: '80px 48px' },
   sectionHead: { textAlign: 'center', marginBottom: '56px' },
-  h2: { fontSize: '38px', fontWeight: '800', letterSpacing: '-0.8px', marginBottom: '16px', color: '#0F172A' },
-  sectionSub: { fontSize: '16px', color: '#64748B', maxWidth: '600px', margin: '0 auto', lineHeight: '1.7' },
+  h2: { fontSize: '36px', fontWeight: '900', letterSpacing: '-0.8px', marginBottom: '12px', color: '#0F172A' },
+  sectionSub: { fontSize: '15px', color: '#6B7280', maxWidth: '600px', margin: '0 auto', lineHeight: '1.7' },
   featuresGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' },
-  featureCard: { background: '#fff', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '28px 24px', textAlign: 'center' },
-  featureIcon: { fontSize: '32px', marginBottom: '16px' },
-  featureTitle: { fontSize: '16px', fontWeight: '700', marginBottom: '10px', color: '#0F172A' },
-  featureDesc: { fontSize: '14px', color: '#64748B', lineHeight: '1.65' },
-
-  /* Placement Section */
-  placementSection: { maxWidth: '1280px', margin: '0 auto', padding: '80px 48px' },
-  placementBadge: { textAlign: 'center', fontSize: '12px', fontWeight: '700', color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '16px', background: '#EFF6FF', display: 'inline-block', padding: '6px 14px', borderRadius: '20px', margin: '0 auto 16px' },
-  placementGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginTop: '40px' },
-  placementCard: { background: '#fff', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '24px' },
-  placementHeader: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #F0F1F3' },
-  studentAvatar: { width: '40px', height: '40px', borderRadius: '50%', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '13px' },
-  studentName: { fontSize: '14px', fontWeight: '700', color: '#0F172A' },
-  studentRole: { fontSize: '12px', color: '#64748B' },
-  placedBadge: { marginLeft: 'auto', background: '#ECFDF5', color: '#059669', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600' },
-  placementDetails: { display: 'flex', flexDirection: 'column', gap: '14px' },
-  detailRow: { display: 'flex', flexDirection: 'column', gap: '4px' },
-  detailLabel: { fontSize: '11px', fontWeight: '700', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  detailValue: { fontSize: '13px', fontWeight: '600', color: '#0F172A' },
-
-  statusTitle: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: '700', color: '#0F172A', marginBottom: '8px' },
-  checkIcon: { fontSize: '16px', color: '#059669' },
-  statusDesc: { fontSize: '13px', color: '#64748B', marginBottom: '16px' },
-  statusUpdate: { background: '#ECFDF5', border: '1px solid #D1FAE5', borderRadius: '12px', padding: '14px', marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'flex-start' },
-  updateIcon: { width: '24px', height: '24px', borderRadius: '50%', background: '#D1FAE5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '12px', flexShrink: 0 },
-  updateTitle: { fontSize: '13px', fontWeight: '700', color: '#059669', marginBottom: '2px' },
-  updateDesc: { fontSize: '12px', color: '#047857' },
-  statusDetail: { marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #F0F1F3' },
-
-  noteItem: { marginBottom: '14px', paddingBottom: '14px', borderBottom: '1px solid #F0F1F3' },
-  noteTitle: { fontSize: '13px', fontWeight: '700', color: '#0F172A', marginBottom: '4px' },
-  notePriority: { fontSize: '11px', fontWeight: '600', color: '#94A3B8', marginBottom: '4px' },
-  noteDesc: { fontSize: '12px', color: '#64748B', lineHeight: '1.5' },
-
-  /* Highlights Section */
-  highlightSection: { maxWidth: '1280px', margin: '0 auto', padding: '80px 48px', background: '#F8FAFC', borderRadius: '20px', marginBottom: '80px' },
-  highlightGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '28px' },
-  highlightCard: { background: '#fff', borderRadius: '16px', padding: '32px 28px', border: '1px solid #E2E8F0' },
-  highlightIcon: { fontSize: '40px', marginBottom: '16px', display: 'block' },
-  highlightTitle: { fontSize: '18px', fontWeight: '700', marginBottom: '10px', color: '#0F172A' },
-  highlightDesc: { fontSize: '14px', color: '#64748B', lineHeight: '1.7', marginBottom: '18px' },
-  featuresList: { display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '18px', paddingBottom: '18px', borderBottom: '1px solid #E2E8F0' },
-  featureItem: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: '500', color: '#0F172A' },
-  checkmark: { color: '#059669', fontWeight: '800', fontSize: '14px' },
-  ctaLink: { fontSize: '13px', fontWeight: '600', color: '#2563EB', cursor: 'pointer' },
+  featureCard: { background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', padding: '28px 24px', textAlign: 'center' },
+  featureIcon: { fontSize: '32px', marginBottom: '16px', display: 'block' },
+  featureTitle: { fontSize: '15px', fontWeight: '700', marginBottom: '10px', color: '#0F172A' },
+  featureDesc: { fontSize: '13px', color: '#6B7280', lineHeight: '1.65' },
 
   /* Testimonials */
   testimonialSection: { maxWidth: '1280px', margin: '0 auto', padding: '80px 48px' },
   testimonialGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' },
-  testimonial: { background: '#fff', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '24px' },
-  stars: { fontSize: '14px', color: '#FCD34D', marginBottom: '12px', letterSpacing: '1px' },
-  testimonialText: { fontSize: '14px', fontStyle: 'italic', color: '#4B5563', lineHeight: '1.7', marginBottom: '16px', borderLeft: '3px solid #2563EB', paddingLeft: '12px' },
-  testimonialAuthor: { display: 'flex', alignItems: 'center', gap: '10px' },
-  authorAvatar: { width: '36px', height: '36px', borderRadius: '50%', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '12px' },
-  authorName: { fontSize: '13px', fontWeight: '700', color: '#0F172A' },
-  authorRole: { fontSize: '12px', color: '#94A3B8' },
+  testimonial: { background: '#fff', border: '1px solid #E5E7EB', borderRadius: '14px', padding: '24px' },
+  stars: { fontSize: '13px', color: '#FBBF24', marginBottom: '12px', letterSpacing: '1px', display: 'block' },
+  testimonialText: { fontSize: '14px', color: '#4B5563', lineHeight: '1.7', marginBottom: '16px' },
+  testimonialAuthor: { display: 'flex', alignItems: 'center', gap: '10px', borderTop: '1px solid #E5E7EB', paddingTop: '16px' },
+  authorAvatar: { width: '36px', height: '36px', borderRadius: '50%', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '11px', flexShrink: 0 },
+  authorName: { fontSize: '12px', fontWeight: '700', color: '#0F172A' },
+  authorRole: { fontSize: '11px', color: '#9CA3AF' },
 
-  /* CTA Banner */
+  /* CTA */
   ctaSection: { padding: '60px 48px' },
-  ctaBanner: { background: '#0F172A', textAlign: 'center', padding: '80px 60px', borderRadius: '24px', maxWidth: '1280px', margin: '0 auto' },
-  ctaTitle: { fontSize: '40px', fontWeight: '800', color: '#fff', marginBottom: '16px' },
-  ctaSub: { fontSize: '17px', color: '#CBD5E1', marginBottom: '32px', maxWidth: '600px', margin: '0 auto 32px', lineHeight: '1.7' },
-  ctaButtons: { display: 'flex', gap: '16px', justifyContent: 'center' },
-  ctaBtnPrimary: { padding: '14px 36px', background: '#fff', color: '#0F172A', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '700' },
-  ctaBtnSecondary: { padding: '14px 36px', background: 'transparent', color: '#fff', border: '1.5px solid #fff', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '700' },
+  ctaBanner: { background: '#1F2937', textAlign: 'center', padding: '80px 60px', borderRadius: '20px', maxWidth: '1280px', margin: '0 auto' },
+  ctaTitle: { fontSize: '48px', fontWeight: '900', color: '#fff', marginBottom: '20px', lineHeight: '1.2' },
+  ctaSub: { fontSize: '15px', color: '#D1D5DB', marginBottom: '32px', maxWidth: '600px', margin: '0 auto 32px', lineHeight: '1.7' },
+  ctaButtons: { display: 'flex', gap: '12px', justifyContent: 'center' },
+  ctaBtnPrimary: { padding: '12px 32px', background: '#fff', color: '#1F2937', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '700' },
+  ctaBtnSecondary: { padding: '12px 32px', background: 'transparent', color: '#fff', border: '1.5px solid #fff', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '700' },
 
   /* Footer */
-  footer: { background: '#0F172A', color: '#fff', padding: '60px 48px 24px', borderTop: '1px solid #1E293B' },
+  footer: { background: '#0F172A', color: '#fff', padding: '56px 48px 24px', borderTop: '1px solid #1E293B' },
   footerContent: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '40px', maxWidth: '1280px', margin: '0 auto 40px' },
-  footerSection: { fontSize: '14px' },
-  footerBrand: { fontSize: '18px', fontWeight: '800', marginBottom: '12px', color: '#fff' },
-  footerDesc: { color: '#94A3B8', fontSize: '13px', lineHeight: '1.6' },
-  footerTitle: { fontWeight: '700', marginBottom: '12px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#CBD5E1' },
-  footerLink: { color: '#94A3B8', fontSize: '13px', marginBottom: '10px', cursor: 'pointer' },
-  footerBottom: { textAlign: 'center', color: '#64748B', fontSize: '12px', borderTop: '1px solid #1E293B', paddingTop: '24px' }
+  footerSection: { fontSize: '13px' },
+  footerBrand: { fontSize: '16px', fontWeight: '800', marginBottom: '10px', color: '#fff' },
+  footerDesc: { color: '#9CA3AF', fontSize: '12px', lineHeight: '1.6' },
+  footerTitle: { fontWeight: '700', marginBottom: '10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#D1D5DB' },
+  footerLink: { color: '#9CA3AF', fontSize: '12px', marginBottom: '8px', cursor: 'pointer' },
+  footerBottom: { textAlign: 'center', color: '#6B7280', fontSize: '11px', borderTop: '1px solid #1E293B', paddingTop: '20px' }
 }
