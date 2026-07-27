@@ -29,6 +29,7 @@ export default function Landing() {
         @keyframes floatRev{0%,100%{transform:translateY(0)}50%{transform:translateY(14px)}}
         @keyframes pulseDot{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
         @keyframes gradientMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+        @keyframes slideInLeft{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
         .reveal{opacity:0}
         .reveal.show{animation:fadeUp .8s cubic-bezier(.16,1,.3,1) forwards}
         .blobA{animation:float 9s ease-in-out infinite}
@@ -53,6 +54,8 @@ export default function Landing() {
         .gradientBg{background:linear-gradient(120deg,#1D4ED8,#2563EB,#3B82F6,#2563EB);background-size:300% 300%;animation:gradientMove 8s ease infinite}
         .btnPrimary:focus,.btnGhost:focus,.navLink:focus{outline:3px solid rgba(37,99,235,0.18);outline-offset:3px}
         .btnPrimary:focus{box-shadow:0 8px 24px rgba(37,99,235,0.2)}
+        .testimonialCard{transition:all .3s ease}
+        .testimonialCard:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(15,23,42,.08)}
 
         /* Responsive tweaks */
         @media(max-width: 980px){
@@ -62,43 +65,56 @@ export default function Landing() {
           .lead{max-width:100% !important}
           .navBar{padding:12px 20px !important}
           .navRight{gap:12px !important}
+          .statsGrid{grid-template-columns:1fr 1fr !important}
+          .featuresGrid{grid-template-columns:1fr !important}
+          .testimonialGrid{grid-template-columns:1fr !important}
         }
         @media(max-width:560px){
           .heroImg{height:240px !important}
           .btnPrimary,.btnGhost{padding:12px 18px !important; font-size:14px !important}
           .statsRow{display:none}
+          .statsGrid{grid-template-columns:1fr !important}
+          .h1{font-size:28px !important}
         }
       `}</style>
 
-
+      {/* Navigation */}
       <nav className="navBar" style={{...S.nav, ...(scrolled ? S.navScrolled : {})}} aria-label="Main navigation">
         <div style={S.logo}>CareerBridge</div>
         <div style={S.navRight}>
           <span className="navLink" style={S.navLink} onClick={() => scrollTo('how')}>How it works</span>
           <span className="navLink" style={S.navLink} onClick={() => scrollTo('feat')}>Features</span>
+          <span className="navLink" style={S.navLink} onClick={() => scrollTo('testi')}>Testimonials</span>
           <span className="navLink" style={S.navLink} onClick={() => navigate('/login')}>Log in</span>
           <button className="btnPrimary" style={S.navCta} onClick={() => navigate('/signup')} aria-label="Sign up">Sign up</button>
         </div>
       </nav>
 
+      {/* Hero Section */}
       <section style={S.hero}>
         <div className="blobA" style={S.blob1}></div>
         <div className="blobB" style={S.blob2}></div>
+        
+        {/* Trust Badge */}
+        <div style={S.trustBadge}>
+          Trusted by 500+ universities globally
+        </div>
+
         <div style={S.heroInner}>
           <div style={S.heroLeft}>
             <div style={S.badge}><span className="dot" style={S.badgeDot}></span>Final Year Project · GCTU 2026</div>
-            <h1 style={S.h1}>Connecting students to internships with <span style={S.h1Accent}>AI-powered</span> matching</h1>
-            <p style={S.lead}>CareerBridge helps students discover the right job and internship opportunities, while giving employers smarter tools to find top talent — faster.</p>
+            <h1 style={S.h1}>Where students, universities & employers <span style={S.h1Accent}>connect</span></h1>
+            <p style={S.lead}>CareerBridge is the all-in-one platform that links ambitious students with leading employers, powered by real university partnerships and actionable analytics.</p>
             <div style={S.btnRow}>
               <button className="btnPrimary" style={S.btnPrimary} onClick={() => navigate('/signup')}>Get started — it's free</button>
               <button className="btnGhost" style={S.btnGhost} onClick={() => navigate('/login')}>I already have an account</button>
             </div>
             <div style={S.statsRow}>
-              <div className="statBlock" style={S.stat}><div style={S.statNum}>2</div><div style={S.statLabel}>User roles</div></div>
+              <div className="statBlock" style={S.stat}><div style={S.statNum}>2.4M+</div><div style={S.statLabel}>Active job listings</div></div>
               <div style={S.statLine}></div>
-              <div className="statBlock" style={S.stat}><div style={S.statNum}>AI</div><div style={S.statLabel}>Smart matching</div></div>
+              <div className="statBlock" style={S.stat}><div style={S.statNum}>500+</div><div style={S.statLabel}>University partners</div></div>
               <div style={S.statLine}></div>
-              <div className="statBlock" style={S.stat}><div style={S.statNum}>100%</div><div style={S.statLabel}>Free for students</div></div>
+              <div className="statBlock" style={S.stat}><div style={S.statNum}>92%</div><div style={S.statLabel}>Placement rate</div></div>
             </div>
           </div>
           <div style={S.heroRight}>
@@ -117,6 +133,51 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Stats Section with Grid */}
+      <section style={S.statsSection}>
+        <div style={S.statsGrid}>
+          <div className={`reveal ${v('stats')}`} ref={setRef('stats')} data-k="stats" style={S.statCard}>
+            <div style={S.statCardNum}>2.4M+</div>
+            <div style={S.statCardLabel}>Active job listings</div>
+          </div>
+          <div className={`reveal ${v('stats')}`} style={{...S.statCard, animationDelay: '0.08s'}}>
+            <div style={S.statCardNum}>500+</div>
+            <div style={S.statCardLabel}>University partners</div>
+          </div>
+          <div className={`reveal ${v('stats')}`} style={{...S.statCard, animationDelay: '0.16s'}}>
+            <div style={S.statCardNum}>18K</div>
+            <div style={S.statCardLabel}>Hiring employers</div>
+          </div>
+          <div className={`reveal ${v('stats')}`} style={{...S.statCard, animationDelay: '0.24s'}}>
+            <div style={S.statCardNum}>92%</div>
+            <div style={S.statCardLabel}>Placement rate</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Core Features Section */}
+      <section ref={setRef('feat')} data-k="feat" style={S.coreSection}>
+        <div className={`reveal ${v('feat')}`} style={S.sectionHead}>
+          <h2 style={S.h2}>Everything you need to bridge the gap</h2>
+          <p style={S.sectionSub}>A single platform that brings together job discovery, partnerships, and insights.</p>
+        </div>
+        <div style={S.featuresGrid}>
+          {[
+            { icon: '🔍', t: 'Smart Job Search', d: 'Filter thousands of roles by degree, skills and location with AI-matched recommendations.' },
+            { icon: '🏫', t: 'University Partnerships', d: 'Coordinators manage placements, endorse students and monitor outcomes in one dashboard.' },
+            { icon: '🤝', t: 'Employer Connections', d: 'Post roles, screen verified candidates and build a pipeline directly from campus.' },
+            { icon: '📊', t: 'Powerful Analytics', d: 'Real-time reporting on applications, placements and hiring trends across your network.' }
+          ].map((f, i) => (
+            <div key={i} className={`card reveal ${v('feat')}`} style={{...S.featureCard, animationDelay: `${i * 0.12}s`}}>
+              <div style={{...S.featureIconWrap}}><span style={S.featureIcon}>{f.icon}</span></div>
+              <div style={S.featureTitle}>{f.t}</div>
+              <div style={S.featureDesc}>{f.d}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How It Works Section */}
       <section ref={setRef('how')} data-k="how" style={S.section}>
         <div className={`reveal ${v('how')}`} style={S.sectionHead}>
           <div style={S.eyebrow}>How it works</div>
@@ -137,57 +198,125 @@ export default function Landing() {
         </div>
       </section>
 
-      <section ref={setRef('feat')} data-k="feat" style={S.featuresSection}>
-        {[
-          { icon: '🎓', bg: '#EFF6FF', t: 'For Students', d: 'Build your profile, upload your CV, browse internships and track every application in one place.' },
-          { icon: '🏢', bg: '#ECFDF5', t: 'For Employers', d: 'Post jobs in minutes and review applicants with all the information you need to make the right hire.' },
-          { icon: '🤖', bg: '#F5F3FF', t: 'AI-Powered', d: 'Get instant CV feedback and smart job match scores powered by real artificial intelligence.' }
-        ].map((f, i) => (
-          <div key={i} className={`card reveal ${v('feat')}`} style={{...S.featureCard, animationDelay: `${i * 0.12}s`}}>
-            <div style={{...S.featureIconWrap, background: f.bg}}><span style={S.featureIcon}>{f.icon}</span></div>
-            <div style={S.featureTitle}>{f.t}</div>
-            <div style={S.featureDesc}>{f.d}</div>
-          </div>
-        ))}
-      </section>
-
-      <section ref={setRef('cta')} data-k="cta" className={`reveal ${v('cta')}`}>
-        <div className="gradientBg" style={S.ctaBanner}>
-          <h2 style={S.ctaTitle}>Ready to find your next opportunity?</h2>
-          <p style={S.ctaSub}>Join CareerBridge today — completely free for students.</p>
-          <button className="ctaBtn" style={S.ctaBtn} onClick={() => navigate('/signup')} aria-label="Create your CareerBridge account">Create your account</button>
+      {/* Feature Highlights for Each Role */}
+      <section style={S.highlightSection}>
+        <div className={`reveal ${v('high')}`} ref={setRef('high')} data-k="high" style={S.sectionHead}>
+          <h2 style={S.h2}>One platform, every career journey</h2>
+          <p style={S.sectionSub}>From student readiness to placement success, CareerBridge keeps every step connected.</p>
+        </div>
+        <div style={S.highlightGrid}>
+          {[
+            { icon: '👨‍🎓', bg: '#EFF6FF', t: 'For students', d: 'Land your first role with confidence through guided applications, interview prep, and placement tracking.', features: ['AI resume feedback', 'One-click apply', 'Interview prep'] },
+            { icon: '🏢', bg: '#ECFDF5', t: 'For employers', d: 'Hire better talent faster with streamlined candidate review and placement-ready workflows.', features: ['Smart candidate ranking', 'Bulk application review', 'ATS integration'] },
+            { icon: '🤖', bg: '#F5F3FF', t: 'AI-powered support', d: 'Our matching engine learns from successful placements to improve every recommendation.', features: ['Semantic skill matching', 'Career forecasting', 'Placement insights'] }
+          ].map((h, i) => (
+            <div key={i} className={`card reveal ${v('high')}`} style={{...S.highlightCard, background: h.bg, animationDelay: `${i * 0.12}s`}}>
+              <div style={S.highlightIcon}>{h.icon}</div>
+              <div style={S.highlightTitle}>{h.t}</div>
+              <div style={S.highlightDesc}>{h.d}</div>
+              <div style={S.featuresList}>
+                {h.features.map((feat, j) => (
+                  <div key={j} style={S.featureItem}>
+                    <span style={S.checkmark}>✓</span>
+                    <span>{feat}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      <footer style={S.footer}>Built by Selorm Amuzu · Final Year Project · Ghana Communication Technology University</footer>
+      {/* Testimonials Section */}
+      <section ref={setRef('testi')} data-k="testi" style={S.testimonialSection}>
+        <div className={`reveal ${v('testi')}`} style={S.sectionHead}>
+          <h2 style={S.h2}>Loved by the whole community</h2>
+          <p style={S.sectionSub}>Students, coordinators and recruiters share why they choose CareerBridge.</p>
+        </div>
+        <div style={S.testimonialGrid}>
+          {[
+            { name: 'Amara Okafor', role: 'Computer Science Graduate', company: 'Now @ Tech Corp', text: 'I landed my first graduate role within two weeks. The matching was spot on for my degree.', stars: 5 },
+            { name: 'Daniel Rivera', role: 'University Coordinator', company: 'Ghana Tech Institute', text: 'Managing 300 placements used to be a spreadsheet nightmare. Now it\'s all in one place.', stars: 5 },
+            { name: 'Priya Sharma', role: 'Talent Acquisition Lead', company: 'Global HR Solutions', text: 'The quality of pre-verified candidates from partner universities cut our hiring time in half.', stars: 5 }
+          ].map((t, i) => (
+            <div key={i} className={`testimonialCard reveal ${v('testi')}`} style={{...S.testimonial, animationDelay: `${i * 0.12}s`}}>
+              <div style={S.stars}>{'★'.repeat(t.stars)}</div>
+              <p style={S.testimonialText}>"{t.text}"</p>
+              <div style={S.testimonialAuthor}>
+                <div style={S.authorName}>{t.name}</div>
+                <div style={S.authorRole}>{t.role}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA Banner */}
+      <section ref={setRef('cta')} data-k="cta" className={`reveal ${v('cta')}`}>
+        <div className="gradientBg" style={S.ctaBanner}>
+          <h2 style={S.ctaTitle}>Ready to bridge your career?</h2>
+          <p style={S.ctaSub}>Join thousands of students, universities and employers already building better futures together.</p>
+          <button className="ctaBtn" style={S.ctaBtn} onClick={() => navigate('/signup')} aria-label="Create your CareerBridge account">Create free account</button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={S.footer}>
+        <div style={S.footerContent}>
+          <div style={S.footerSection}>
+            <div style={S.footerBrand}>CareerBridge</div>
+            <p style={S.footerDesc}>Connecting students, universities and employers for a stronger future workforce.</p>
+          </div>
+          <div style={S.footerSection}>
+            <div style={S.footerTitle}>Product</div>
+            <div style={S.footerLink} onClick={() => scrollTo('how')}>Browse Jobs</div>
+            <div style={S.footerLink} onClick={() => scrollTo('feat')}>Analytics</div>
+            <div style={S.footerLink}>Pricing</div>
+          </div>
+          <div style={S.footerSection}>
+            <div style={S.footerTitle}>Company</div>
+            <div style={S.footerLink}>About</div>
+            <div style={S.footerLink}>Careers</div>
+            <div style={S.footerLink}>Contact</div>
+          </div>
+          <div style={S.footerSection}>
+            <div style={S.footerTitle}>Legal</div>
+            <div style={S.footerLink}>Privacy</div>
+            <div style={S.footerLink}>Terms</div>
+            <div style={S.footerLink}>Security</div>
+          </div>
+        </div>
+        <div style={S.footerBottom}>© 2026 CareerBridge. All rights reserved. | Built by student success teams</div>
+      </footer>
     </div>
   )
 }
 
-
-
-
 const S = {
-  page: { fontFamily: "'Inter', -apple-system, sans-serif", overflowX: 'hidden', color: '#0F172A' },
-  nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 48px', position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(14px)' },
-  navScrolled: { boxShadow: '0 1px 0 #EEF0F3', background: 'rgba(255,255,255,0.95)' },
+  page: { fontFamily: "'Inter', -apple-system, sans-serif", overflowX: 'hidden', color: '#0F172A', background: '#FFFFFF' },
+  
+  /* Navigation */
+  nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 48px', position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)' },
+  navScrolled: { boxShadow: '0 1px 3px rgba(15,23,42,0.1)', background: 'rgba(255,255,255,0.95)' },
   logo: { fontSize: '21px', fontWeight: '800', color: '#2563EB', letterSpacing: '-0.6px' },
   navRight: { display: 'flex', alignItems: 'center', gap: '24px' },
   navLink: { fontSize: '14.5px', fontWeight: '600', color: '#374151' },
-  navCta: { padding: '10px 22px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', boxShadow: '0 4px 12px rgba(37,99,235,0.28)' },
+  navCta: { padding: '10px 22px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', boxShadow: '0 4px 12px rgba(37,99,235,0.2)' },
 
-  hero: { position: 'relative', overflow: 'hidden', padding: '10px 0 0' },
+  /* Hero Section */
+  trustBadge: { textAlign: 'center', fontSize: '14px', fontWeight: '500', color: '#64748B', paddingTop: '24px', marginBottom: '12px' },
+  hero: { position: 'relative', overflow: 'hidden', padding: '10px 0 40px' },
   blob1: { position: 'absolute', top: '-120px', right: '-140px', width: '420px', height: '420px', borderRadius: '50%', background: 'radial-gradient(circle, #DBEAFE 0%, transparent 70%)', zIndex: 0 },
   blob2: { position: 'absolute', top: '260px', left: '-160px', width: '380px', height: '380px', borderRadius: '50%', background: 'radial-gradient(circle, #D1FAE5 0%, transparent 70%)', zIndex: 0 },
-  heroInner: { display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: '48px', maxWidth: '1180px', margin: '0 auto', padding: '64px 40px 110px', alignItems: 'center', position: 'relative', zIndex: 1 },
+  heroInner: { display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: '48px', maxWidth: '1180px', margin: '0 auto', padding: '64px 40px 60px', alignItems: 'center', position: 'relative', zIndex: 1 },
   heroLeft: { animation: 'fadeUp 0.8s cubic-bezier(.16,1,.3,1) forwards' },
-  badge: { display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#EFF6FF', color: '#2563EB', padding: '8px 18px 8px 14px', borderRadius: '20px', fontSize: '12.5px', fontWeight: '700', marginBottom: '26px' },
+  badge: { display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#EFF6FF', color: '#2563EB', padding: '8px 18px 8px 14px', borderRadius: '20px', fontSize: '12.5px', fontWeight: '600' },
   badgeDot: { width: '6px', height: '6px', borderRadius: '50%', background: '#2563EB' },
   h1: { fontSize: '46px', fontWeight: '800', lineHeight: '1.14', marginBottom: '22px', letterSpacing: '-1.3px' },
   h1Accent: { color: '#2563EB' },
   lead: { fontSize: '17.5px', color: '#64748B', lineHeight: '1.75', marginBottom: '34px', maxWidth: '490px' },
   btnRow: { display: 'flex', gap: '14px', flexWrap: 'wrap', marginBottom: '44px' },
-  btnPrimary: { padding: '16px 30px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '15.5px', fontWeight: '700', boxShadow: '0 8px 20px rgba(37,99,235,0.28)' },
+  btnPrimary: { padding: '16px 30px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '15.5px', fontWeight: '700', boxShadow: '0 8px 20px rgba(37,99,235,0.25)' },
   btnGhost: { padding: '16px 30px', background: '#fff', color: '#2563EB', border: '1.5px solid #DBEAFE', borderRadius: '12px', cursor: 'pointer', fontSize: '15.5px', fontWeight: '700' },
   statsRow: { display: 'flex', alignItems: 'center', gap: '26px' },
   stat: { cursor: 'default' },
@@ -198,33 +327,74 @@ const S = {
   heroRight: { position: 'relative' },
   imgWrap: { position: 'relative' },
   heroImg: { width: '100%', height: '460px', objectFit: 'cover', borderRadius: '26px', boxShadow: '0 36px 70px -20px rgba(37,99,235,0.3)', display: 'block' },
-  float1: { position: 'absolute', top: '-20px', left: '-32px', background: '#fff', borderRadius: '14px', padding: '13px 18px', boxShadow: '0 16px 32px rgba(15,23,42,0.14)', display: 'flex', alignItems: 'center', gap: '11px', maxWidth: '215px' },
-  float2: { position: 'absolute', bottom: '-20px', right: '-28px', background: '#fff', borderRadius: '14px', padding: '13px 18px', boxShadow: '0 16px 32px rgba(15,23,42,0.14)', display: 'flex', alignItems: 'center', gap: '11px', maxWidth: '225px' },
-  floatIcon: { width: '34px', height: '34px', borderRadius: '10px', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '13px', flexShrink: 0 },
+  float1: { position: 'absolute', top: '-20px', left: '-32px', background: '#fff', borderRadius: '14px', padding: '13px 18px', boxShadow: '0 16px 32px rgba(15,23,42,0.14)', display: 'flex', alignItems: 'center', gap: '12px' },
+  float2: { position: 'absolute', bottom: '-20px', right: '-28px', background: '#fff', borderRadius: '14px', padding: '13px 18px', boxShadow: '0 16px 32px rgba(15,23,42,0.14)', display: 'flex', alignItems: 'center', gap: '12px' },
+  floatIcon: { width: '34px', height: '34px', borderRadius: '10px', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '12px' },
   floatTitle: { fontSize: '12.5px', fontWeight: '700' },
   floatSub: { fontSize: '11px', color: '#94A3B8' },
 
-  section: { maxWidth: '1080px', margin: '0 auto', padding: '50px 24px 100px' },
-  sectionHead: { textAlign: 'center', marginBottom: '54px' },
+  /* Stats Section */
+  statsSection: { padding: '60px 40px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', maxWidth: '1080px', margin: '0 auto' },
+  statCard: { background: '#fff', padding: '32px 24px', borderRadius: '18px', textAlign: 'center', border: '1px solid #F0F1F3' },
+  statCardNum: { fontSize: '32px', fontWeight: '800', color: '#2563EB', marginBottom: '8px' },
+  statCardLabel: { fontSize: '14px', color: '#64748B', fontWeight: '500' },
+
+  /* Core Features */
+  coreSection: { maxWidth: '1080px', margin: '0 auto', padding: '80px 40px' },
+  sectionHead: { textAlign: 'center', marginBottom: '60px' },
   eyebrow: { color: '#2563EB', fontSize: '12.5px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '12px' },
-  h2: { fontSize: '32px', fontWeight: '800', letterSpacing: '-0.6px' },
-  stepsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '30px' },
+  h2: { fontSize: '36px', fontWeight: '800', letterSpacing: '-0.6px', marginBottom: '12px' },
+  sectionSub: { fontSize: '16px', color: '#64748B', maxWidth: '500px', margin: '0 auto' },
+  featuresGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' },
+  featureCard: { background: '#fff', border: '1px solid #F0F1F3', borderRadius: '20px', padding: '32px 24px', textAlign: 'center' },
+  featureIconWrap: { width: '56px', height: '56px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', background: '#EFF6FF' },
+  featureIcon: { fontSize: '28px' },
+  featureTitle: { fontSize: '17px', fontWeight: '700', marginBottom: '12px' },
+  featureDesc: { fontSize: '14px', color: '#64748B', lineHeight: '1.7' },
+
+  /* How It Works */
+  section: { maxWidth: '1080px', margin: '0 auto', padding: '80px 40px 100px' },
+  stepsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' },
   stepCard: { cursor: 'default' },
-  stepCircle: { width: '46px', height: '46px', borderRadius: '50%', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '18px', marginBottom: '20px' },
+  stepCircle: { width: '46px', height: '46px', borderRadius: '50%', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '18px', marginBottom: '16px' },
   stepTitle: { fontSize: '17.5px', fontWeight: '700', marginBottom: '9px' },
   stepDesc: { fontSize: '14px', color: '#64748B', lineHeight: '1.7' },
 
-  featuresSection: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '26px', maxWidth: '1080px', margin: '0 auto', padding: '0 24px 100px' },
-  featureCard: { background: '#fff', border: '1px solid #F0F1F3', borderRadius: '20px', padding: '34px 28px', textAlign: 'center', cursor: 'default' },
-  featureIconWrap: { width: '58px', height: '58px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' },
-  featureIcon: { fontSize: '27px' },
-  featureTitle: { fontSize: '17.5px', fontWeight: '700', marginBottom: '10px' },
-  featureDesc: { fontSize: '14px', color: '#64748B', lineHeight: '1.75' },
+  /* Highlights Section */
+  highlightSection: { maxWidth: '1080px', margin: '0 auto', padding: '80px 40px' },
+  highlightGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '28px' },
+  highlightCard: { borderRadius: '20px', padding: '36px 28px', border: '1px solid rgba(0,0,0,0.05)' },
+  highlightIcon: { fontSize: '40px', marginBottom: '16px' },
+  highlightTitle: { fontSize: '19px', fontWeight: '700', marginBottom: '12px' },
+  highlightDesc: { fontSize: '14px', color: '#64748B', lineHeight: '1.7', marginBottom: '24px' },
+  featuresList: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  featureItem: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: '500' },
+  checkmark: { color: '#059669', fontWeight: '800' },
 
-  ctaBanner: { textAlign: 'center', padding: '76px 24px', margin: '0 24px 70px', borderRadius: '30px', maxWidth: '1080px', marginLeft: 'auto', marginRight: 'auto' },
-  ctaTitle: { fontSize: '30px', fontWeight: '800', color: '#fff', marginBottom: '14px' },
-  ctaSub: { fontSize: '15.5px', color: '#DBEAFE', marginBottom: '30px' },
-  ctaBtn: { padding: '16px 32px', background: '#fff', color: '#2563EB', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '15.5px', fontWeight: '700', boxShadow: '0 10px 24px rgba(0,0,0,0.15)' },
+  /* Testimonials */
+  testimonialSection: { maxWidth: '1080px', margin: '0 auto', padding: '80px 40px' },
+  testimonialGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '28px' },
+  testimonial: { background: '#fff', border: '1px solid #F0F1F3', borderRadius: '18px', padding: '28px', cursor: 'default' },
+  stars: { fontSize: '16px', color: '#FCD34D', marginBottom: '16px', letterSpacing: '2px' },
+  testimonialText: { fontSize: '15px', fontStyle: 'italic', color: '#4B5563', lineHeight: '1.8', marginBottom: '20px', borderLeft: '3px solid #2563EB', paddingLeft: '16px' },
+  testimonialAuthor: { paddingTop: '16px', borderTop: '1px solid #F0F1F3' },
+  authorName: { fontSize: '14px', fontWeight: '700', marginBottom: '2px' },
+  authorRole: { fontSize: '12px', color: '#94A3B8', fontWeight: '500' },
 
-  footer: { textAlign: 'center', padding: '30px', color: '#94A3B8', fontSize: '12.5px', borderTop: '1px solid #F0F1F3' }
+  /* CTA Banner */
+  ctaBanner: { textAlign: 'center', padding: '80px 40px', margin: '0 40px 80px', borderRadius: '30px', maxWidth: '1080px' },
+  ctaTitle: { fontSize: '36px', fontWeight: '800', color: '#fff', marginBottom: '16px' },
+  ctaSub: { fontSize: '17px', color: '#DBEAFE', marginBottom: '32px', maxWidth: '600px', margin: '0 auto 32px' },
+  ctaBtn: { padding: '16px 40px', background: '#fff', color: '#2563EB', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '15.5px', fontWeight: '700', boxShadow: '0 10px 24px rgba(0,0,0,0.15)' },
+
+  /* Footer */
+  footer: { background: '#0F172A', color: '#fff', padding: '60px 40px 24px', borderTop: '1px solid #1E293B' },
+  footerContent: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '40px', maxWidth: '1080px', margin: '0 auto 40px' },
+  footerSection: { fontSize: '14px' },
+  footerBrand: { fontSize: '18px', fontWeight: '800', marginBottom: '12px', color: '#2563EB' },
+  footerDesc: { color: '#94A3B8', fontSize: '13px', lineHeight: '1.6' },
+  footerTitle: { fontWeight: '700', marginBottom: '12px', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#CBD5E1' },
+  footerLink: { color: '#94A3B8', fontSize: '14px', marginBottom: '10px', cursor: 'pointer', transition: 'color 0.2s ease' },
+  footerBottom: { textAlign: 'center', color: '#64748B', fontSize: '13px', borderTop: '1px solid #1E293B', paddingTop: '24px' }
 }
