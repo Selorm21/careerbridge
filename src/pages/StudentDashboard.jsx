@@ -48,7 +48,7 @@ export default function StudentDashboard() {
     getData()
   }, [])
 
-  async function handleLogout() { await supabase.auth.signOut() }
+  async function handleLogout() { await supabase.auth.signOut(); navigate('/') }
 
   function getStatusStyle(status) {
     if (status === 'applied') return { bg: '#EFF6FF', color: '#2563EB', dot: '#2563EB' }
@@ -71,28 +71,22 @@ export default function StudentDashboard() {
   return (
     <div style={S.page}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-        @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+        .blobA{animation:float 8s ease-in-out infinite}
+        .blobB{animation:float 10s ease-in-out infinite reverse}
         .pageIn{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) forwards}
         .cardIn{animation:fadeUp .6s cubic-bezier(.16,1,.3,1) forwards}
-        .c2{animation-delay:.08s;opacity:0}
-        .c3{animation-delay:.16s;opacity:0}
-        .c4{animation-delay:.24s;opacity:0}
-        .c5{animation-delay:.32s;opacity:0}
         .metCard{transition:transform .25s ease,box-shadow .25s ease;cursor:default}
-        .metCard:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(15,23,42,0.1)!important}
+        .metCard:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(15,23,42,0.08)!important}
         .jobCard{transition:all .2s ease}
-        .jobCard:hover{border-color:#DBEAFE!important;box-shadow:0 8px 24px rgba(37,99,235,0.09)!important}
+        .jobCard:hover{border-color:#DBEAFE!important;box-shadow:0 8px 24px rgba(37,99,235,0.06)!important}
         .sideBtn{transition:all .2s ease;cursor:pointer}
-        .sideBtn:hover{background:#1E293B!important;color:#fff!important}
+        .sideBtn:hover{background:#F8FAFC!important}
         .logoutBtn{transition:all .2s ease}
-        .logoutBtn:hover{background:#FEF2F2!important;color:#DC2626!important;border-color:#FECACA!important}
-        .progressBar{background:linear-gradient(90deg,#2563EB,#3B82F6);background-size:200% 100%;animation:shimmer 2s linear infinite}
-        .dotPulse{animation:pulse 2s ease-in-out infinite}
+        .progressBar{background:linear-gradient(90deg,#2563EB,#3B82F6);background-size:200% 100%}
+        .dotPulse{animation:fadeUp .8s ease-in-out infinite}
         .recCard:hover{background:#EFF6FF!important;border-color:#DBEAFE!important}
-        .mobileNavItem:active{opacity:.6}
         @media(max-width:768px){
           .sidebar{display:none!important}
           .mobileNav{display:flex!important}
@@ -105,34 +99,10 @@ export default function StudentDashboard() {
           .rightCol{display:none!important}
           .recsGrid{grid-template-columns:1fr 1fr!important}
         }
-        @media(max-width:480px){
-          .metricsRow{grid-template-columns:1fr 1fr!important}
-          .recsGrid{grid-template-columns:1fr!important}
-        }
       `}</style>
 
-      <div className="mobileNav" style={S.mobileNav}>
-        <div className="mobileNavItem" style={S.mobileNavItem} onClick={() => setActiveTab('overview')}>
-          <span style={S.mobileNavIcon}>📊</span>
-          <span style={{...S.mobileNavLabel, color: activeTab==='overview' ? '#2563EB' : '#94A3B8'}}>Overview</span>
-        </div>
-        <div className="mobileNavItem" style={S.mobileNavItem} onClick={() => setActiveTab('applications')}>
-          <span style={S.mobileNavIcon}>📋</span>
-          <span style={{...S.mobileNavLabel, color: activeTab==='applications' ? '#2563EB' : '#94A3B8'}}>Applications</span>
-        </div>
-        <div className="mobileNavItem" style={S.mobileNavItem} onClick={() => navigate('/browse-jobs')}>
-          <span style={S.mobileNavIcon}>🔍</span>
-          <span style={S.mobileNavLabel}>Jobs</span>
-        </div>
-        <div className="mobileNavItem" style={S.mobileNavItem} onClick={() => navigate('/student-profile')}>
-          <span style={S.mobileNavIcon}>👤</span>
-          <span style={S.mobileNavLabel}>Profile</span>
-        </div>
-        <div className="mobileNavItem" style={S.mobileNavItem} onClick={handleLogout}>
-          <span style={S.mobileNavIcon}>🚪</span>
-          <span style={S.mobileNavLabel}>Logout</span>
-        </div>
-      </div>
+      <div className="blobA" style={S.blob1}></div>
+      <div className="blobB" style={S.blob2}></div>
 
       <div className="layout" style={S.layout}>
         <aside className="sidebar" style={S.sidebar}>
@@ -146,35 +116,52 @@ export default function StudentDashboard() {
               </div>
             </div>
           </div>
+
           <nav style={S.sideNav}>
             <div className="sideBtn" style={{...S.sideNavItem, ...(activeTab==='overview' ? S.sideNavActive : {})}} onClick={() => setActiveTab('overview')}>
-              <span style={S.sideNavIcon}>📊</span> Overview
+              <span style={S.sideNavIcon}>📊</span>
+              <span style={{marginLeft:6}}>Overview</span>
             </div>
+
             <div className="sideBtn" style={{...S.sideNavItem, ...(activeTab==='applications' ? S.sideNavActive : {})}} onClick={() => setActiveTab('applications')}>
-              <span style={S.sideNavIcon}>📋</span> Applications
+              <span style={S.sideNavIcon}>📋</span>
+              <span style={{marginLeft:6}}>Applications</span>
               {applications.length > 0 && <span style={S.navBadge}>{applications.length}</span>}
             </div>
+
             <div className="sideBtn" style={{...S.sideNavItem, ...(activeTab==='recommended' ? S.sideNavActive : {})}} onClick={() => setActiveTab('recommended')}>
-              <span style={S.sideNavIcon}>🤖</span> Recommended
+              <span style={S.sideNavIcon}>🤖</span>
+              <span style={{marginLeft:6}}>Recommended</span>
               {recommendedJobs.length > 0 && <span style={S.navBadge}>{recommendedJobs.length}</span>}
             </div>
+
             <div className="sideBtn" style={{...S.sideNavItem, ...(activeTab==='interviews' ? S.sideNavActive : {})}} onClick={() => setActiveTab('interviews')}>
-              <span style={S.sideNavIcon}>📅</span> Interviews
+              <span style={S.sideNavIcon}>📅</span>
+              <span style={{marginLeft:6}}>Interviews</span>
               {interviews.length > 0 && <span style={{...S.navBadge, background:'#D97706'}}>{interviews.length}</span>}
             </div>
+
             <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/browse-jobs')}>
-              <span style={S.sideNavIcon}>🔍</span> Browse Jobs
+              <span style={S.sideNavIcon}>🔍</span>
+              <span style={{marginLeft:6}}>Browse Jobs</span>
             </div>
+
             <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/student-profile')}>
-              <span style={S.sideNavIcon}>👤</span> My Profile
+              <span style={S.sideNavIcon}>👤</span>
+              <span style={{marginLeft:6}}>My Profile</span>
             </div>
+
             <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/resume-builder')}>
-              <span style={S.sideNavIcon}>📄</span> Resume Builder
+              <span style={S.sideNavIcon}>📄</span>
+              <span style={{marginLeft:6}}>Resume Builder</span>
             </div>
+
             <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/analytics')}>
-              <span style={S.sideNavIcon}>📊</span> Analytics
+              <span style={S.sideNavIcon}>📊</span>
+              <span style={{marginLeft:6}}>Analytics</span>
             </div>
           </nav>
+
           <div style={S.profileStrengthBox}>
             <div style={S.strengthLabel}>Profile strength</div>
             <div style={S.strengthTrack}>
@@ -183,6 +170,7 @@ export default function StudentDashboard() {
             <div style={S.strengthPct}>{profileStrength()}% complete</div>
             {profileStrength() < 100 && <div style={S.strengthTip} onClick={() => navigate('/student-profile')}>Complete profile →</div>}
           </div>
+
           <button className="logoutBtn" style={S.logoutBtn} onClick={handleLogout}>← Log out</button>
         </aside>
 
@@ -336,8 +324,8 @@ export default function StudentDashboard() {
                       <div style={S.interviewCard}>
                        <div style={S.interviewTitle}>
                           {new Date(interview.interview_date) < new Date() ? '✓ Interview Completed' : '📅 Interview Scheduled'}
-                        </div> 
-                        <div style={S.interviewRow}><span style={S.interviewIcon}>🗓</span><span>{new Date(interview.interview_date).toLocaleDateString('en', { weekday:'long', year:'numeric', month:'short', day:'numeric' })}</span></div>
+                        </div>
+                        <div style={S.interviewRow}><span style={S.interviewIcon}>🗓</span><span>{new Date(interview.interview_date).toLocaleDateString()}</span></div>
                         <div style={S.interviewRow}><span style={S.interviewIcon}>⏰</span><span>{interview.interview_time}</span></div>
                         <div style={S.interviewRow}><span style={S.interviewIcon}>📍</span><span>{interview.location}</span></div>
                         {interview.notes && <div style={S.interviewRow}><span style={S.interviewIcon}>📝</span><span>{interview.notes}</span></div>}
@@ -376,9 +364,9 @@ export default function StudentDashboard() {
                         padding:'4px 12px', borderRadius:'20px', fontSize:'12px', fontWeight:'700'
                       }}>
                         {new Date(interview.interview_date) < new Date() ? '✓ Completed' : '📅 Scheduled'}
-                      </span> 
+                      </span>
                     </div>
-                    <div style={S.interviewRow}><span style={S.interviewIcon}>🗓</span><span style={{fontWeight:'600'}}>{new Date(interview.interview_date).toLocaleDateString('en', { weekday:'long', year:'numeric', month:'short', day:'numeric' })}</span></div>
+                    <div style={S.interviewRow}><span style={S.interviewIcon}>🗓</span><span style={{fontWeight:'600'}}>{new Date(interview.interview_date).toLocaleDateString()}</span></div>
                     <div style={S.interviewRow}><span style={S.interviewIcon}>⏰</span><span>{interview.interview_time}</span></div>
                     <div style={S.interviewRow}><span style={S.interviewIcon}>📍</span><span>{interview.location}</span></div>
                     {interview.notes && <div style={S.interviewRow}><span style={S.interviewIcon}>📝</span><span>{interview.notes}</span></div>}
@@ -428,54 +416,59 @@ export default function StudentDashboard() {
     </div>
   )
 }
-const S = {
-  page: { minHeight: '100vh', background: '#F1F5F9', fontFamily: "'Inter', -apple-system, sans-serif" },
-  layout: { display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100vh' },
 
-  mobileNav: { display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #F0F2F5', justifyContent: 'space-around', padding: '10px 0 16px', zIndex: 1000 },
+const S = {
+  page: { minHeight: '100vh', background: '#F8FAFC', fontFamily: "'Inter', -apple-system, sans-serif", position: 'relative', overflow: 'hidden' },
+  blob1: { position: 'absolute', top: '-100px', right: '-100px', width: '340px', height: '340px', borderRadius: '50%', background: 'radial-gradient(circle, #DBEAFE 0%, transparent 70%)' },
+  blob2: { position: 'absolute', bottom: '-120px', left: '-100px', width: '320px', height: '320px', borderRadius: '50%', background: 'radial-gradient(circle, #D1FAE5 0%, transparent 70%)' },
+
+  layout: { display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100vh', gap: '24px', padding: '40px' },
+
+  mobileNav: { display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #F0F2F5', justifyContent: 'space-around', padding: '10px 0 16px', zIndex: 30 },
   mobileNavItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', padding: '0 8px' },
   mobileNavIcon: { fontSize: '20px' },
   mobileNavLabel: { fontSize: '10.5px', fontWeight: '700', color: '#94A3B8' },
 
-  sidebar: { background: '#0F172A', display: 'flex', flexDirection: 'column', padding: '0', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' },
-  sidebarTop: { padding: '28px 24px 20px' },
-  sidebarLogo: { fontSize: '18px', fontWeight: '800', color: '#fff', letterSpacing: '-0.5px', marginBottom: '28px' },
+  // Sidebar (light theme to match auth pages)
+  sidebar: { background: '#fff', display: 'flex', flexDirection: 'column', padding: '0', position: 'sticky', top: 0, height: 'calc(100vh - 80px)', borderRadius: '14px', boxShadow: '0 12px 30px rgba(15,23,42,0.06)', paddingBottom: '20px' },
+  sidebarTop: { padding: '20px 18px 12px' },
+  sidebarLogo: { fontSize: '18px', fontWeight: '800', color: '#2563EB', letterSpacing: '-0.5px', marginBottom: '18px' },
   avatarWrap: { display: 'flex', alignItems: 'center', gap: '12px' },
-  avatar: { width: '42px', height: '42px', borderRadius: '50%', background: 'linear-gradient(135deg, #2563EB, #3B82F6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '800' },
-  avatarName: { fontSize: '14px', fontWeight: '700', color: '#F1F5F9' },
-  avatarRole: { fontSize: '11.5px', color: '#64748B', fontWeight: '500' },
+  avatar: { width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, #2563EB, #3B82F6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '18px' },
+  avatarName: { fontSize: '14px', fontWeight: '700', color: '#0F172A' },
+  avatarRole: { fontSize: '12px', color: '#6B7280', fontWeight: '500' },
 
-  sideNav: { padding: '20px 12px', flex: 1 },
-  sideNavItem: { display: 'flex', alignItems: 'center', gap: '10px', padding: '11px 14px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#94A3B8', marginBottom: '4px' },
-  sideNavActive: { background: '#1E293B', color: '#fff' },
+  sideNav: { padding: '12px 12px', flex: 1 },
+  sideNavItem: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '6px' },
+  sideNavActive: { background: '#EFF6FF', color: '#2563EB', boxShadow: 'inset 0 0 0 1px rgba(37,99,235,0.06)' },
   sideNavIcon: { fontSize: '16px' },
   navBadge: { marginLeft: 'auto', background: '#2563EB', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px' },
 
-  profileStrengthBox: { margin: '0 12px', padding: '16px', background: '#1E293B', borderRadius: '12px', marginBottom: '16px' },
+  profileStrengthBox: { margin: '12px', padding: '12px', background: '#F8FAFC', borderRadius: '10px', marginBottom: '16px' },
   strengthLabel: { fontSize: '12px', fontWeight: '600', color: '#64748B', marginBottom: '8px' },
-  strengthTrack: { height: '6px', background: '#0F172A', borderRadius: '3px', overflow: 'hidden', marginBottom: '6px' },
+  strengthTrack: { height: '6px', background: '#EFF6FF', borderRadius: '3px', overflow: 'hidden', marginBottom: '6px' },
   strengthFill: { height: '100%', borderRadius: '3px', transition: 'width 1s ease' },
-  strengthPct: { fontSize: '12px', fontWeight: '700', color: '#F1F5F9' },
-  strengthTip: { fontSize: '12px', color: '#3B82F6', marginTop: '6px', cursor: 'pointer', fontWeight: '600' },
+  strengthPct: { fontSize: '12px', fontWeight: '700', color: '#0F172A' },
+  strengthTip: { fontSize: '12px', color: '#2563EB', marginTop: '6px', cursor: 'pointer', fontWeight: '600' },
 
-  logoutBtn: { margin: '0 12px 24px', padding: '11px', background: 'transparent', border: '1px solid #1E293B', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#94A3B8' },
+  logoutBtn: { margin: '0 12px 12px', padding: '10px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '700', color: '#2563EB' },
 
-  main: { padding: '32px 36px', overflowY: 'auto', paddingBottom: '80px' },
-  topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px' },
+  main: { padding: '22px', overflowY: 'auto', paddingBottom: '80px' },
+  topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' },
   heading: { fontSize: '22px', fontWeight: '800', color: '#0F172A', marginBottom: '4px' },
   headSub: { fontSize: '14px', color: '#94A3B8' },
-  browseBtn: { padding: '11px 22px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '700', boxShadow: '0 4px 12px rgba(37,99,235,0.3)' },
+  browseBtn: { padding: '10px 18px', background: '#0F172A', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '700', boxShadow: '0 6px 16px rgba(0,0,0,0.08)' },
 
-  metricsRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px', marginBottom: '24px' },
-  metCard: { background: '#fff', borderRadius: '14px', padding: '20px', border: '1px solid #F0F2F5', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' },
-  metIcon: { width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', marginBottom: '12px' },
-  metVal: { fontSize: '28px', fontWeight: '800', marginBottom: '4px' },
+  metricsRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px', marginBottom: '20px' },
+  metCard: { background: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #F0F2F5', boxShadow: '0 6px 18px rgba(15,23,42,0.04)' },
+  metIcon: { width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', marginBottom: '10px' },
+  metVal: { fontSize: '24px', fontWeight: '800', marginBottom: '4px' },
   metLabel: { fontSize: '12.5px', color: '#94A3B8', fontWeight: '600' },
 
   grid2: { display: 'grid', gridTemplateColumns: '1fr 380px', gap: '16px' },
   rightCol: {},
-  card: { background: '#fff', borderRadius: '16px', padding: '22px', border: '1px solid #F0F2F5', boxShadow: '0 2px 8px rgba(15,23,42,0.04)', marginBottom: '0' },
-  cardHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' },
+  card: { background: '#fff', borderRadius: '14px', padding: '18px', border: '1px solid #F0F2F5', boxShadow: '0 6px 18px rgba(15,23,42,0.04)' },
+  cardHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' },
   cardTitle: { fontSize: '15px', fontWeight: '800', color: '#0F172A' },
   cardLink: { fontSize: '13px', color: '#2563EB', fontWeight: '700', cursor: 'pointer' },
 
@@ -490,7 +483,7 @@ const S = {
   recSkillChip: { background: '#ECFDF5', color: '#059669', padding: '2px 8px', borderRadius: '20px', fontSize: '10.5px', fontWeight: '600' },
   recApplyBtn: { fontSize: '12.5px', color: '#2563EB', fontWeight: '700', marginTop: '8px' },
 
-  appRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 14px', borderRadius: '10px', border: '1px solid #F8FAFC', marginBottom: '8px', background: '#FAFBFC' },
+  appRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', borderRadius: '10px', border: '1px solid #F8FAFC', marginBottom: '8px', background: '#fff' },
   appLeft: {},
   appTitle: { fontSize: '14px', fontWeight: '700', color: '#0F172A', marginBottom: '3px' },
   appMeta: { fontSize: '12px', color: '#94A3B8', marginBottom: '3px' },
@@ -511,11 +504,11 @@ const S = {
   skillChip: { background: '#EFF6FF', color: '#2563EB', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' },
 
   quickActions: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '4px' },
-  quickAction: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px 10px', background: '#F8FAFC', borderRadius: '12px', cursor: 'pointer', border: '1px solid #F0F2F5', transition: 'all .2s ease' },
+  quickAction: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px', background: '#F8FAFC', borderRadius: '12px', cursor: 'pointer', border: '1px solid #F0F2F5' },
   qaIcon: { fontSize: '22px' },
   qaLabel: { fontSize: '12px', fontWeight: '700', color: '#374151', textAlign: 'center' },
 
-  empty: { textAlign: 'center', padding: '40px 0', color: '#94A3B8' },
+  empty: { textAlign: 'center', padding: '36px 0', color: '#94A3B8' },
   emptyIcon: { fontSize: '36px', marginBottom: '10px' },
   emptyText: { fontSize: '14px', fontWeight: '700', color: '#64748B', marginBottom: '4px' },
   emptySubText: { fontSize: '13px' }
