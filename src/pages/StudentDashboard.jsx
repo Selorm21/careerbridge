@@ -168,6 +168,9 @@ export default function StudentDashboard() {
             <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/student-profile')}>
               <span style={S.sideNavIcon}>👤</span> My Profile
             </div>
+            <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/documents')}>
+              <span style={S.sideNavIcon}>📁</span> Documents
+            </div>
             <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/resume-builder')}>
               <span style={S.sideNavIcon}>📄</span> Resume Builder
             </div>

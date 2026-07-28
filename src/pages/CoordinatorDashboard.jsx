@@ -110,6 +110,9 @@ export default function CoordinatorDashboard() {
               <span style={S.sideNavIcon}>📋</span> Placements
               <span style={S.navBadge}>{applications.filter(a => a.status === 'offer').length}</span>
             </div>
+            <div className="sideBtn" style={{...S.sideNavItem, ...(activeTab==='documents' ? S.sideNavActive : {})}} onClick={() => setActiveTab('documents')}>
+              <span style={S.sideNavIcon}>📁</span> Documents
+            </div>
             <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/analytics')}>
               <span style={S.sideNavIcon}>📈</span> Analytics
             </div>
@@ -290,8 +293,86 @@ export default function CoordinatorDashboard() {
               )}
             </div>
           )}
+
+          {activeTab === 'documents' && (
+            <DocumentsVerification />
+          )}
         </main>
       </div>
+    </div>
+  )
+}
+
+function DocumentsVerification() {
+  const [documents, setDocuments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(null)
+
+  useEffect(() => {
+    async function fetchDocs() {
+      const { data } = await supabase
+        .from('documents')
+        .select('*, profiles(full_name, email, university, course)')
+        .order('uploaded_at', { ascending: false })
+      setDocuments(data || [])
+      setLoading(false)
+    }
+    fetchDocs()
+  }, [])
+
+  async function updateStatus(id, status) {
+    setUpdating(id)
+    await supabase.from('documents').update({ status }).eq('id', id)
+    const { data } = await supabase
+      .from('documents')
+      .select('*, profiles(full_name, email, university, course)')
+      .order('uploaded_at', { ascending: false })
+    setDocuments(data || [])
+    setUpdating(null)
+  }
+
+  function getStatusStyle(status) {
+    if (status === 'verified') return { bg: '#ECFDF5', color: '#059669' }
+    if (status === 'rejected') return { bg: '#FEF2F2', color: '#DC2626' }
+    return { bg: '#FFFBEB', color: '#D97706' }
+  }
+
+  const docLabel = { transcript: '🎓 Transcript', national_id: '🪪 National ID', recommendation: '📝 Recommendation' }
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>Loading documents...</div>
+
+  return (
+    <div style={{ background: '#fff', borderRadius: '16px', padding: '22px', border: '1px solid #F0F2F5', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' }}>
+      <div style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', marginBottom: '16px' }}>
+        📁 Document Verification ({documents.length})
+      </div>
+      {documents.length === 0 && <div style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>No documents uploaded yet</div>}
+      {documents.map(doc => {
+        const st = getStatusStyle(doc.status)
+        return (
+          <div key={doc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px', borderRadius: '10px', border: '1px solid #F0F2F5', marginBottom: '10px', background: '#FAFAFA' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', marginBottom: '2px' }}>{doc.profiles?.full_name}</div>
+              <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '4px' }}>{doc.profiles?.email} · {doc.profiles?.university}</div>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151' }}>{docLabel[doc.doc_type]}</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {doc.file_url && <a href={doc.file_url} target="_blank" rel="noreferrer" style={{ fontSize: '13px', color: '#2563EB', fontWeight: '700', textDecoration: 'none' }}>View →</a>}
+              <span style={{ ...st, padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', background: st.bg }}>{doc.status}</span>
+              <button
+                onClick={() => updateStatus(doc.id, 'verified')}
+                disabled={updating === doc.id || doc.status === 'verified'}
+                style={{ padding: '6px 12px', background: '#ECFDF5', color: '#059669', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+              >✓ Verify</button>
+              <button
+                onClick={() => updateStatus(doc.id, 'rejected')}
+                disabled={updating === doc.id || doc.status === 'rejected'}
+                style={{ padding: '6px 12px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+              >✗ Reject</button>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

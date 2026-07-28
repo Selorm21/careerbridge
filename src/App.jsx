@@ -13,6 +13,7 @@ import ViewApplicants from './pages/ViewApplicants'
 import Analytics from './pages/Analytics'
 import ScheduleInterview from './pages/ScheduleInterview'
 import CoordinatorDashboard from './pages/CoordinatorDashboard'
+import DocumentUpload from './pages/DocumentUpload'
 import AdminDashboard from './pages/AdminDashboard'
 import ResumeBuilder from './pages/ResumeBuilder'
 
@@ -67,6 +68,7 @@ function App() {
       <Route path="/analytics" element={session ? <Analytics /> : <Navigate to="/login" />} />
       <Route path="/schedule/:applicationId" element={session && role === 'employer' ? <ScheduleInterview /> : <Navigate to="/login" />} />
       <Route path="/coordinator" element={session && role === 'coordinator' ? <CoordinatorDashboard /> : <Navigate to="/login" />} />
+      <Route path="/documents" element={session && role === 'student' ? <DocumentUpload /> : <Navigate to="/login" />} />
       <Route path="/admin" element={session && role === 'admin' ? <AdminDashboard /> : <Navigate to="/login" />} />
     </Routes>
   )
