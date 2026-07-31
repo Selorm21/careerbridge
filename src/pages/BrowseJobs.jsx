@@ -89,12 +89,12 @@ export default function BrowseJobs() {
       setAppliedJobs(prev => [...prev, jobId])
       setSuccess('Application submitted!')
       setTimeout(() => setSuccess(''), 3000)
-      const { data: { user } } = await supabase.auth.getUser()
+     const { data: { user } } = await supabase.auth.getUser()
       const { data: profileData } = await supabase.from('profiles').select('full_name, email').eq('id', user.id).single()
       const job = jobs.find(j => j.id === jobId)
       if (profileData?.email) {
-        const { subject, html } = applicationSubmittedEmail(profileData.full_name, job?.title, job?.company)
-        await sendEmail(profileData.email, subject, html)
+        const { subject, message } = applicationSubmittedEmail(profileData.full_name, job?.title, job?.company)
+        await sendEmail(profileData.email, subject, message)
       }
     }
     setApplying(null)

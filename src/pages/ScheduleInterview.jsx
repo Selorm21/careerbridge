@@ -50,7 +50,7 @@ export default function ScheduleInterview() {
    await supabase.from('applications').update({ status: 'interview' }).eq('id', applicationId)
 
     if (application?.profiles?.email) {
-      const { subject, html } = interviewScheduledEmail(
+      const { subject, message } = interviewScheduledEmail(
         application.profiles.full_name,
         application.jobs?.title,
         application.jobs?.company,
@@ -59,7 +59,7 @@ export default function ScheduleInterview() {
         location,
         notes
       )
-      await sendEmail(application.profiles.email, subject, html)
+      await sendEmail(application.profiles.email, subject, message)
     }
 
     setSuccess('Interview scheduled! Email sent to candidate.')

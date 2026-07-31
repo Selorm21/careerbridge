@@ -1,7 +1,7 @@
 import emailjs from '@emailjs/browser'
 
 const SERVICE_ID = 'service_1fryqxp'
-const TEMPLATE_ID = 'hgo9p1i'
+const TEMPLATE_ID = 'template_3q7acl9'
 const PUBLIC_KEY = 'SJXJURq0Xdoi3Y7Sg'
 
 export async function sendEmail(to, subject, message) {
@@ -9,11 +9,14 @@ export async function sendEmail(to, subject, message) {
     await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
       to_email: to,
       subject: subject,
-      message: message
+      message: message,
+      email: to,
+      name: 'CareerBridge'
     }, PUBLIC_KEY)
     console.log('Email sent successfully')
   } catch (err) {
     console.error('Email failed:', err)
+    console.error('Error details:', err.text || err.message || JSON.stringify(err))
   }
 }
 
