@@ -1,6 +1,47 @@
+
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
+
+// ---------- inline icon set (shared visual language with Analytics / BrowseJobs) ----------
+const Icon = ({ path, size = 18, ...rest }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...rest}>
+    {path}
+  </svg>
+)
+const icons = {
+  grid: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>,
+  briefcase: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></>,
+  cap: <><path d="M2 9l10-5 10 5-10 5-10-5z" /><path d="M6 11v4c0 1.5 2.5 3 6 3s6-1.5 6-3v-4" /></>,
+  users: <><circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c0-3.3 3-6 6.5-6s6.5 2.7 6.5 6" /><path d="M16 8.2a3 3 0 1 1 3.6 3M21.5 20c0-2.6-1.8-4.8-4.3-5.6" /></>,
+  building: <><rect x="4" y="3" width="16" height="18" rx="1.5" /><path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1" /></>,
+  settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 13a7.7 7.7 0 0 0 0-2l2-1.6-2-3.4-2.4.6a7.7 7.7 0 0 0-1.8-1L14.6 3H9.4l-.6 2.6a7.7 7.7 0 0 0-1.8 1l-2.4-.6-2 3.4L4.6 11a7.7 7.7 0 0 0 0 2l-2 1.6 2 3.4 2.4-.6c.5.4 1.1.8 1.8 1l.6 2.6h5.2l.6-2.6c.7-.2 1.3-.6 1.8-1l2.4.6 2-3.4-2-1.6z" /></>,
+  alert: <><path d="M12 9v4M12 17h.01" /><path d="M10.3 3.9L2.5 17a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /></>,
+  check: <><circle cx="12" cy="12" r="9" /><path d="M8 12.5l2.5 2.5L16 9.5" /></>,
+  file: <><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" /><path d="M14 3v5h5" /></>,
+  save: <><path d="M5 3h11l3 3v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" /><path d="M8 3v6h8V3M8 13h8v7H8z" /></>,
+  bulb: <><path d="M9 18h6M10 22h4" /><path d="M12 2a6 6 0 0 0-3.5 10.9c.6.4.9 1.1.9 1.8v.3h5.2v-.3c0-.7.3-1.4.9-1.8A6 6 0 0 0 12 2z" /></>,
+  arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
+}
+
+const C = {
+  bg: '#F8F9FB',
+  ink: '#0F172A',
+  sub: '#94A3B8',
+  border: '#EEF1F5',
+  card: '#FFFFFF',
+  navActiveBg: '#111827',
+  navActiveText: '#FFFFFF',
+  navText: '#475569',
+  accent: '#EA4E1B',
+  teal: '#0E9C8F',
+  navy: '#0B3B57',
+  gold: '#F0A93A',
+  green: '#0E9C6B',
+  red: '#DC2626',
+  blue: '#2563EB',
+}
 
 export default function StudentProfile() {
   const [loading, setLoading] = useState(false)
@@ -72,44 +113,92 @@ export default function StudentProfile() {
     return score
   }
 
+  const navItems = [
+    { label: 'Analytics', icon: 'grid', path: '/analytics' },
+    { label: 'Browse Jobs', icon: 'briefcase', path: '/jobs' },
+    { label: 'Coordinator', icon: 'cap', path: '/coordinator' },
+    { label: 'Students', icon: 'users', path: '/students' },
+    { label: 'Employers', icon: 'building', path: '/employers' },
+    { label: 'Settings', icon: 'settings', path: '/settings' },
+  ]
+
+  const initials = (name) => (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+
   return (
-    <div style={S.page}>
+    <div style={S.app}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
         @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
         .pageIn{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) forwards}
+        .navBtn{transition:all .15s ease;}
+        .navBtn:hover{background:#F1F5F9!important;}
+        .navBtn.active:hover{background:${C.navActiveBg}!important;}
         .inputF{transition:border-color .2s ease,box-shadow .2s ease}
-        .inputF:focus{outline:none;border-color:#2563EB!important;box-shadow:0 0 0 3px rgba(37,99,235,0.1)!important}
+        .inputF:focus{outline:none;border-color:${C.accent}!important;box-shadow:0 0 0 3px rgba(234,78,27,0.1)!important}
         .saveBtn{transition:all .2s ease}
-        .saveBtn:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(37,99,235,0.3)!important}
-        .backBtn{transition:all .2s ease}
-        .backBtn:hover{background:#EFF6FF!important;color:#2563EB!important}
+        .saveBtn:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(234,78,27,0.3)!important}
         .uploadArea{transition:all .2s ease;cursor:pointer}
-        .uploadArea:hover{border-color:#2563EB!important;background:#EFF6FF!important}
-        .progressBar{background:linear-gradient(90deg,#2563EB,#3B82F6,#2563EB);background-size:200% 100%;animation:shimmer 2s linear infinite}
+        .uploadArea:hover{border-color:${C.accent}!important;background:#FFF6F0!important}
+        .progressBar{background:linear-gradient(90deg,${C.accent},#FF8552,${C.accent});background-size:200% 100%;animation:shimmer 2s linear infinite}
+        @media(max-width:1000px){
+          .sidebar{display:none!important;}
+        }
+        @media(max-width:900px){
+          .layoutGrid{grid-template-columns:1fr!important}
+        }
+        @media(max-width:768px){
+          .grid2El{grid-template-columns:1fr!important}
+          .mainEl{padding:20px 16px!important}
+        }
       `}</style>
 
-      <nav style={S.nav}>
-        <div style={S.logo}>CareerBridge</div>
-        <button className="backBtn" style={S.backBtn} onClick={() => navigate('/student')}>← Back to dashboard</button>
-      </nav>
+      {/* ---------------- Sidebar ---------------- */}
+      <aside className="sidebar" style={S.sidebar}>
+        <div style={S.logoRow}>
+          <div style={S.logoMark}><Icon path={icons.grid} size={16} /></div>
+          <span style={S.logoText}>CareerBridge</span>
+        </div>
 
-      <div className="pageIn" style={S.main}>
+        <nav style={S.navList}>
+          {navItems.map(item => (
+            <button
+              key={item.label}
+              className="navBtn"
+              style={S.navItem}
+              onClick={() => navigate(item.path)}
+            >
+              <Icon path={icons[item.icon]} size={17} />
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        <div style={S.sidebarFooter}>
+          <div style={S.userAvatar}>{initials(fullName || 'Student')}</div>
+          <div>
+            <div style={S.userName}>{fullName || 'Your Profile'}</div>
+            <div style={S.userRole}>Student</div>
+          </div>
+        </div>
+      </aside>
+
+      {/* ---------------- Main ---------------- */}
+      <div className="pageIn mainEl" style={S.main}>
         <div style={S.pageHead}>
           <h1 style={S.heading}>My Profile</h1>
           <p style={S.headSub}>Complete your profile to get better job matches and impress employers</p>
         </div>
 
-        <div style={S.layout}>
+        <div className="layoutGrid" style={S.layout}>
           <div style={S.formCol}>
-            {error && <div style={S.error}>⚠️ {error}</div>}
-            {success && <div style={S.successBox}>✓ {success}</div>}
+            {error && <div style={S.error}><Icon path={icons.alert} size={16} /> {error}</div>}
+            {success && <div style={S.successBox}><Icon path={icons.check} size={16} /> {success}</div>}
 
             <form onSubmit={handleSave}>
               <div style={S.card}>
                 <div style={S.cardTitle}>Personal Information</div>
-                <div style={S.grid2}>
+                <div className="grid2El" style={S.grid2}>
                   <div style={S.field}>
                     <label style={S.label}>Full name <span style={S.required}>*</span></label>
                     <input className="inputF" style={S.input} type="text" placeholder="Your full name" value={fullName} onChange={e => setFullName(e.target.value)} required />
@@ -135,7 +224,7 @@ export default function StudentProfile() {
                 </div>
               </div>
 
-              <div style={{...S.card, marginTop: '16px'}}>
+              <div style={{ ...S.card, marginTop: '16px' }}>
                 <div style={S.cardTitle}>Skills & Bio</div>
                 <div style={S.field}>
                   <label style={S.label}>Your skills</label>
@@ -149,31 +238,31 @@ export default function StudentProfile() {
                     ))}
                   </div>
                 )}
-                <div style={{...S.field, marginTop: '16px'}}>
+                <div style={{ ...S.field, marginTop: '16px' }}>
                   <label style={S.label}>Short bio</label>
-                  <textarea className="inputF" style={{...S.input, height: '110px', resize: 'vertical'}} placeholder="Tell employers about yourself, your goals and experience..." value={bio} onChange={e => setBio(e.target.value)} />
+                  <textarea className="inputF" style={{ ...S.input, height: '110px', resize: 'vertical' }} placeholder="Tell employers about yourself, your goals and experience..." value={bio} onChange={e => setBio(e.target.value)} />
                   <div style={S.hint}>{bio.length}/300 characters</div>
                 </div>
               </div>
 
-              <div style={{...S.card, marginTop: '16px'}}>
+              <div style={{ ...S.card, marginTop: '16px' }}>
                 <div style={S.cardTitle}>CV / Resume</div>
-                <label className="uploadArea" style={{...S.uploadArea, ...(cvUrl ? S.uploadAreaDone : {})}}>
+                <label className="uploadArea" style={{ ...S.uploadArea, ...(cvUrl ? S.uploadAreaDone : {}) }}>
                   <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => e.target.files[0] && handleCvUpload(e.target.files[0])} />
                   {uploading ? (
                     <div style={S.uploadContent}>
-                      <div style={S.uploadIcon}>⏳</div>
+                      <div style={S.uploadIconWrap}>⏳</div>
                       <div style={S.uploadText}>Uploading your CV...</div>
                     </div>
                   ) : cvUrl ? (
                     <div style={S.uploadContent}>
-                      <div style={S.uploadIcon}>✅</div>
+                      <div style={{ ...S.uploadIconWrap, background: '#ECFDF5', color: C.teal }}><Icon path={icons.check} size={24} /></div>
                       <div style={S.uploadText}>CV uploaded successfully</div>
                       <div style={S.uploadSub}>Click to replace · <a href={cvUrl} target="_blank" rel="noreferrer" style={S.viewLink} onClick={e => e.stopPropagation()}>View CV →</a></div>
                     </div>
                   ) : (
                     <div style={S.uploadContent}>
-                      <div style={S.uploadIcon}>📄</div>
+                      <div style={{ ...S.uploadIconWrap, background: '#FFF1EA', color: C.accent }}><Icon path={icons.file} size={24} /></div>
                       <div style={S.uploadText}>Upload your CV</div>
                       <div style={S.uploadSub}>Click to browse · PDF only · Max 5MB</div>
                     </div>
@@ -182,7 +271,7 @@ export default function StudentProfile() {
               </div>
 
               <button className="saveBtn" style={S.saveBtn} type="submit" disabled={loading}>
-                {loading ? '⏳ Saving...' : '💾 Save profile'}
+                <Icon path={icons.save} size={16} /> {loading ? 'Saving...' : 'Save profile'}
               </button>
             </form>
           </div>
@@ -192,7 +281,7 @@ export default function StudentProfile() {
               <div style={S.strengthTitle}>Profile strength</div>
               <div style={S.strengthPct}>{profileStrength()}%</div>
               <div style={S.strengthTrack}>
-                <div className="progressBar" style={{...S.strengthFill, width: `${profileStrength()}%`}}></div>
+                <div className="progressBar" style={{ ...S.strengthFill, width: `${profileStrength()}%` }}></div>
               </div>
               <div style={S.strengthItems}>
                 {[
@@ -203,19 +292,19 @@ export default function StudentProfile() {
                   { label: 'Bio', done: !!bio },
                 ].map((item, i) => (
                   <div key={i} style={S.strengthItem}>
-                    <span style={{...S.strengthDot, background: item.done ? '#059669' : '#E5E7EB'}}>{item.done ? '✓' : ''}</span>
-                    <span style={{...S.strengthItemLabel, color: item.done ? '#059669' : '#94A3B8'}}>{item.label}</span>
+                    <span style={{ ...S.strengthDot, background: item.done ? C.green : '#E5E7EB' }}>{item.done ? '✓' : ''}</span>
+                    <span style={{ ...S.strengthItemLabel, color: item.done ? C.green : C.sub }}>{item.label}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div style={{...S.strengthCard, marginTop: '16px', background: '#FFFBEB', border: '1px solid #FDE68A'}}>
-              <div style={{...S.strengthTitle, color: '#D97706'}}>💡 Tips</div>
-              <div style={S.tipItem}>✓ Add all your technical skills</div>
-              <div style={S.tipItem}>✓ Upload an up-to-date CV</div>
-              <div style={S.tipItem}>✓ Write a compelling bio</div>
-              <div style={S.tipItem}>✓ A complete profile gets 3x more matches</div>
+            <div style={{ ...S.strengthCard, marginTop: '16px', background: '#FFFBEB', border: '1px solid #FDE68A' }}>
+              <div style={{ ...S.strengthTitle, color: '#D97706', display: 'flex', alignItems: 'center', gap: '7px' }}><Icon path={icons.bulb} size={16} /> Tips</div>
+              <div style={S.tipItem}>Add all your technical skills</div>
+              <div style={S.tipItem}>Upload an up-to-date CV</div>
+              <div style={S.tipItem}>Write a compelling bio</div>
+              <div style={S.tipItem}>A complete profile gets 3x more matches</div>
             </div>
           </div>
         </div>
@@ -225,40 +314,51 @@ export default function StudentProfile() {
 }
 
 const S = {
-  page: { minHeight: '100vh', background: '#F1F5F9', fontFamily: "'Inter', -apple-system, sans-serif" },
-  nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 36px', background: '#fff', borderBottom: '1px solid #F0F2F5', position: 'sticky', top: 0, zIndex: 10 },
-  logo: { fontSize: '19px', fontWeight: '800', color: '#2563EB', letterSpacing: '-0.5px' },
-  backBtn: { padding: '9px 18px', background: '#F8FAFC', border: '1.5px solid #E5E7EB', borderRadius: '10px', cursor: 'pointer', fontSize: '13.5px', fontWeight: '700', color: '#374151' },
-  main: { maxWidth: '1000px', margin: '0 auto', padding: '36px 24px' },
-  pageHead: { marginBottom: '28px' },
-  heading: { fontSize: '26px', fontWeight: '800', color: '#0F172A', marginBottom: '6px', letterSpacing: '-0.5px' },
-  headSub: { fontSize: '14.5px', color: '#94A3B8' },
+  app: { minHeight: '100vh', background: C.bg, fontFamily: "'Inter', -apple-system, sans-serif", display: 'flex' },
+
+  // sidebar (shared with Analytics / BrowseJobs)
+  sidebar: { width: '232px', flexShrink: 0, background: C.card, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', padding: '22px 16px', position: 'sticky', top: 0, height: '100vh' },
+  logoRow: { display: 'flex', alignItems: 'center', gap: '10px', padding: '0 8px', marginBottom: '28px' },
+  logoMark: { width: '30px', height: '30px', borderRadius: '9px', background: C.ink, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  logoText: { fontSize: '17px', fontWeight: '800', color: C.ink, letterSpacing: '-0.4px' },
+  navList: { display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 },
+  navItem: { display: 'flex', alignItems: 'center', gap: '11px', padding: '10px 12px', borderRadius: '10px', border: 'none', background: 'transparent', color: C.navText, fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' },
+  sidebarFooter: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 10px', borderTop: `1px solid ${C.border}`, marginTop: '10px' },
+  userAvatar: { width: '34px', height: '34px', borderRadius: '10px', background: '#F1F5F9', color: C.ink, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700' },
+  userName: { fontSize: '13.5px', fontWeight: '700', color: C.ink, maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  userRole: { fontSize: '12px', color: C.sub },
+
+  main: { flex: 1, maxWidth: '1040px', margin: '0 auto', padding: '32px 32px 60px' },
+  pageHead: { marginBottom: '26px' },
+  heading: { fontSize: '25px', fontWeight: '800', color: C.ink, marginBottom: '6px', letterSpacing: '-0.5px' },
+  headSub: { fontSize: '14px', color: C.sub },
+
   layout: { display: 'grid', gridTemplateColumns: '1fr 280px', gap: '20px' },
   formCol: {},
   sideCol: {},
-  card: { background: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #F0F2F5', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' },
-  cardTitle: { fontSize: '15px', fontWeight: '800', color: '#0F172A', marginBottom: '18px' },
+  card: { background: C.card, borderRadius: '16px', padding: '24px', border: `1px solid ${C.border}`, boxShadow: '0 2px 8px rgba(15,23,42,0.04)' },
+  cardTitle: { fontSize: '15px', fontWeight: '800', color: C.ink, marginBottom: '18px' },
   grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   field: { marginBottom: '4px' },
-  label: { display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '7px', color: '#374151' },
-  required: { color: '#DC2626' },
-  hint: { fontSize: '11.5px', color: '#94A3B8', marginTop: '5px' },
-  input: { width: '100%', padding: '12px 14px', border: '1.5px solid #E5E7EB', borderRadius: '10px', fontSize: '14px', boxSizing: 'border-box', fontFamily: 'inherit', color: '#0F172A' },
+  label: { display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '7px', color: C.navText },
+  required: { color: C.red },
+  hint: { fontSize: '11.5px', color: C.sub, marginTop: '5px' },
+  input: { width: '100%', padding: '12px 14px', border: `1.5px solid ${C.border}`, borderRadius: '10px', fontSize: '14px', boxSizing: 'border-box', fontFamily: 'inherit', color: C.ink },
   skillsPreview: { display: 'flex', flexWrap: 'wrap', gap: '7px', marginTop: '10px' },
-  skillChip: { background: '#EFF6FF', color: '#2563EB', padding: '5px 13px', borderRadius: '20px', fontSize: '12.5px', fontWeight: '600' },
+  skillChip: { background: '#FFF4EE', color: C.accent, padding: '5px 13px', borderRadius: '20px', fontSize: '12.5px', fontWeight: '600' },
   uploadArea: { display: 'block', border: '2px dashed #E5E7EB', borderRadius: '14px', padding: '32px', textAlign: 'center' },
   uploadAreaDone: { border: '2px dashed #A7F3D0', background: '#F0FDF4' },
   uploadContent: {},
-  uploadIcon: { fontSize: '32px', marginBottom: '10px' },
-  uploadText: { fontSize: '14.5px', fontWeight: '700', color: '#374151', marginBottom: '6px' },
-  uploadSub: { fontSize: '12.5px', color: '#94A3B8' },
-  viewLink: { color: '#2563EB', fontWeight: '700', textDecoration: 'none' },
-  saveBtn: { width: '100%', padding: '14px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '700', marginTop: '16px', boxShadow: '0 4px 14px rgba(37,99,235,0.25)' },
-  error: { background: '#FEF2F2', color: '#DC2626', padding: '13px 16px', borderRadius: '10px', fontSize: '13.5px', fontWeight: '600', marginBottom: '16px' },
-  successBox: { background: '#ECFDF5', color: '#059669', padding: '13px 16px', borderRadius: '10px', fontSize: '13.5px', fontWeight: '600', marginBottom: '16px' },
-  strengthCard: { background: '#fff', borderRadius: '16px', padding: '22px', border: '1px solid #F0F2F5', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' },
-  strengthTitle: { fontSize: '14px', fontWeight: '800', color: '#0F172A', marginBottom: '12px' },
-  strengthPct: { fontSize: '32px', fontWeight: '800', color: '#2563EB', marginBottom: '10px' },
+  uploadIconWrap: { width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: '24px' },
+  uploadText: { fontSize: '14.5px', fontWeight: '700', color: C.navText, marginBottom: '6px' },
+  uploadSub: { fontSize: '12.5px', color: C.sub },
+  viewLink: { color: C.accent, fontWeight: '700', textDecoration: 'none' },
+  saveBtn: { width: '100%', padding: '14px', background: C.accent, color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '700', marginTop: '16px', boxShadow: '0 4px 14px rgba(234,78,27,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' },
+  error: { display: 'flex', alignItems: 'center', gap: '8px', background: '#FEF2F2', color: C.red, padding: '13px 16px', borderRadius: '10px', fontSize: '13.5px', fontWeight: '600', marginBottom: '16px' },
+  successBox: { display: 'flex', alignItems: 'center', gap: '8px', background: '#ECFDF5', color: C.green, padding: '13px 16px', borderRadius: '10px', fontSize: '13.5px', fontWeight: '600', marginBottom: '16px' },
+  strengthCard: { background: C.card, borderRadius: '16px', padding: '22px', border: `1px solid ${C.border}`, boxShadow: '0 2px 8px rgba(15,23,42,0.04)' },
+  strengthTitle: { fontSize: '14px', fontWeight: '800', color: C.ink, marginBottom: '12px' },
+  strengthPct: { fontSize: '32px', fontWeight: '800', color: C.accent, marginBottom: '10px' },
   strengthTrack: { height: '8px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden', marginBottom: '16px' },
   strengthFill: { height: '100%', borderRadius: '4px', transition: 'width 1s ease' },
   strengthItems: { display: 'flex', flexDirection: 'column', gap: '8px' },
