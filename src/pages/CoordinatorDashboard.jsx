@@ -277,14 +277,7 @@ function DocumentsVerification() {
 
   useEffect(() => {
     async function fetchDocs() {
-<<<<<<< HEAD
-      const { data } = await supabase
-        .from('documents')
-        .select('*, profiles(full_name, email, university, course)')
-        .order('uploaded_at', { ascending: false })
-=======
       const { data } = await supabase.from('documents').select('*, profiles(full_name, email, university, course)').order('uploaded_at', { ascending: false })
->>>>>>> feature/auth-ui-forms
       setDocuments(data || [])
       setLoading(false)
     }
@@ -294,14 +287,7 @@ function DocumentsVerification() {
   async function updateStatus(id, status) {
     setUpdating(id)
     await supabase.from('documents').update({ status }).eq('id', id)
-<<<<<<< HEAD
-    const { data } = await supabase
-      .from('documents')
-      .select('*, profiles(full_name, email, university, course)')
-      .order('uploaded_at', { ascending: false })
-=======
     const { data } = await supabase.from('documents').select('*, profiles(full_name, email, university, course)').order('uploaded_at', { ascending: false })
->>>>>>> feature/auth-ui-forms
     setDocuments(data || [])
     setUpdating(null)
   }
@@ -318,13 +304,7 @@ function DocumentsVerification() {
 
   return (
     <div style={{ background: '#fff', borderRadius: '16px', padding: '22px', border: '1px solid #F0F2F5', boxShadow: '0 2px 8px rgba(15,23,42,0.04)' }}>
-<<<<<<< HEAD
-      <div style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', marginBottom: '16px' }}>
-        📁 Document Verification ({documents.length})
-      </div>
-=======
       <div style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', marginBottom: '16px' }}>📁 Document Verification ({documents.length})</div>
->>>>>>> feature/auth-ui-forms
       {documents.length === 0 && <div style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>No documents uploaded yet</div>}
       {documents.map(doc => {
         const st = getStatusStyle(doc.status)
@@ -337,23 +317,9 @@ function DocumentsVerification() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               {doc.file_url && <a href={doc.file_url} target="_blank" rel="noreferrer" style={{ fontSize: '13px', color: '#2563EB', fontWeight: '700', textDecoration: 'none' }}>View →</a>}
-<<<<<<< HEAD
-              <span style={{ ...st, padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', background: st.bg }}>{doc.status}</span>
-              <button
-                onClick={() => updateStatus(doc.id, 'verified')}
-                disabled={updating === doc.id || doc.status === 'verified'}
-                style={{ padding: '6px 12px', background: '#ECFDF5', color: '#059669', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
-              >✓ Verify</button>
-              <button
-                onClick={() => updateStatus(doc.id, 'rejected')}
-                disabled={updating === doc.id || doc.status === 'rejected'}
-                style={{ padding: '6px 12px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
-              >✗ Reject</button>
-=======
               <span style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', background: st.bg, color: st.color }}>{doc.status}</span>
               <button onClick={() => updateStatus(doc.id, 'verified')} disabled={updating===doc.id||doc.status==='verified'} style={{ padding: '6px 12px', background: '#ECFDF5', color: '#059669', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>✓ Verify</button>
               <button onClick={() => updateStatus(doc.id, 'rejected')} disabled={updating===doc.id||doc.status==='rejected'} style={{ padding: '6px 12px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>✗ Reject</button>
->>>>>>> feature/auth-ui-forms
             </div>
           </div>
         )

@@ -183,13 +183,7 @@ export default function StudentDashboard() {
               <UserCircle size={17} style={S.sideNavIcon} />
               <span style={{marginLeft:10}}>My profile</span>
             </div>
-<<<<<<< HEAD
-            <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/documents')}>
-              <span style={S.sideNavIcon}>📁</span> Documents
-            </div>
-=======
 
->>>>>>> feature/auth-ui-forms
             <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/resume-builder')}>
               <FileText size={17} style={S.sideNavIcon} />
               <span style={{marginLeft:10}}>Resume builder</span>
