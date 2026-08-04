@@ -125,30 +125,6 @@ export default function AdminDashboard() {
 
   return (
     <div style={S.page}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-        .pageIn{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) forwards}
-        .cardIn{animation:fadeUp .6s cubic-bezier(.16,1,.3,1) forwards}
-        .c2{animation-delay:.08s;opacity:0}
-        .c3{animation-delay:.16s;opacity:0}
-        .metCard{transition:transform .25s ease,box-shadow .25s ease;cursor:default}
-        .metCard:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(15,23,42,0.1)!important}
-        .sideBtn{transition:all .2s ease;cursor:pointer}
-        .sideBtn:hover{background:#1E293B!important;color:#fff!important}
-        .logoutBtn{transition:all .2s ease}
-        .logoutBtn:hover{background:#FEF2F2!important;color:#DC2626!important;border-color:#FECACA!important}
-        .actionBtn{transition:all .2s ease}
-        .actionBtn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.1)!important}
-        @media(max-width:768px){
-          .sidebar{display:none!important}
-          .layout{grid-template-columns:1fr!important}
-          .main{padding:20px 16px 80px!important}
-          .metricsRow{grid-template-columns:1fr 1fr!important}
-          .tableScroll{overflow-x:auto!important}
-        }
-      `}</style>
 
       <div className="layout" style={S.layout}>
         <aside className="sidebar" style={S.sidebar}>
