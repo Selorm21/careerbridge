@@ -2,20 +2,20 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
 import { getScoreColor } from '../matchScore'
+import Sidebar from '../components/Sidebar'
 import {
   LayoutGrid, ListChecks, Sparkles, CalendarClock, Search, UserCircle,
-  FileText, BarChart3, LogOut, Send, CheckCircle2, XCircle, ArrowRight,
+  FileText, BarChart3, Send, CheckCircle2, XCircle, ArrowRight,
   Pencil, MapPin, Clock, StickyNote, ChevronRight, Plus, Check
 } from 'lucide-react'
 
-// Cycles a small, deliberate accent palette across cards/avatars so the
-// dashboard reads as designed rather than uniformly gray.
+// Cycles a small, deliberate accent palette across cards/avatars
 const ACCENTS = [
-  { bg: '#EEF2FF', color: '#4338CA', border: '#E0E7FF' }, // indigo
-  { bg: '#F0FDF4', color: '#15803D', border: '#DCFCE7' }, // green
-  { bg: '#FEF9EE', color: '#B45309', border: '#FDE9C8' }, // amber
-  { bg: '#FCE7F3', color: '#BE185D', border: '#FBCFE8' }, // pink
-  { bg: '#ECFEFF', color: '#0E7490', border: '#CFFAFE' }, // cyan
+  { bg: '#EEF2FF', color: '#4338CA', border: '#E0E7FF' },
+  { bg: '#F0FDF4', color: '#15803D', border: '#DCFCE7' },
+  { bg: '#FEF9EE', color: '#B45309', border: '#FDE9C8' },
+  { bg: '#FCE7F3', color: '#BE185D', border: '#FBCFE8' },
+  { bg: '#ECFEFF', color: '#0E7490', border: '#CFFAFE' },
 ]
 function accentFor(seed = '') {
   let h = 0
@@ -72,8 +72,6 @@ export default function StudentDashboard() {
     getData()
   }, [])
 
-  async function handleLogout() { await supabase.auth.signOut(); navigate('/') }
-
   function getStatusStyle(status) {
     if (status === 'applied') return { bg: '#EEF2FF', color: '#4338CA', dot: '#6366F1' }
     if (status === 'interview') return { bg: '#FEF9EE', color: '#B45309', dot: '#D97706' }
@@ -92,6 +90,18 @@ export default function StudentDashboard() {
     return score
   }
 
+  // Define navigation items for sidebar
+  const navItems = [
+    { id: 'overview', icon: '📊', label: 'Overview' },
+    { id: 'applications', icon: '✓', label: 'Applications', badge: applications.length > 0 ? applications.length : null },
+    { id: 'recommended', icon: '✨', label: 'Recommended', badge: recommendedJobs.length > 0 ? recommendedJobs.length : null },
+    { id: 'interviews', icon: '📅', label: 'Interviews', badge: interviews.length > 0 ? interviews.length : null },
+    { id: 'browse', icon: '🔍', label: 'Browse jobs', path: '/browse-jobs' },
+    { id: 'profile', icon: '👤', label: 'My profile', path: '/student-profile' },
+    { id: 'resume', icon: '📄', label: 'Resume builder', path: '/resume-builder' },
+    { id: 'analytics', icon: '📈', label: 'Analytics', path: '/analytics' },
+  ]
+
   const metrics = [
     { label: 'Applications', val: applications.length, Icon: Send, bg: '#EEF2FF', color: '#4338CA' },
     { label: 'Interviews', val: applications.filter(a => a.status === 'interview').length, Icon: CalendarClock, bg: '#FEF9EE', color: '#B45309' },
@@ -109,17 +119,12 @@ export default function StudentDashboard() {
         .metCard:hover{border-color:#D4D4D8!important;transform:translateY(-1px)}
         .jobCard{transition:all .15s ease}
         .jobCard:hover{border-color:#D4D4D8!important;transform:translateY(-1px)}
-        .sideBtn{transition:background .15s ease;cursor:pointer}
-        .sideBtn:hover{background:#F4F4F5!important}
-        .logoutBtn{transition:all .15s ease}
-        .logoutBtn:hover{background:#F4F4F5!important}
         .progressBar{background:linear-gradient(90deg,#4338CA,#6366F1)}
         .recCard:hover{border-color:#D4D4D8!important;background:#fff!important;transform:translateY(-1px)}
         .browseBtn:hover{opacity:.88;transform:translateY(-1px)}
         .quickAction:hover{border-color:#D4D4D8!important;transform:translateY(-1px)}
         @media(max-width:768px){
           .sidebar{display:none!important}
-          .mobileNav{display:flex!important}
           .layout{grid-template-columns:1fr!important}
           .grid2{grid-template-columns:1fr!important}
           .metricsRow{grid-template-columns:1fr 1fr!important}
@@ -132,83 +137,14 @@ export default function StudentDashboard() {
       `}</style>
 
       <div className="layout" style={S.layout}>
-        <aside className="sidebar" style={S.sidebar}>
-          <div style={S.sidebarTop}>
-            <div style={S.sidebarLogoRow}>
-              <div style={S.sidebarMark}>CB</div>
-              <div>
-                <div style={S.sidebarLogo}>CareerBridge</div>
-                <div style={S.sidebarSub}>Student console</div>
-              </div>
-            </div>
-            <div style={S.avatarWrap}>
-              <div style={S.avatar}>{profile?.full_name?.charAt(0) || 'S'}</div>
-              <div>
-                <div style={S.avatarName}>{profile?.full_name || 'Student'}</div>
-                <div style={S.avatarRole}>Student</div>
-              </div>
-            </div>
-          </div>
-
-          <nav style={S.sideNav}>
-            <div className="sideBtn" style={{...S.sideNavItem, ...(activeTab==='overview' ? S.sideNavActive : {})}} onClick={() => setActiveTab('overview')}>
-              <LayoutGrid size={17} style={S.sideNavIcon} />
-              <span style={{marginLeft:10}}>Overview</span>
-            </div>
-
-            <div className="sideBtn" style={{...S.sideNavItem, ...(activeTab==='applications' ? S.sideNavActive : {})}} onClick={() => setActiveTab('applications')}>
-              <ListChecks size={17} style={S.sideNavIcon} />
-              <span style={{marginLeft:10}}>Applications</span>
-              {applications.length > 0 && <span style={S.navBadge}>{applications.length}</span>}
-            </div>
-
-            <div className="sideBtn" style={{...S.sideNavItem, ...(activeTab==='recommended' ? S.sideNavActive : {})}} onClick={() => setActiveTab('recommended')}>
-              <Sparkles size={17} style={S.sideNavIcon} />
-              <span style={{marginLeft:10}}>Recommended</span>
-              {recommendedJobs.length > 0 && <span style={S.navBadge}>{recommendedJobs.length}</span>}
-            </div>
-
-            <div className="sideBtn" style={{...S.sideNavItem, ...(activeTab==='interviews' ? S.sideNavActive : {})}} onClick={() => setActiveTab('interviews')}>
-              <CalendarClock size={17} style={S.sideNavIcon} />
-              <span style={{marginLeft:10}}>Interviews</span>
-              {interviews.length > 0 && <span style={{...S.navBadge, background:'#D97706'}}>{interviews.length}</span>}
-            </div>
-
-            <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/browse-jobs')}>
-              <Search size={17} style={S.sideNavIcon} />
-              <span style={{marginLeft:10}}>Browse jobs</span>
-            </div>
-
-            <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/student-profile')}>
-              <UserCircle size={17} style={S.sideNavIcon} />
-              <span style={{marginLeft:10}}>My profile</span>
-            </div>
-
-            <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/resume-builder')}>
-              <FileText size={17} style={S.sideNavIcon} />
-              <span style={{marginLeft:10}}>Resume builder</span>
-            </div>
-
-            <div className="sideBtn" style={S.sideNavItem} onClick={() => navigate('/analytics')}>
-              <BarChart3 size={17} style={S.sideNavIcon} />
-              <span style={{marginLeft:10}}>Analytics</span>
-            </div>
-          </nav>
-
-          <div style={S.profileStrengthBox}>
-            <div style={S.strengthLabel}>Profile strength</div>
-            <div style={S.strengthTrack}>
-              <div className="progressBar" style={{...S.strengthFill, width: `${profileStrength()}%`}}></div>
-            </div>
-            <div style={S.strengthPct}>{profileStrength()}% complete</div>
-            {profileStrength() < 100 && <div style={S.strengthTip} onClick={() => navigate('/student-profile')}>Complete profile<ChevronRight size={12} /></div>}
-          </div>
-
-          <button className="logoutBtn" style={S.logoutBtn} onClick={handleLogout}>
-            <LogOut size={15} />
-            Log out
-          </button>
-        </aside>
+        <Sidebar 
+          profile={profile}
+          role="student"
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          navItems={navItems}
+          showLogout={true}
+        />
 
         <main className="main" style={S.main}>
           <div className="pageIn topBar" style={S.topBar}>
@@ -350,7 +286,6 @@ export default function StudentDashboard() {
               {applications.map(app => {
                 const st = getStatusStyle(app.status)
                 const a = accentFor(app.jobs?.company)
-                const interview = interviews.find(i => i.application_id === app.id)
                 return (
                   <div key={app.id} style={{...S.appRow, flexDirection:'column', alignItems:'stretch', gap:'0'}}>
                     <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
@@ -359,9 +294,6 @@ export default function StudentDashboard() {
                         <div style={S.appLeft}>
                           <div style={S.appTitle}>{app.jobs?.title}</div>
                           <div style={S.appMeta}>{app.jobs?.company} · {app.jobs?.location} · {app.jobs?.type}</div>
-                          {app.match_score > 0 && (
-                            <div style={{...S.matchPill, background: getScoreColor(app.match_score).bg, color: getScoreColor(app.match_score).color}}>{app.match_score}% match</div>
-                          )}
                         </div>
                       </div>
                       <div style={{...S.statusBadge, background: st.bg, color: st.color}}>
@@ -369,17 +301,6 @@ export default function StudentDashboard() {
                         {app.status}
                       </div>
                     </div>
-                    {interview && (
-                      <div style={S.interviewCard}>
-                       <div style={S.interviewTitle}>
-                          {new Date(interview.interview_date) < new Date() ? <><Check size={14} style={{display:'inline', verticalAlign:'-2px', marginRight:'4px'}} />Interview completed</> : <><CalendarClock size={14} style={{display:'inline', verticalAlign:'-2px', marginRight:'4px'}} />Interview scheduled</>}
-                        </div>
-                        <div style={S.interviewRow}><CalendarClock size={14} style={S.interviewIcon} /><span>{new Date(interview.interview_date).toLocaleDateString()}</span></div>
-                        <div style={S.interviewRow}><Clock size={14} style={S.interviewIcon} /><span>{interview.interview_time}</span></div>
-                        <div style={S.interviewRow}><MapPin size={14} style={S.interviewIcon} /><span>{interview.location}</span></div>
-                        {interview.notes && <div style={S.interviewRow}><StickyNote size={14} style={S.interviewIcon} /><span>{interview.notes}</span></div>}
-                      </div>
-                    )}
                   </div>
                 )
               })}
@@ -398,36 +319,6 @@ export default function StudentDashboard() {
                   <div style={S.emptySubText}>Keep applying — interviews will appear here.</div>
                 </div>
               )}
-              {interviews.map(interview => {
-                const app = applications.find(a => a.id === interview.application_id)
-                const isPast = new Date(interview.interview_date) < new Date()
-                const a = accentFor(app?.jobs?.company)
-                return (
-                  <div key={interview.id} style={{...S.interviewCard, marginBottom: '12px', background: isPast ? '#FAFAFA' : '#F0FDF4', border: isPast ? '1px solid #E4E4E7' : '1px solid #DCFCE7'}}>
-                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'10px'}}>
-                      <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-                        <div style={{...S.appAvatar, background: a.bg, color: a.color}}>{initialsFor(app?.jobs?.company)}</div>
-                        <div>
-                          <div style={{fontSize:'15px', fontWeight:'700', color:'#18181B', marginBottom:'3px'}}>{app?.jobs?.title}</div>
-                          <div style={{fontSize:'13px', color:'#A1A1AA'}}>{app?.jobs?.company}</div>
-                        </div>
-                      </div>
-                     <span style={{
-                        background: isPast ? '#F4F4F5' : '#DCFCE7',
-                        color: isPast ? '#52525B' : '#15803D',
-                        padding:'4px 12px', borderRadius:'20px', fontSize:'12px', fontWeight:'600',
-                        border: isPast ? '1px solid #E4E4E7' : '1px solid #BBF7D0'
-                      }}>
-                        {isPast ? <><Check size={12} style={{display:'inline', verticalAlign:'-1px', marginRight:'3px'}} />Completed</> : <><CalendarClock size={12} style={{display:'inline', verticalAlign:'-1px', marginRight:'3px'}} />Scheduled</>}
-                      </span>
-                    </div>
-                    <div style={S.interviewRow}><CalendarClock size={14} style={S.interviewIcon} /><span style={{fontWeight:'600'}}>{new Date(interview.interview_date).toLocaleDateString()}</span></div>
-                    <div style={S.interviewRow}><Clock size={14} style={S.interviewIcon} /><span>{interview.interview_time}</span></div>
-                    <div style={S.interviewRow}><MapPin size={14} style={S.interviewIcon} /><span>{interview.location}</span></div>
-                    {interview.notes && <div style={S.interviewRow}><StickyNote size={14} style={S.interviewIcon} /><span>{interview.notes}</span></div>}
-                  </div>
-                )
-              })}
             </div>
           )}
 
@@ -443,28 +334,6 @@ export default function StudentDashboard() {
                   <div style={S.emptySubText}>Add your skills in your profile to get recommendations.</div>
                 </div>
               )}
-              <div className="recsGrid" style={{...S.recsGrid, gridTemplateColumns: 'repeat(2, 1fr)'}}>
-                {recommendedJobs.map(job => {
-                  const { color, bg } = getScoreColor(job.score)
-                  const a = accentFor(job.company)
-                  return (
-                    <div key={job.id} className="recCard jobCard" style={{...S.recCard, padding: '18px'}} onClick={() => navigate('/browse-jobs')}>
-                      <div style={S.recTop}>
-                        <div style={{...S.recIconWrap, background: a.bg, color: a.color}}>{initialsFor(job.company)}</div>
-                        <div style={{...S.recScore, background: bg, color, fontSize: '16px', padding: '4px 12px'}}>{job.score}% match</div>
-                      </div>
-                      <div style={{...S.recTitle, fontSize: '15px'}}>{job.title}</div>
-                      <div style={S.recCompany}>{job.company} · {job.location}</div>
-                      <div style={S.recSkills}>
-                        {job.matched.map((s,i) => (
-                          <span key={i} style={S.recSkillChip}><Check size={11} style={{display:'inline', verticalAlign:'-1px', marginRight:'2px'}} />{s}</span>
-                        ))}
-                      </div>
-                      <div style={S.recApplyBtn}>Apply now<ChevronRight size={14} /></div>
-                    </div>
-                  )
-                })}
-              </div>
             </div>
           )}
         </main>
@@ -475,45 +344,13 @@ export default function StudentDashboard() {
 
 const S = {
   page: { minHeight: '100vh', background: '#FAFAFA', fontFamily: "'Inter', -apple-system, sans-serif" },
-
   layout: { display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100vh', gap: '24px', padding: '40px' },
-
-  mobileNav: { display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #E4E4E7', justifyContent: 'space-around', padding: '10px 0 16px', zIndex: 30 },
-  mobileNavItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', padding: '0 8px' },
-  mobileNavIcon: { fontSize: '18px' },
-  mobileNavLabel: { fontSize: '10.5px', fontWeight: '600', color: '#A1A1AA' },
-
-  sidebar: { background: '#fff', display: 'flex', flexDirection: 'column', padding: '0', position: 'sticky', top: 0, height: 'calc(100vh - 80px)', borderRadius: '16px', border: '1px solid #E4E4E7', paddingBottom: '20px' },
-  sidebarTop: { padding: '20px 18px 14px', borderBottom: '1px solid #F4F4F5' },
-  sidebarLogoRow: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' },
-  sidebarMark: { width: '32px', height: '32px', borderRadius: '9px', background: '#18181B', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '12px', letterSpacing: '.02em' },
-  sidebarLogo: { fontSize: '15px', fontWeight: '700', color: '#18181B', letterSpacing: '-0.2px' },
-  sidebarSub: { fontSize: '11.5px', color: '#A1A1AA', fontWeight: '500' },
-  avatarWrap: { display: 'flex', alignItems: 'center', gap: '12px' },
-  avatar: { width: '44px', height: '44px', borderRadius: '50%', background: '#EEF2FF', color: '#4338CA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '16px', border: '1px solid #E0E7FF' },
-  avatarName: { fontSize: '14px', fontWeight: '700', color: '#18181B' },
-  avatarRole: { fontSize: '12px', color: '#A1A1AA', fontWeight: '500' },
-
-  sideNav: { padding: '12px 12px', flex: 1 },
-  sideNavItem: { display: 'flex', alignItems: 'center', padding: '10px 12px', borderRadius: '10px', fontSize: '14px', fontWeight: '500', color: '#3F3F46', marginBottom: '4px' },
-  sideNavActive: { background: '#EEF2FF', color: '#4338CA', fontWeight: '700', border: '1px solid #E0E7FF' },
-  sideNavIcon: { flexShrink: 0, color: 'inherit' },
-  navBadge: { marginLeft: 'auto', background: '#18181B', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px' },
-
-  profileStrengthBox: { margin: '12px', padding: '12px', background: '#FAFAFA', borderRadius: '12px', marginBottom: '16px', border: '1px solid #F4F4F5' },
-  strengthLabel: { fontSize: '12px', fontWeight: '600', color: '#71717A', marginBottom: '8px' },
-  strengthTrack: { height: '6px', background: '#E4E4E7', borderRadius: '3px', overflow: 'hidden', marginBottom: '6px' },
-  strengthFill: { height: '100%', borderRadius: '3px', transition: 'width .6s ease' },
-  strengthPct: { fontSize: '12px', fontWeight: '700', color: '#18181B' },
-  strengthTip: { fontSize: '12px', color: '#4338CA', marginTop: '6px', cursor: 'pointer', fontWeight: '600', textDecoration: 'underline' },
-
-  logoutBtn: { margin: '0 12px 12px', padding: '10px', background: '#fff', border: '1px solid #E4E4E7', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#3F3F46', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' },
 
   main: { padding: '22px', overflowY: 'auto', paddingBottom: '80px' },
   topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' },
   heading: { fontSize: '24px', fontWeight: '700', color: '#18181B', marginBottom: '4px', letterSpacing: '-0.3px' },
   headSub: { fontSize: '14px', color: '#A1A1AA' },
-  browseBtn: { display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 20px', background: '#18181B', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', transition: 'opacity .15s ease, transform .15s ease' },
+  browseBtn: { display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 20px', background: '#18181B', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s ease' },
 
   metricsRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px', marginBottom: '20px' },
   metCard: { background: '#fff', borderRadius: '14px', padding: '16px', border: '1px solid #E4E4E7' },
@@ -538,7 +375,6 @@ const S = {
   recCompany: { fontSize: '11.5px', color: '#A1A1AA', marginBottom: '8px' },
   recSkills: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '10px' },
   recSkillChip: { background: '#F0FDF4', color: '#15803D', padding: '2px 8px', borderRadius: '20px', fontSize: '10.5px', fontWeight: '600', border: '1px solid #DCFCE7' },
-  recApplyBtn: { fontSize: '12.5px', color: '#18181B', fontWeight: '700', marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '2px' },
 
   appRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 14px', borderRadius: '12px', border: '1px solid #F4F4F5', marginBottom: '8px', background: '#fff' },
   appLeftRow: { display: 'flex', alignItems: 'center', gap: '12px' },
@@ -546,14 +382,8 @@ const S = {
   appLeft: {},
   appTitle: { fontSize: '14px', fontWeight: '700', color: '#18181B', marginBottom: '3px' },
   appMeta: { fontSize: '12px', color: '#A1A1AA', marginBottom: '3px' },
-  matchPill: { display: 'inline-block', padding: '2px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', marginTop: '3px' },
   statusBadge: { display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' },
   statusDot: { width: '6px', height: '6px', borderRadius: '50%', flexShrink: 0 },
-
-  interviewCard: { background: '#F0FDF4', border: '1px solid #DCFCE7', borderRadius: '12px', padding: '14px', marginTop: '10px' },
-  interviewTitle: { fontSize: '13px', fontWeight: '700', color: '#15803D', marginBottom: '8px' },
-  interviewRow: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#3F3F46', marginBottom: '5px' },
-  interviewIcon: { flexShrink: 0, color: '#71717A', marginTop: '1px' },
 
   profileRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: '1px solid #F4F4F5' },
   profileLabel: { fontSize: '12.5px', color: '#A1A1AA', fontWeight: '500' },
@@ -563,7 +393,7 @@ const S = {
   skillChip: { background: '#EEF2FF', color: '#4338CA', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', border: '1px solid #E0E7FF' },
 
   quickActions: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '4px' },
-  quickAction: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px', background: '#FAFAFA', borderRadius: '12px', cursor: 'pointer', border: '1px solid #E4E4E7', transition: 'border-color .15s ease, transform .15s ease' },
+  quickAction: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px', background: '#FAFAFA', borderRadius: '12px', cursor: 'pointer', border: '1px solid #F4F4F5', transition: 'all 0.2s ease' },
   qaIcon: { color: '#3F3F46' },
   qaLabel: { fontSize: '12px', fontWeight: '600', color: '#3F3F46', textAlign: 'center' },
 
