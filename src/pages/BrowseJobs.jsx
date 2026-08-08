@@ -89,7 +89,7 @@ export default function BrowseJobs() {
       setAppliedJobs(prev => [...prev, jobId])
       setSuccess('Application submitted!')
       setTimeout(() => setSuccess(''), 3000)
-     const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       const { data: profileData } = await supabase.from('profiles').select('full_name, email').eq('id', user.id).single()
       const job = jobs.find(j => j.id === jobId)
       if (profileData?.email) {
@@ -112,15 +112,6 @@ export default function BrowseJobs() {
     return scoreB - scoreA
   })
 
-  const navItems = [
-    { label: 'Analytics', icon: 'grid', path: '/analytics' },
-    { label: 'Browse Jobs', icon: 'briefcase', path: '/jobs', active: true },
-    { label: 'Coordinator', icon: 'cap', path: '/coordinator' },
-    { label: 'Students', icon: 'users', path: '/students' },
-    { label: 'Employers', icon: 'building', path: '/employers' },
-    { label: 'Settings', icon: 'settings', path: '/settings' },
-  ]
-
   const initials = (name) => (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 
   return (
@@ -129,54 +120,18 @@ export default function BrowseJobs() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
         .pageIn{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) forwards}
-        .navBtn{transition:all .15s ease;}
-        .navBtn:hover{background:#F1F5F9!important;}
-        .navBtn.active:hover{background:${C.navActiveBg}!important;}
         .jobCard{transition:all .25s ease}
         .jobCard:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(234,78,27,0.10)!important;border-color:#FFDCC7!important}
         .applyBtn{transition:all .2s ease}
         .applyBtn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(234,78,27,0.28)!important}
         .searchIn:focus{outline:none;border-color:${C.accent}!important;box-shadow:0 0 0 3px rgba(234,78,27,0.12)!important}
         .filterSel:focus{outline:none;border-color:${C.accent}!important}
-        @media(max-width:1000px){
-          .sidebar{display:none!important;}
-        }
         @media(max-width:768px){
           .searchBarEl{flex-direction:column!important}
           .jobsGridEl{grid-template-columns:1fr!important}
           .mainEl{padding:20px 16px!important}
         }
       `}</style>
-
-      {/* ---------------- Sidebar ---------------- */}
-      <aside className="sidebar" style={S.sidebar}>
-        <div style={S.logoRow}>
-          <div style={S.logoMark}><Icon path={icons.grid} size={16} /></div>
-          <span style={S.logoText}>CareerBridge</span>
-        </div>
-
-        <nav style={S.navList}>
-          {navItems.map(item => (
-            <button
-              key={item.label}
-              className={`navBtn${item.active ? ' active' : ''}`}
-              style={{ ...S.navItem, ...(item.active ? S.navItemActive : {}) }}
-              onClick={() => navigate(item.path)}
-            >
-              <Icon path={icons[item.icon]} size={17} />
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div style={S.sidebarFooter}>
-          <div style={S.userAvatar}>{initials('Student')}</div>
-          <div>
-            <div style={S.userName}>Your Profile</div>
-            <div style={S.userRole}>Student</div>
-          </div>
-        </div>
-      </aside>
 
       {/* ---------------- Main ---------------- */}
       <div className="pageIn mainEl" style={S.main}>
@@ -193,7 +148,7 @@ export default function BrowseJobs() {
           <div style={S.skillsAlert}>
             <Icon path={icons.alert} size={16} />
             Add your skills in your profile to see how well you match each job!
-            <span style={S.skillsAlertLink} onClick={() => navigate('/student-profile')}>Add skills <Icon path={icons.arrow} size={13} /></span>
+            <span style={S.skillsAlertLink} onClick={() => navigate('/student/profile')}>Add skills <Icon path={icons.arrow} size={13} /></span>
           </div>
         )}
 
@@ -289,22 +244,9 @@ export default function BrowseJobs() {
 }
 
 const S = {
-  app: { minHeight: '100vh', background: C.bg, fontFamily: "'Inter', -apple-system, sans-serif", display: 'flex' },
+  app: { minHeight: '100vh', background: C.bg, fontFamily: "'Inter', -apple-system, sans-serif" },
 
-  // sidebar (shared with Analytics)
-  sidebar: { width: '232px', flexShrink: 0, background: C.card, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', padding: '22px 16px', position: 'sticky', top: 0, height: '100vh' },
-  logoRow: { display: 'flex', alignItems: 'center', gap: '10px', padding: '0 8px', marginBottom: '28px' },
-  logoMark: { width: '30px', height: '30px', borderRadius: '9px', background: C.ink, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  logoText: { fontSize: '17px', fontWeight: '800', color: C.ink, letterSpacing: '-0.4px' },
-  navList: { display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 },
-  navItem: { display: 'flex', alignItems: 'center', gap: '11px', padding: '10px 12px', borderRadius: '10px', border: 'none', background: 'transparent', color: C.navText, fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' },
-  navItemActive: { background: C.navActiveBg, color: C.navActiveText },
-  sidebarFooter: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 10px', borderTop: `1px solid ${C.border}`, marginTop: '10px' },
-  userAvatar: { width: '34px', height: '34px', borderRadius: '10px', background: '#F1F5F9', color: C.ink, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700' },
-  userName: { fontSize: '13.5px', fontWeight: '700', color: C.ink },
-  userRole: { fontSize: '12px', color: C.sub },
-
-  main: { flex: 1, maxWidth: '1180px', margin: '0 auto', padding: '32px 32px 60px' },
+  main: { maxWidth: '1180px', margin: '0 auto', padding: '32px 32px 60px' },
   pageHead: { marginBottom: '20px' },
   heading: { fontSize: '25px', fontWeight: '800', color: C.ink, marginBottom: '6px', letterSpacing: '-0.5px' },
   headSub: { fontSize: '14px', color: C.sub },

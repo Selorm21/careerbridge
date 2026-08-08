@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
 import { getScoreColor } from '../matchScore'
-import Sidebar from '../components/Sidebar'
 import {
   LayoutGrid, ListChecks, Sparkles, CalendarClock, Search, UserCircle,
   FileText, BarChart3, Send, CheckCircle2, XCircle, ArrowRight,
@@ -90,24 +89,41 @@ export default function StudentDashboard() {
     return score
   }
 
-  // Define navigation items for sidebar
-  const navItems = [
-    { id: 'overview', icon: '📊', label: 'Overview' },
-    { id: 'applications', icon: '✓', label: 'Applications', badge: applications.length > 0 ? applications.length : null },
-    { id: 'recommended', icon: '✨', label: 'Recommended', badge: recommendedJobs.length > 0 ? recommendedJobs.length : null },
-    { id: 'interviews', icon: '📅', label: 'Interviews', badge: interviews.length > 0 ? interviews.length : null },
-    { id: 'browse', icon: '🔍', label: 'Browse jobs', path: '/browse-jobs' },
-    { id: 'profile', icon: '👤', label: 'My profile', path: '/student-profile' },
-    { id: 'resume', icon: '📄', label: 'Resume builder', path: '/resume-builder' },
-    { id: 'analytics', icon: '📈', label: 'Analytics', path: '/analytics' },
-  ]
-
   const metrics = [
     { label: 'Applications', val: applications.length, Icon: Send, bg: '#EEF2FF', color: '#4338CA' },
     { label: 'Interviews', val: applications.filter(a => a.status === 'interview').length, Icon: CalendarClock, bg: '#FEF9EE', color: '#B45309' },
     { label: 'Offers', val: applications.filter(a => a.status === 'offer').length, Icon: CheckCircle2, bg: '#F0FDF4', color: '#15803D' },
     { label: 'Rejected', val: applications.filter(a => a.status === 'rejected').length, Icon: XCircle, bg: '#FEF2F2', color: '#B91C1C' },
   ]
+
+  // Navigation handler for tab changes
+  const handleTabChange = (tab) => {
+    const routes = {
+      overview: '/student',
+      applications: '/student?tab=applications',
+      recommended: '/student?tab=recommended',
+      interviews: '/student?tab=interviews',
+      browse: '/student/browse-jobs',
+      profile: '/student/profile',
+      resume: '/student/resume-builder',
+      analytics: '/student/analytics',
+    }
+
+    if (tab === 'overview') {
+      navigate('/student')
+    } else if (tab === 'browse') {
+      navigate('/student/browse-jobs')
+    } else if (tab === 'profile') {
+      navigate('/student/profile')
+    } else if (tab === 'resume') {
+      navigate('/student/resume-builder')
+    } else if (tab === 'analytics') {
+      navigate('/student/analytics')
+    } else {
+      // For other tabs, just update the state
+      setActiveTab(tab)
+    }
+  }
 
   return (
     <div style={S.page}>
@@ -124,7 +140,6 @@ export default function StudentDashboard() {
         .browseBtn:hover{opacity:.88;transform:translateY(-1px)}
         .quickAction:hover{border-color:#D4D4D8!important;transform:translateY(-1px)}
         @media(max-width:768px){
-          .sidebar{display:none!important}
           .layout{grid-template-columns:1fr!important}
           .grid2{grid-template-columns:1fr!important}
           .metricsRow{grid-template-columns:1fr 1fr!important}
@@ -137,22 +152,13 @@ export default function StudentDashboard() {
       `}</style>
 
       <div className="layout" style={S.layout}>
-        <Sidebar 
-          profile={profile}
-          role="student"
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          navItems={navItems}
-          showLogout={true}
-        />
-
         <main className="main" style={S.main}>
           <div className="pageIn topBar" style={S.topBar}>
             <div>
               <h1 style={S.heading}>Good day, {profile?.full_name?.split(' ')[0] || 'Student'}</h1>
               <p style={S.headSub}>Here's what's happening with your job search.</p>
             </div>
-            <button className="browseBtn" style={S.browseBtn} onClick={() => navigate('/browse-jobs')}>
+            <button className="browseBtn" style={S.browseBtn} onClick={() => handleTabChange('browse')}>
               <Search size={16} />
               Browse jobs
             </button>
@@ -177,14 +183,14 @@ export default function StudentDashboard() {
                       <div style={S.cardTitle}>Recommended for you</div>
                       <div style={S.cardSub}>Roles matched to your profile skills.</div>
                     </div>
-                    <span style={S.cardLink} onClick={() => setActiveTab('recommended')}>View all<ChevronRight size={14} /></span>
+                    <span style={S.cardLink} onClick={() => handleTabChange('recommended')}>View all<ChevronRight size={14} /></span>
                   </div>
                   <div className="recsGrid" style={S.recsGrid}>
                     {recommendedJobs.map(job => {
                       const { color, bg } = getScoreColor(job.score)
                       const a = accentFor(job.company)
                       return (
-                        <div key={job.id} className="recCard jobCard" style={S.recCard} onClick={() => navigate('/browse-jobs')}>
+                        <div key={job.id} className="recCard jobCard" style={S.recCard} onClick={() => handleTabChange('browse')}>
                           <div style={S.recTop}>
                             <div style={{...S.recIconWrap, background: a.bg, color: a.color}}>{initialsFor(job.company)}</div>
                             <div style={{...S.recScore, background: bg, color}}>{job.score}%</div>
@@ -210,7 +216,7 @@ export default function StudentDashboard() {
                       <div style={S.cardTitle}>Recent applications</div>
                       <div style={S.cardSub}>Your latest activity and status.</div>
                     </div>
-                    <span style={S.cardLink} onClick={() => setActiveTab('applications')}>View all<ChevronRight size={14} /></span>
+                    <span style={S.cardLink} onClick={() => handleTabChange('applications')}>View all<ChevronRight size={14} /></span>
                   </div>
                   {applications.length === 0 && (
                     <div style={S.empty}>
@@ -244,7 +250,7 @@ export default function StudentDashboard() {
                   <div className="cardIn" style={{...S.card, marginBottom:'16px'}}>
                     <div style={S.cardHead}>
                       <div style={S.cardTitle}>My profile</div>
-                      <span style={S.cardLink} onClick={() => navigate('/student-profile')}>Edit<ChevronRight size={14} /></span>
+                      <span style={S.cardLink} onClick={() => handleTabChange('profile')}>Edit<ChevronRight size={14} /></span>
                     </div>
                     <div style={S.profileRow}><span style={S.profileLabel}>University</span><span style={S.profileVal}>{profile?.university || <span style={S.notSet}>Not set</span>}</span></div>
                     <div style={S.profileRow}><span style={S.profileLabel}>Course</span><span style={S.profileVal}>{profile?.course || <span style={S.notSet}>Not set</span>}</span></div>
@@ -260,10 +266,10 @@ export default function StudentDashboard() {
                   <div className="cardIn" style={S.card}>
                     <div style={S.cardTitle}>Quick actions</div>
                     <div style={S.quickActions}>
-                      <div className="quickAction" style={S.quickAction} onClick={() => navigate('/browse-jobs')}><Search size={18} style={S.qaIcon} /><span style={S.qaLabel}>Browse jobs</span></div>
-                      <div className="quickAction" style={S.quickAction} onClick={() => navigate('/student-profile')}><Pencil size={18} style={S.qaIcon} /><span style={S.qaLabel}>Edit profile</span></div>
-                      <div className="quickAction" style={S.quickAction} onClick={() => setActiveTab('applications')}><ListChecks size={18} style={S.qaIcon} /><span style={S.qaLabel}>Applications</span></div>
-                      <div className="quickAction" style={S.quickAction} onClick={() => navigate('/resume-builder')}><FileText size={18} style={S.qaIcon} /><span style={S.qaLabel}>Resume</span></div>
+                     <div className="quickAction" style={S.quickAction} onClick={() => handleTabChange('browse')}><Search size={18} style={S.qaIcon} /><span style={S.qaLabel}>Browse jobs</span></div>
+                      <div className="quickAction" style={S.quickAction} onClick={() => handleTabChange('profile')}><Pencil size={18} style={S.qaIcon} /><span style={S.qaLabel}>Edit profile</span></div>
+                      <div className="quickAction" style={S.quickAction} onClick={() => handleTabChange('applications')}><ListChecks size={18} style={S.qaIcon} /><span style={S.qaLabel}>Applications</span></div>
+                      <div className="quickAction" style={S.quickAction} onClick={() => handleTabChange('resume')}><FileText size={18} style={S.qaIcon} /><span style={S.qaLabel}>Resume</span></div>
                     </div>
                   </div>
                 </div>
@@ -336,15 +342,452 @@ export default function StudentDashboard() {
               )}
             </div>
           )}
+          {activeTab === 'browse' && (
+            <div className="cardIn" style={S.card}>
+              <div style={S.cardHead}>
+                <div>
+                  <div style={S.cardTitle}>Browse Jobs</div>
+                  <div style={S.cardSub}>Find opportunities that match your skills.</div>
+                </div>
+              </div>
+              <BrowseJobsTab studentSkills={profile?.skills || ''} userId={profile?.id} />
+            </div>
+          )}
+
+          {activeTab === 'profile' && (
+            <ProfileTab
+              profile={profile}
+              onSaved={(updatedProfile) => setProfile(updatedProfile)}
+            />
+          )}
+
+          {activeTab === 'resume' && (
+            <div className="cardIn" style={S.card}>
+              <div style={S.cardHead}>
+                <div style={S.cardTitle}>Resume Builder</div>
+                <span style={S.cardLink} onClick={() => handleTabChange('resume')}>
+                  Open full page<ChevronRight size={14} />
+                </span>
+              </div>
+              <p style={{color:'#A1A1AA', fontSize:'14px'}}>
+                Click "Open full page" to use the full Resume Builder with live preview and PDF download.
+              </p>
+            </div>
+          )}
+
+          {activeTab === 'analytics' && (
+            <div className="cardIn" style={S.card}>
+              <div style={S.cardHead}>
+                <div style={S.cardTitle}>Analytics</div>
+                <span style={S.cardLink} onClick={() => handleTabChange('analytics')}>
+                  Open full page<ChevronRight size={14} />
+                </span>
+              </div>
+              <p style={{color:'#A1A1AA', fontSize:'14px'}}>
+                Click "Open full page" to view the full analytics dashboard with charts.
+              </p>
+            </div>
+          )}
+
         </main>
       </div>
     </div>
   )
 }
 
+
+function BrowseJobsTab({ studentSkills, userId }) {
+  const [jobs, setJobs] = useState([])
+  const [appliedJobs, setAppliedJobs] = useState([])
+  const [search, setSearch] = useState('')
+  const [applying, setApplying] = useState(null)
+  const [success, setSuccess] = useState('')
+
+  useEffect(() => {
+    async function fetchJobs() {
+      const { data: jobsData } = await supabase
+        .from('jobs')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      setJobs(jobsData || [])
+
+      if (userId) {
+        const { data: appsData } = await supabase
+          .from('applications')
+          .select('job_id')
+          .eq('student_id', userId)
+
+        setAppliedJobs(appsData?.map(a => a.job_id) || [])
+      }
+    }
+
+    fetchJobs()
+  }, [userId])
+
+  async function applyForJob(jobId) {
+    if (!userId) return
+
+    setApplying(jobId)
+
+    const { error } = await supabase
+      .from('applications')
+      .insert({
+        job_id: jobId,
+        student_id: userId,
+        status: 'applied'
+      })
+
+    if (!error) {
+      setAppliedJobs(prev => [...prev, jobId])
+      setSuccess('Application submitted!')
+      setTimeout(() => setSuccess(''), 3000)
+    }
+
+    setApplying(null)
+  }
+
+  const filtered = jobs.filter(job =>
+    job.title?.toLowerCase().includes(search.toLowerCase()) ||
+    job.company?.toLowerCase().includes(search.toLowerCase())
+  )
+
+  return (
+    <div>
+      {success && (
+        <div style={{
+          background:'#F0FDF4',
+          color:'#15803D',
+          padding:'12px 16px',
+          borderRadius:'10px',
+          marginBottom:'16px',
+          fontSize:'14px',
+          fontWeight:'600'
+        }}>
+          ✓ {success}
+        </div>
+      )}
+
+      <input
+        style={{
+          width:'100%',
+          padding:'12px 14px',
+          border:'1px solid #E4E4E7',
+          borderRadius:'12px',
+          fontSize:'14px',
+          marginBottom:'16px',
+          boxSizing:'border-box'
+        }}
+        placeholder="Search jobs..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+      />
+
+      <div style={{
+        display:'grid',
+        gridTemplateColumns:'repeat(auto-fill, minmax(280px,1fr))',
+        gap:'14px'
+      }}>
+        {filtered.map(job => {
+          const jobSkills = job.skills
+            ? job.skills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean)
+            : []
+
+          const skills = studentSkills
+            ? studentSkills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean)
+            : []
+
+          const matchedCount = jobSkills.filter(jobSkill =>
+            skills.some(studentSkill =>
+              studentSkill.includes(jobSkill) || jobSkill.includes(studentSkill)
+            )
+          ).length
+
+          const score = jobSkills.length
+            ? Math.round((matchedCount / jobSkills.length) * 100)
+            : 0
+
+          return (
+            <div
+              key={job.id}
+              style={{
+                background:'#fff',
+                borderRadius:'14px',
+                padding:'18px',
+                border:'1px solid #E4E4E7'
+              }}
+            >
+              <div style={{
+                fontSize:'15px',
+                fontWeight:'700',
+                color:'#18181B',
+                marginBottom:'4px'
+              }}>
+                {job.title}
+              </div>
+
+              <div style={{
+                fontSize:'13px',
+                color:'#A1A1AA',
+                marginBottom:'8px'
+              }}>
+                {job.company} · {job.location}
+              </div>
+
+              {studentSkills && (
+                <div style={{
+                  fontSize:'13px',
+                  fontWeight:'700',
+                  color: score >= 70 ? '#15803D' : score >= 40 ? '#B45309' : '#B91C1C',
+                  marginBottom:'10px'
+                }}>
+                  {score}% match
+                </div>
+              )}
+
+              {appliedJobs.includes(job.id) ? (
+                <div style={{
+                  padding:'10px',
+                  background:'#F0FDF4',
+                  color:'#15803D',
+                  borderRadius:'8px',
+                  fontSize:'13px',
+                  fontWeight:'600',
+                  textAlign:'center'
+                }}>
+                  ✓ Applied
+                </div>
+              ) : (
+                <button
+                  onClick={() => applyForJob(job.id)}
+                  disabled={applying === job.id}
+                  style={{
+                    width:'100%',
+                    padding:'10px',
+                    background:'#18181B',
+                    color:'#fff',
+                    border:'none',
+                    borderRadius:'8px',
+                    fontSize:'13px',
+                    fontWeight:'600',
+                    cursor:'pointer'
+                  }}
+                >
+                  {applying === job.id ? 'Applying...' : 'Apply now →'}
+                </button>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function ProfileTab({ profile, onSaved }) {
+  const [form, setForm] = useState({
+    full_name: profile?.full_name || '',
+    university: profile?.university || '',
+    course: profile?.course || '',
+    graduation_year: profile?.graduation_year || '',
+    skills: profile?.skills || '',
+    bio: profile?.bio || ''
+  })
+
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    setForm({
+      full_name: profile?.full_name || '',
+      university: profile?.university || '',
+      course: profile?.course || '',
+      graduation_year: profile?.graduation_year || '',
+      skills: profile?.skills || '',
+      bio: profile?.bio || ''
+    })
+  }, [profile])
+
+  async function handleSave() {
+    setSaving(true)
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      setSaving(false)
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(form)
+      .eq('id', user.id)
+      .select()
+      .single()
+
+    if (!error && data) {
+      onSaved?.(data)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    }
+
+    setSaving(false)
+  }
+
+  return (
+    <div style={{
+      background:'#fff',
+      borderRadius:'16px',
+      padding:'22px',
+      border:'1px solid #E4E4E7'
+    }}>
+      <div style={{
+        fontSize:'15px',
+        fontWeight:'700',
+        color:'#18181B',
+        marginBottom:'18px'
+      }}>
+        My Profile
+      </div>
+
+      {saved && (
+        <div style={{
+          background:'#F0FDF4',
+          color:'#15803D',
+          padding:'12px',
+          borderRadius:'10px',
+          marginBottom:'16px',
+          fontSize:'14px',
+          fontWeight:'600'
+        }}>
+          ✓ Profile saved!
+        </div>
+      )}
+
+      <div style={{
+        display:'grid',
+        gridTemplateColumns:'1fr 1fr',
+        gap:'14px',
+        marginBottom:'14px'
+      }}>
+        {[
+          ['Full name','full_name'],
+          ['University','university'],
+          ['Course','course'],
+          ['Graduation year','graduation_year']
+        ].map(([label, key]) => (
+          <div key={key}>
+            <label style={{
+              display:'block',
+              fontSize:'12.5px',
+              fontWeight:'600',
+              color:'#52525B',
+              marginBottom:'6px'
+            }}>
+              {label}
+            </label>
+
+            <input
+              style={{
+                width:'100%',
+                padding:'10px 12px',
+                border:'1px solid #E4E4E7',
+                borderRadius:'8px',
+                fontSize:'13px',
+                boxSizing:'border-box'
+              }}
+              value={form[key]}
+              onChange={e => setForm(prev => ({
+                ...prev,
+                [key]: e.target.value
+              }))}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginBottom:'14px' }}>
+        <label style={{
+          display:'block',
+          fontSize:'12.5px',
+          fontWeight:'600',
+          color:'#52525B',
+          marginBottom:'6px'
+        }}>
+          Skills (comma separated)
+        </label>
+
+        <input
+          style={{
+            width:'100%',
+            padding:'10px 12px',
+            border:'1px solid #E4E4E7',
+            borderRadius:'8px',
+            fontSize:'13px',
+            boxSizing:'border-box'
+          }}
+          value={form.skills}
+          onChange={e => setForm(prev => ({
+            ...prev,
+            skills: e.target.value
+          }))}
+        />
+      </div>
+
+      <div style={{ marginBottom:'18px' }}>
+        <label style={{
+          display:'block',
+          fontSize:'12.5px',
+          fontWeight:'600',
+          color:'#52525B',
+          marginBottom:'6px'
+        }}>
+          Bio
+        </label>
+
+        <textarea
+          style={{
+            width:'100%',
+            padding:'10px 12px',
+            border:'1px solid #E4E4E7',
+            borderRadius:'8px',
+            fontSize:'13px',
+            boxSizing:'border-box',
+            height:'80px',
+            resize:'vertical',
+            fontFamily:'inherit'
+          }}
+          value={form.bio}
+          onChange={e => setForm(prev => ({
+            ...prev,
+            bio: e.target.value
+          }))}
+        />
+      </div>
+
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        style={{
+          padding:'12px 24px',
+          background:'#18181B',
+          color:'#fff',
+          border:'none',
+          borderRadius:'10px',
+          fontSize:'14px',
+          fontWeight:'600',
+          cursor:'pointer'
+        }}
+      >
+        {saving ? 'Saving...' : 'Save profile'}
+      </button>
+    </div>
+  )
+}
+
 const S = {
   page: { minHeight: '100vh', background: '#FAFAFA', fontFamily: "'Inter', -apple-system, sans-serif" },
-  layout: { display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100vh', gap: '24px', padding: '40px' },
+  layout: { display: 'grid', gridTemplateColumns: '1fr', minHeight: '100vh', gap: '24px', padding: '40px' },
 
   main: { padding: '22px', overflowY: 'auto', paddingBottom: '80px' },
   topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' },

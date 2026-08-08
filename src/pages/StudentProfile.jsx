@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
@@ -55,13 +54,20 @@ export default function StudentProfile() {
   const [bio, setBio] = useState('')
   const [cvUrl, setCvUrl] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [profile, setProfile] = useState(null)
+  const [applicationsCount, setApplicationsCount] = useState(0)
+  const [interviewsCount, setInterviewsCount] = useState(0)
+  const [recommendedCount, setRecommendedCount] = useState(0)
   const navigate = useNavigate()
 
   useEffect(() => {
     async function getProfile() {
       const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (data) {
+        setProfile(data)
         setFullName(data.full_name || '')
         setUniversity(data.university || '')
         setCourse(data.course || '')
@@ -69,6 +75,43 @@ export default function StudentProfile() {
         setSkills(data.skills || '')
         setBio(data.bio || '')
         setCvUrl(data.cv_url || '')
+      }
+
+      const { data: appsData } = await supabase
+        .from('applications')
+        .select('job_id')
+        .eq('student_id', user.id)
+
+      setApplicationsCount(appsData?.length || 0)
+
+      const { data: interviewsData } = await supabase
+        .from('interviews')
+        .select('id')
+        .eq('student_id', user.id)
+
+      setInterviewsCount(interviewsData?.length || 0)
+
+      // Keep the Recommended badge consistent with the dashboard.
+      if (data?.skills) {
+        const { data: jobsData } = await supabase.from('jobs').select('*')
+        const appliedIds = appsData?.map(a => a.job_id) || []
+        const skillsList = data.skills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean)
+
+        const count = (jobsData || [])
+          .filter(job => !appliedIds.includes(job.id))
+          .map(job => {
+            const jobSkills = job.skills?.toLowerCase().split(',').map(s => s.trim()).filter(Boolean) || []
+            const matched = jobSkills.filter(skill =>
+              skillsList.some(studentSkill =>
+                studentSkill.includes(skill) || skill.includes(studentSkill)
+              )
+            )
+            return jobSkills.length ? Math.round((matched.length / jobSkills.length) * 100) : 0
+          })
+          .filter(score => score > 0)
+          .length
+
+        setRecommendedCount(count > 4 ? 4 : count)
       }
     }
     getProfile()
@@ -113,15 +156,6 @@ export default function StudentProfile() {
     return score
   }
 
-  const navItems = [
-    { label: 'Analytics', icon: 'grid', path: '/analytics' },
-    { label: 'Browse Jobs', icon: 'briefcase', path: '/jobs' },
-    { label: 'Coordinator', icon: 'cap', path: '/coordinator' },
-    { label: 'Students', icon: 'users', path: '/students' },
-    { label: 'Employers', icon: 'building', path: '/employers' },
-    { label: 'Settings', icon: 'settings', path: '/settings' },
-  ]
-
   const initials = (name) => (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 
   return (
@@ -131,9 +165,6 @@ export default function StudentProfile() {
         @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
         @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
         .pageIn{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) forwards}
-        .navBtn{transition:all .15s ease;}
-        .navBtn:hover{background:#F1F5F9!important;}
-        .navBtn.active:hover{background:${C.navActiveBg}!important;}
         .inputF{transition:border-color .2s ease,box-shadow .2s ease}
         .inputF:focus{outline:none;border-color:${C.accent}!important;box-shadow:0 0 0 3px rgba(234,78,27,0.1)!important}
         .saveBtn{transition:all .2s ease}
@@ -142,7 +173,7 @@ export default function StudentProfile() {
         .uploadArea:hover{border-color:${C.accent}!important;background:#FFF6F0!important}
         .progressBar{background:linear-gradient(90deg,${C.accent},#FF8552,${C.accent});background-size:200% 100%;animation:shimmer 2s linear infinite}
         @media(max-width:1000px){
-          .sidebar{display:none!important;}
+          .mainEl{padding-left:24px!important;padding-right:24px!important}
         }
         @media(max-width:900px){
           .layoutGrid{grid-template-columns:1fr!important}
@@ -152,36 +183,6 @@ export default function StudentProfile() {
           .mainEl{padding:20px 16px!important}
         }
       `}</style>
-
-      {/* ---------------- Sidebar ---------------- */}
-      <aside className="sidebar" style={S.sidebar}>
-        <div style={S.logoRow}>
-          <div style={S.logoMark}><Icon path={icons.grid} size={16} /></div>
-          <span style={S.logoText}>CareerBridge</span>
-        </div>
-
-        <nav style={S.navList}>
-          {navItems.map(item => (
-            <button
-              key={item.label}
-              className="navBtn"
-              style={S.navItem}
-              onClick={() => navigate(item.path)}
-            >
-              <Icon path={icons[item.icon]} size={17} />
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div style={S.sidebarFooter}>
-          <div style={S.userAvatar}>{initials(fullName || 'Student')}</div>
-          <div>
-            <div style={S.userName}>{fullName || 'Your Profile'}</div>
-            <div style={S.userRole}>Student</div>
-          </div>
-        </div>
-      </aside>
 
       {/* ---------------- Main ---------------- */}
       <div className="pageIn mainEl" style={S.main}>
@@ -314,21 +315,9 @@ export default function StudentProfile() {
 }
 
 const S = {
-  app: { minHeight: '100vh', background: C.bg, fontFamily: "'Inter', -apple-system, sans-serif", display: 'flex' },
+  app: { minHeight: '100vh', background: C.bg, fontFamily: "'Inter', -apple-system, sans-serif" },
 
-  // sidebar (shared with Analytics / BrowseJobs)
-  sidebar: { width: '232px', flexShrink: 0, background: C.card, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', padding: '22px 16px', position: 'sticky', top: 0, height: '100vh' },
-  logoRow: { display: 'flex', alignItems: 'center', gap: '10px', padding: '0 8px', marginBottom: '28px' },
-  logoMark: { width: '30px', height: '30px', borderRadius: '9px', background: C.ink, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  logoText: { fontSize: '17px', fontWeight: '800', color: C.ink, letterSpacing: '-0.4px' },
-  navList: { display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 },
-  navItem: { display: 'flex', alignItems: 'center', gap: '11px', padding: '10px 12px', borderRadius: '10px', border: 'none', background: 'transparent', color: C.navText, fontSize: '14px', fontWeight: '600', cursor: 'pointer', textAlign: 'left' },
-  sidebarFooter: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 10px', borderTop: `1px solid ${C.border}`, marginTop: '10px' },
-  userAvatar: { width: '34px', height: '34px', borderRadius: '10px', background: '#F1F5F9', color: C.ink, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700' },
-  userName: { fontSize: '13.5px', fontWeight: '700', color: C.ink, maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  userRole: { fontSize: '12px', color: C.sub },
-
-  main: { flex: 1, maxWidth: '1040px', margin: '0 auto', padding: '32px 32px 60px' },
+  main: { flex: 1, minWidth: 0, padding: '32px 40px 60px' },
   pageHead: { marginBottom: '26px' },
   heading: { fontSize: '25px', fontWeight: '800', color: C.ink, marginBottom: '6px', letterSpacing: '-0.5px' },
   headSub: { fontSize: '14px', color: C.sub },
