@@ -102,6 +102,7 @@ export default function StudentLayout() {
 
   const [profile, setProfile] = useState(null)
   const [applications, setApplications] = useState([])
+  const [recommendedCount, setRecommendedCount] = useState(0)
 
   useEffect(() => {
     async function loadUserData() {
@@ -131,6 +132,27 @@ export default function StudentLayout() {
 
         setProfile(profileData || null)
         setApplications(applicationsData || [])
+
+        // Count recommended jobs (for badge)
+        const { data: jobsData } = await supabase.from('jobs').select('*')
+        const studentSkills = profileData?.skills || ''
+        const appliedJobIds = applicationsData?.map(a => a.job_id) || []
+
+        if (studentSkills && jobsData) {
+          const skillsList = studentSkills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean)
+          const count = jobsData
+            .filter(job => !appliedJobIds.includes(job.id))
+            .filter(job => {
+              const jobSkills = job.skills?.toLowerCase().split(',').map(s => s.trim()).filter(Boolean) || []
+              return jobSkills.some(skill =>
+                skillsList.some(studentSkill =>
+                  studentSkill.includes(skill) || skill.includes(studentSkill)
+                )
+              )
+            })
+            .length
+          setRecommendedCount(count > 0 ? count : 0)
+        }
       } catch (error) {
         console.error('Failed to load student layout:', error)
       }
@@ -150,6 +172,7 @@ export default function StudentLayout() {
       .toUpperCase()
   }
 
+  // UPDATED: Navigation items with correct paths
   const navItems = [
     {
       label: 'Overview',
@@ -158,52 +181,71 @@ export default function StudentLayout() {
     },
     {
       label: 'Applications',
-      path: '/applications',
+      path: '/student?tab=applications',
       icon: 'applications',
       badge: applications.length,
+      isTab: true, // Mark as tab-based navigation
+      tabName: 'applications',
     },
     {
       label: 'Recommended',
-      path: '/recommended',
+      path: '/student?tab=recommended',
       icon: 'recommended',
-      badge: 1,
+      badge: recommendedCount,
+      isTab: true,
+      tabName: 'recommended',
     },
     {
       label: 'Interviews',
-      path: '/interviews',
+      path: '/student?tab=interviews',
       icon: 'interviews',
       badge: applications.filter(
         (application) => application.status === 'interview'
       ).length,
+      isTab: true,
+      tabName: 'interviews',
     },
     {
       label: 'Browse jobs',
-      path: '/browse-jobs',
+      path: '/student/browse-jobs',
       icon: 'jobs',
     },
     {
       label: 'My profile',
-      path: '/student-profile',
+      path: '/student/profile',
       icon: 'profile',
     },
     {
       label: 'Resume builder',
-      path: '/resume-builder',
+      path: '/student/resume-builder',
       icon: 'resume',
     },
     {
       label: 'Analytics',
-      path: '/analytics',
+      path: '/student/analytics',
       icon: 'analytics',
     },
   ]
 
   const isActive = (path) => {
     if (path === '/student') {
-      return location.pathname === '/student'
+      return location.pathname === '/student' && !location.search
     }
-
+    if (path.includes('?tab=')) {
+      // Check if we're on the student page with the right tab parameter
+      return location.pathname === '/student' && location.search === path.split('?')[1]
+    }
     return location.pathname.startsWith(path)
+  }
+
+  // UPDATED: Handle navigation with tab support
+  const handleNavigation = (item) => {
+    if (item.isTab) {
+      // For tabs, navigate to /student with the tab parameter
+      navigate(`/student?tab=${item.tabName}`)
+    } else {
+      navigate(item.path)
+    }
   }
 
   async function handleLogout() {
@@ -247,7 +289,7 @@ export default function StudentLayout() {
             return (
               <button
                 key={item.label}
-                onClick={() => navigate(item.path)}
+                onClick={() => handleNavigation(item)}
                 style={{
                   ...styles.navButton,
                   ...(active ? styles.navButtonActive : {}),

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getScoreColor } from '../matchScore'
 import {
   LayoutGrid, ListChecks, Sparkles, CalendarClock, Search, UserCircle,
@@ -33,6 +33,15 @@ export default function StudentDashboard() {
   const [interviews, setInterviews] = useState([])
   const [activeTab, setActiveTab] = useState('overview')
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+
+  // Sync tab from URL parameter
+  useEffect(() => {
+    if (tabParam && ['overview', 'applications', 'recommended', 'interviews'].includes(tabParam)) {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam])
 
   useEffect(() => {
     async function getData() {
@@ -98,19 +107,16 @@ export default function StudentDashboard() {
 
   // Navigation handler for tab changes
   const handleTabChange = (tab) => {
-    const routes = {
-      overview: '/student',
-      applications: '/student?tab=applications',
-      recommended: '/student?tab=recommended',
-      interviews: '/student?tab=interviews',
-      browse: '/student/browse-jobs',
-      profile: '/student/profile',
-      resume: '/student/resume-builder',
-      analytics: '/student/analytics',
-    }
-
-    if (tab === 'overview') {
-      navigate('/student')
+    // For these tabs, update the URL parameter
+    const stateTabs = ['overview', 'applications', 'recommended', 'interviews'];
+    
+    if (stateTabs.includes(tab)) {
+      // Update the URL with the tab parameter
+      if (tab === 'overview') {
+        navigate('/student')
+      } else {
+        navigate(`/student?tab=${tab}`)
+      }
     } else if (tab === 'browse') {
       navigate('/student/browse-jobs')
     } else if (tab === 'profile') {
@@ -119,11 +125,8 @@ export default function StudentDashboard() {
       navigate('/student/resume-builder')
     } else if (tab === 'analytics') {
       navigate('/student/analytics')
-    } else {
-      // For other tabs, just update the state
-      setActiveTab(tab)
     }
-  }
+  };
 
   return (
     <div style={S.page}>
@@ -325,6 +328,21 @@ export default function StudentDashboard() {
                   <div style={S.emptySubText}>Keep applying — interviews will appear here.</div>
                 </div>
               )}
+              {interviews.map(interview => (
+                <div key={interview.id} style={S.appRow}>
+                  <div style={S.appLeftRow}>
+                    <div style={{...S.appAvatar, background: '#EEF2FF', color: '#4338CA'}}>📅</div>
+                    <div style={S.appLeft}>
+                      <div style={S.appTitle}>Interview with {interview.company || 'Company'}</div>
+                      <div style={S.appMeta}>{new Date(interview.scheduled_at).toLocaleDateString()} at {interview.time || 'TBD'}</div>
+                    </div>
+                  </div>
+                  <div style={{...S.statusBadge, background: '#FEF9EE', color: '#B45309'}}>
+                    <span style={{...S.statusDot, background: '#D97706'}}></span>
+                    Scheduled
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
@@ -340,8 +358,27 @@ export default function StudentDashboard() {
                   <div style={S.emptySubText}>Add your skills in your profile to get recommendations.</div>
                 </div>
               )}
+              {recommendedJobs.map(job => {
+                const { color, bg } = getScoreColor(job.score)
+                const a = accentFor(job.company)
+                return (
+                  <div key={job.id} style={{...S.appRow, cursor: 'pointer'}} onClick={() => handleTabChange('browse')}>
+                    <div style={S.appLeftRow}>
+                      <div style={{...S.appAvatar, background: a.bg, color: a.color}}>{initialsFor(job.company)}</div>
+                      <div style={S.appLeft}>
+                        <div style={S.appTitle}>{job.title}</div>
+                        <div style={S.appMeta}>{job.company} · {job.location}</div>
+                      </div>
+                    </div>
+                    <div style={{...S.statusBadge, background: bg, color}}>
+                      {job.score}% Match
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
+
           {activeTab === 'browse' && (
             <div className="cardIn" style={S.card}>
               <div style={S.cardHead}>
