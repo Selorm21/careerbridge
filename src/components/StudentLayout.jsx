@@ -1,472 +1,229 @@
-import { useEffect, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+// src/components/StudentLayout.jsx
+import { Outlet, useLocation, Link } from 'react-router-dom'
+import { useState } from 'react'
 import { supabase } from '../supabase'
-
-const C = {
-  bg: '#F8F9FB',
-  ink: '#0F172A',
-  sub: '#94A3B8',
-  border: '#EEF1F5',
-  card: '#FFFFFF',
-  navText: '#475569',
-  activeBg: '#EEF5FF',
-  activeText: '#2563EB',
-  red: '#DC2626',
-}
-
-const Icon = ({ children, size = 18 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    {children}
-  </svg>
-)
-
-const icons = {
-  overview: (
-    <>
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
-    </>
-  ),
-
-  applications: (
-    <>
-      <path d="M20 6 9 17l-5-5" />
-    </>
-  ),
-
-  recommended: (
-    <>
-      <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
-    </>
-  ),
-
-  interviews: (
-    <>
-      <rect x="3" y="4" width="18" height="17" rx="2" />
-      <path d="M16 2v4M8 2v4M3 10h18" />
-    </>
-  ),
-
-  jobs: (
-    <>
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-4-4" />
-    </>
-  ),
-
-  profile: (
-    <>
-      <circle cx="12" cy="8" r="3.5" />
-      <path d="M5 21c.8-4 3.1-6 7-6s6.2 2 7 6" />
-    </>
-  ),
-
-  resume: (
-    <>
-      <path d="M6 3h9l4 4v14H6z" />
-      <path d="M14 3v5h5M9 13h6M9 17h6" />
-    </>
-  ),
-
-  analytics: (
-    <>
-      <path d="M4 19V5" />
-      <path d="M4 19h17" />
-      <path d="m7 15 4-5 3 2 5-7" />
-    </>
-  ),
-
-  logout: (
-    <>
-      <path d="M10 17l5-5-5-5" />
-      <path d="M15 12H3" />
-      <path d="M21 19V5a2 2 0 0 0-2-2h-5" />
-    </>
-  ),
-}
+import { 
+  LayoutGrid, Search, Sparkles, FileText, CalendarClock, 
+  UserCircle, LogOut, Rocket 
+} from 'lucide-react'
 
 export default function StudentLayout() {
-  const navigate = useNavigate()
-  const location = useLocation()
+  const location = useLocation();
+  const [isHovered, setIsHovered] = useState(false);
 
-  const [profile, setProfile] = useState(null)
-  const [applications, setApplications] = useState([])
-  const [recommendedCount, setRecommendedCount] = useState(0)
-
-  useEffect(() => {
-    async function loadUserData() {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
-
-        if (!user) {
-          navigate('/login')
-          return
-        }
-
-        const [{ data: profileData }, { data: applicationsData }] =
-          await Promise.all([
-            supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', user.id)
-              .single(),
-
-            supabase
-              .from('applications')
-              .select('*')
-              .eq('student_id', user.id),
-          ])
-
-        setProfile(profileData || null)
-        setApplications(applicationsData || [])
-
-        // Count recommended jobs (for badge)
-        const { data: jobsData } = await supabase.from('jobs').select('*')
-        const studentSkills = profileData?.skills || ''
-        const appliedJobIds = applicationsData?.map(a => a.job_id) || []
-
-        if (studentSkills && jobsData) {
-          const skillsList = studentSkills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean)
-          const count = jobsData
-            .filter(job => !appliedJobIds.includes(job.id))
-            .filter(job => {
-              const jobSkills = job.skills?.toLowerCase().split(',').map(s => s.trim()).filter(Boolean) || []
-              return jobSkills.some(skill =>
-                skillsList.some(studentSkill =>
-                  studentSkill.includes(skill) || skill.includes(studentSkill)
-                )
-              )
-            })
-            .length
-          setRecommendedCount(count > 0 ? count : 0)
-        }
-      } catch (error) {
-        console.error('Failed to load student layout:', error)
-      }
-    }
-
-    loadUserData()
-  }, [navigate])
-
-  const initials = (name) => {
-    if (!name) return 'EA'
-
-    return name
-      .split(' ')
-      .map((word) => word[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase()
-  }
-
-  // UPDATED: Navigation items with correct paths
   const navItems = [
-    {
-      label: 'Overview',
-      path: '/student',
-      icon: 'overview',
-    },
-    {
-      label: 'Applications',
-      path: '/student?tab=applications',
-      icon: 'applications',
-      badge: applications.length,
-      isTab: true, // Mark as tab-based navigation
-      tabName: 'applications',
-    },
-    {
-      label: 'Recommended',
-      path: '/student?tab=recommended',
-      icon: 'recommended',
-      badge: recommendedCount,
-      isTab: true,
-      tabName: 'recommended',
-    },
-    {
-      label: 'Interviews',
-      path: '/student?tab=interviews',
-      icon: 'interviews',
-      badge: applications.filter(
-        (application) => application.status === 'interview'
-      ).length,
-      isTab: true,
-      tabName: 'interviews',
-    },
-    {
-      label: 'Browse jobs',
-      path: '/student/browse-jobs',
-      icon: 'jobs',
-    },
-    {
-      label: 'My profile',
-      path: '/student/profile',
-      icon: 'profile',
-    },
-    {
-      label: 'Resume builder',
-      path: '/student/resume-builder',
-      icon: 'resume',
-    },
-    {
-      label: 'Analytics',
-      path: '/student/analytics',
-      icon: 'analytics',
-    },
-  ]
-
-  const isActive = (path) => {
-    if (path === '/student') {
-      return location.pathname === '/student' && !location.search
-    }
-    if (path.includes('?tab=')) {
-      // Check if we're on the student page with the right tab parameter
-      return location.pathname === '/student' && location.search === path.split('?')[1]
-    }
-    return location.pathname.startsWith(path)
-  }
-
-  // UPDATED: Handle navigation with tab support
-  const handleNavigation = (item) => {
-    if (item.isTab) {
-      // For tabs, navigate to /student with the tab parameter
-      navigate(`/student?tab=${item.tabName}`)
-    } else {
-      navigate(item.path)
-    }
-  }
-
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    navigate('/login')
-  }
+    { path: '/student', icon: LayoutGrid, label: 'Overview' },
+    { path: '/student/browse-jobs', icon: Search, label: 'Browse Jobs' },
+    { path: '/student/analytics', icon: Sparkles, label: 'Analytics' },
+    { path: '/student/resume-builder', icon: FileText, label: 'Resume' },
+    { path: '/student/documents', icon: CalendarClock, label: 'Documents' },
+    { path: '/student/profile', icon: UserCircle, label: 'Profile' },
+  ];
 
   return (
-    <div style={styles.app}>
+    <div style={styles.mainWrapper}>
+      
       {/* SIDEBAR */}
-      <aside style={styles.sidebar}>
+      <div 
+        style={{
+          ...styles.sidebar,
+          width: isHovered ? '220px' : '80px',
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         {/* Logo */}
-        <div style={styles.logo}>
-          CareerBridge
+        <div style={styles.logoWrapper}>
+          <div style={styles.logoIcon}>
+            <Rocket size={24} color="#fff" />
+          </div>
+          {isHovered && <span style={styles.brandText}>CareerBridge</span>}
         </div>
 
-        {/* User */}
-        <div style={styles.userSection}>
-          <div style={styles.avatar}>
-            {initials(profile?.full_name || 'Ernest Amuzu')}
-          </div>
-
-          <div>
-            <div style={styles.userName}>
-              {profile?.full_name || 'Ernest Amuzu'}
-            </div>
-
-            <div style={styles.userRole}>
-              Student
-            </div>
-          </div>
-        </div>
-
-        <div style={styles.divider} />
-
-        {/* Navigation */}
-        <nav style={styles.navigation}>
+        {/* Navigation Links */}
+        <div style={styles.navContainer}>
           {navItems.map((item) => {
-            const active = isActive(item.path)
-
+            const isActive = location.pathname === item.path;
             return (
-              <button
-                key={item.label}
-                onClick={() => handleNavigation(item)}
+              <Link 
+                key={item.path} 
+                to={item.path}
                 style={{
-                  ...styles.navButton,
-                  ...(active ? styles.navButtonActive : {}),
+                  ...styles.navItem,
+                  background: isActive ? 'rgba(99, 102, 241, 0.08)' : 'transparent',
+                  justifyContent: isHovered ? 'flex-start' : 'center',
+                  padding: isHovered ? '0 24px' : '0',
+                  textDecoration: 'none',
                 }}
               >
-                <Icon size={18}>
-                  {icons[item.icon]}
-                </Icon>
-
-                <span style={{ flex: 1 }}>
-                  {item.label}
-                </span>
-
-                {item.badge !== undefined && item.badge > 0 && (
-                  <span style={styles.badge}>
-                    {item.badge}
+                <div style={{
+                  ...styles.navIconBox,
+                  background: isActive ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
+                }}>
+                  <item.icon 
+                    size={20} 
+                    color={isActive ? '#6366F1' : '#94A3B8'} 
+                  />
+                </div>
+                
+                {isHovered && (
+                  <span style={{
+                    ...styles.navLabel,
+                    color: isActive ? '#4338CA' : '#64748B',
+                    fontWeight: isActive ? '600' : '500',
+                    marginLeft: '12px',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {item.label}
                   </span>
                 )}
-              </button>
-            )
+                
+                {isActive && <div style={styles.activeIndicator} />}
+              </Link>
+            );
           })}
-        </nav>
+        </div>
 
         {/* Logout */}
-        <button
-          onClick={handleLogout}
-          style={styles.logout}
-        >
-          <Icon size={17}>
-            {icons.logout}
-          </Icon>
+        <div style={styles.logoutSection}>
+          <div 
+            onClick={() => supabase.auth.signOut()}
+            style={{
+              ...styles.navItem,
+              justifyContent: isHovered ? 'flex-start' : 'center',
+              padding: isHovered ? '0 24px' : '0',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={styles.navIconBox}>
+              <LogOut size={20} color="#94A3B8" />
+            </div>
+            {isHovered && (
+              <span style={{...styles.navLabel, marginLeft: '12px', whiteSpace: 'nowrap', color: '#64748B'}}>
+                Log Out
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
 
-          <span>Log out</span>
-        </button>
-      </aside>
-
-      {/* PAGE CONTENT */}
-      <main style={styles.content}>
+      {/* RIGHT SIDE CONTENT */}
+      <div style={{
+        ...styles.contentArea,
+        marginLeft: isHovered ? '220px' : '80px',
+      }}>
         <Outlet />
-      </main>
+      </div>
     </div>
-  )
+  );
 }
 
 const styles = {
-  app: {
-    minHeight: '100vh',
-    background: C.bg,
+  mainWrapper: {
     display: 'flex',
-    fontFamily:
-      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    minHeight: '100vh',
+    background: '#F8FAFC',
+    fontFamily: "'Inter', sans-serif",
   },
-
   sidebar: {
-    width: '358px',
-    flexShrink: 0,
-    background: '#fff',
-    borderRight: `1px solid ${C.border}`,
-    padding: '28px 20px',
-    boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
-    position: 'sticky',
-    top: 0,
     height: '100vh',
+    padding: '24px 0',
+    background: '#FFFFFF',
+    borderRight: '1px solid #F1F5F9',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    zIndex: 100,
+    overflowY: 'auto',
+    transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '2px 0 12px rgba(0,0,0,0.03)',
   },
-
-  logo: {
-    fontSize: '21px',
-    fontWeight: '800',
-    color: C.ink,
-    marginBottom: '22px',
-    paddingLeft: '20px',
-  },
-
-  userSection: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-    padding: '0 20px',
-    marginBottom: '20px',
-  },
-
-  avatar: {
-    width: '50px',
-    height: '50px',
-    borderRadius: '12px',
-    background: 'linear-gradient(135deg, #6366F1, #4F46E5)',
-    color: '#fff',
+  logoWrapper: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '16px',
+    marginBottom: '40px',
+    gap: '12px',
+    width: '100%',
+    padding: '0 16px',
+  },
+  logoIcon: {
+    width: '48px',
+    height: '48px',
+    minWidth: '48px',
+    borderRadius: '16px',
+    background: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+  },
+  brandText: {
+    fontSize: '20px',
     fontWeight: '800',
+    background: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    animation: 'fadeIn 0.3s ease forwards',
   },
-
-  userName: {
-    fontSize: '15px',
-    fontWeight: '700',
-    color: C.ink,
-  },
-
-  userRole: {
-    fontSize: '13px',
-    color: C.sub,
-    marginTop: '3px',
-  },
-
-  divider: {
-    height: '1px',
-    background: '#E5E7EB',
-    margin: '0 20px 25px',
-  },
-
-  navigation: {
+  navContainer: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '5px',
+    gap: '8px',
     flex: 1,
-  },
-
-  navButton: {
     width: '100%',
+  },
+  navItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: '13px',
-    border: 'none',
-    background: 'transparent',
-    color: C.navText,
-    padding: '11px 15px',
+    width: '100%',
+    height: '48px',
     borderRadius: '12px',
     cursor: 'pointer',
-    fontSize: '15px',
-    fontWeight: '600',
-    textAlign: 'left',
-    transition: 'all .15s ease',
+    transition: 'all 0.2s ease',
+    position: 'relative',
   },
-
-  navButtonActive: {
-    background: '#EEF5FF',
-    color: '#2563EB',
-  },
-
-  badge: {
-    minWidth: '24px',
-    height: '22px',
-    padding: '0 6px',
-    borderRadius: '7px',
-    background: C.red,
-    color: '#fff',
+  navIconBox: {
+    width: '32px',
+    height: '32px',
+    minWidth: '32px',
+    borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '11px',
-    fontWeight: '800',
   },
-
-  logout: {
+  navLabel: {
+    fontSize: '14px',
+    lineHeight: '1',
+    animation: 'fadeIn 0.3s ease forwards',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    right: '6px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: '4px',
+    height: '20px',
+    borderRadius: '2px',
+    background: '#6366F1',
+  },
+  logoutSection: {
+    marginTop: 'auto',
     width: '100%',
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: '8px',
-    padding: '11px',
-    background: '#fff',
-    border: `1px solid ${C.border}`,
-    borderRadius: '11px',
-    color: C.navText,
-    fontSize: '14px',
-    fontWeight: '700',
-    cursor: 'pointer',
+    paddingTop: '16px',
+    borderTop: '1px solid #F1F5F9',
   },
-
-  content: {
+  contentArea: {
     flex: 1,
-    minWidth: 0,
-    minHeight: '100vh',
-    overflow: 'hidden',
-  },
-}
+    padding: '24px 32px',
+    maxWidth: '1440px',
+    position: 'relative',
+    width: '100%',
+    transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  }
+};

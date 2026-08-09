@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 
-// Pages - Updated imports to point to the pages folder
+// Pages
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -20,7 +20,7 @@ import DocumentUpload from './pages/DocumentUpload'
 import AdminDashboard from './pages/AdminDashboard'
 import ResumeBuilder from './pages/ResumeBuilder'
 
-// Layout - Updated to point to components folder
+// Layout
 import StudentLayout from './components/StudentLayout'
 
 function App() {
@@ -31,12 +31,9 @@ function App() {
   useEffect(() => {
     let mounted = true
 
-    // Get current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return
-
       setSession(session)
-
       if (session) {
         fetchRole(session.user.id)
       } else {
@@ -44,14 +41,11 @@ function App() {
       }
     })
 
-    // Listen for authentication changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return
-
       setSession(session)
-
       if (session) {
         fetchRole(session.user.id)
       } else {
@@ -88,7 +82,6 @@ function App() {
     }
   }
 
-  // Loading screen
   if (loading) {
     return (
       <div
@@ -111,10 +104,6 @@ function App() {
 
   return (
     <Routes>
-      {/* =====================================================
-          PUBLIC ROUTES
-      ====================================================== */}
-
       <Route
         path="/"
         element={
@@ -134,47 +123,10 @@ function App() {
         }
       />
 
-      <Route
-        path="/login"
-        element={
-          !session ? (
-            <Login />
-          ) : (
-            <Navigate to="/" replace />
-          )
-        }
-      />
+      <Route path="/login" element={!session ? <Login /> : <Navigate to="/" replace />} />
+      <Route path="/signup" element={!session ? <Signup /> : <Navigate to="/" replace />} />
 
-      <Route
-        path="/signup"
-        element={
-          !session ? (
-            <Signup />
-          ) : (
-            <Navigate to="/" replace />
-          )
-        }
-      />
-
-      {/* =====================================================
-          STUDENT APPLICATION
-          
-          StudentLayout is the parent.
-
-          This means:
-          
-          StudentLayout
-              ├── StudentDashboard
-              ├── Analytics
-              ├── BrowseJobs
-              ├── StudentProfile
-              ├── ResumeBuilder
-              └── Documents
-
-          The SAME sidebar remains visible while switching
-          between these pages.
-      ====================================================== */}
-
+      {/* STUDENT ROUTES */}
       <Route
         path="/student"
         element={
@@ -186,180 +138,31 @@ function App() {
         }
       >
         <Route index element={<StudentDashboard />} />
-
-        <Route
-          path="analytics"
-          element={<Analytics />}
-        />
-
-        <Route
-          path="browse-jobs"
-          element={<BrowseJobs />}
-        />
-
-        <Route
-          path="profile"
-          element={<StudentProfile />}
-        />
-
-        <Route
-          path="resume-builder"
-          element={<ResumeBuilder />}
-        />
-
-        <Route
-          path="documents"
-          element={<DocumentUpload />}
-        />
+        <Route path="analytics" element={<Analytics />} />
+        <Route path="browse-jobs" element={<BrowseJobs />} />
+        <Route path="profile" element={<StudentProfile />} />
+        <Route path="resume-builder" element={<ResumeBuilder />} />
+        <Route path="documents" element={<DocumentUpload />} />
       </Route>
 
-      {/* =====================================================
-          EMPLOYER ROUTES
-      ====================================================== */}
+      {/* EMPLOYER ROUTES */}
+      <Route path="/employer" element={session && role === 'employer' ? <EmployerDashboard /> : <Navigate to="/login" replace />} />
+      <Route path="/post-job" element={session && role === 'employer' ? <PostJob /> : <Navigate to="/login" replace />} />
+      <Route path="/applicants/:jobId" element={session && role === 'employer' ? <ViewApplicants /> : <Navigate to="/login" replace />} />
+      <Route path="/schedule/:applicationId" element={session && role === 'employer' ? <ScheduleInterview /> : <Navigate to="/login" replace />} />
 
-      <Route
-        path="/employer"
-        element={
-          session && role === 'employer' ? (
-            <EmployerDashboard />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+      {/* COORDINATOR & ADMIN */}
+      <Route path="/coordinator" element={session && role === 'coordinator' ? <CoordinatorDashboard /> : <Navigate to="/login" replace />} />
+      <Route path="/admin" element={session && role === 'admin' ? <AdminDashboard /> : <Navigate to="/login" replace />} />
 
-      <Route
-        path="/post-job"
-        element={
-          session && role === 'employer' ? (
-            <PostJob />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+      {/* REDIRECTS */}
+      <Route path="/analytics" element={session && role === 'student' ? <Navigate to="/student/analytics" replace /> : <Navigate to="/login" replace />} />
+      <Route path="/browse-jobs" element={session && role === 'student' ? <Navigate to="/student/browse-jobs" replace /> : <Navigate to="/login" replace />} />
+      <Route path="/student-profile" element={session && role === 'student' ? <Navigate to="/student/profile" replace /> : <Navigate to="/login" replace />} />
+      <Route path="/resume-builder" element={session && role === 'student' ? <Navigate to="/student/resume-builder" replace /> : <Navigate to="/login" replace />} />
+      <Route path="/documents" element={session && role === 'student' ? <Navigate to="/student/documents" replace /> : <Navigate to="/login" replace />} />
 
-      <Route
-        path="/applicants/:jobId"
-        element={
-          session && role === 'employer' ? (
-            <ViewApplicants />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-
-      <Route
-        path="/schedule/:applicationId"
-        element={
-          session && role === 'employer' ? (
-            <ScheduleInterview />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-
-      {/* =====================================================
-          COORDINATOR
-      ====================================================== */}
-
-      <Route
-        path="/coordinator"
-        element={
-          session && role === 'coordinator' ? (
-            <CoordinatorDashboard />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-
-      {/* =====================================================
-          ADMIN
-      ====================================================== */}
-
-      <Route
-        path="/admin"
-        element={
-          session && role === 'admin' ? (
-            <AdminDashboard />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-
-      {/* =====================================================
-          OLD / DIRECT ROUTES
-          
-          These redirect to the new student layout routes.
-      ====================================================== */}
-
-      <Route
-        path="/analytics"
-        element={
-          session && role === 'student' ? (
-            <Navigate to="/student/analytics" replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-
-      <Route
-        path="/browse-jobs"
-        element={
-          session && role === 'student' ? (
-            <Navigate to="/student/browse-jobs" replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-
-      <Route
-        path="/student-profile"
-        element={
-          session && role === 'student' ? (
-            <Navigate to="/student/profile" replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-
-      <Route
-        path="/resume-builder"
-        element={
-          session && role === 'student' ? (
-            <Navigate to="/student/resume-builder" replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-
-      <Route
-        path="/documents"
-        element={
-          session && role === 'student' ? (
-            <Navigate to="/student/documents" replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-
-      {/* =====================================================
-          FALLBACK
-      ====================================================== */}
-
-      <Route
-        path="*"
-        element={<Navigate to="/" replace />}
-      />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { supabase } from '../supabase'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { Rocket, Mail, Lock, User, ArrowRight } from 'lucide-react'
 
 export default function Signup() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -33,94 +35,538 @@ export default function Signup() {
   const roles = [
     { value: 'student', icon: '🎓', label: 'Student' },
     { value: 'employer', icon: '🏢', label: 'Employer' },
-    { value: 'coordinator', icon: '🎓', label: 'University Coordinator' },
+    { value: 'coordinator', icon: '📚', label: 'Coordinator' },
     { value: 'admin', icon: '⚙️', label: 'Admin' }
   ]
 
   return (
-    <div style={S.page}>
-      <style>{`
-        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
-        .blobA{animation:float 8s ease-in-out infinite}
-        .blobB{animation:float 10s ease-in-out infinite reverse}
-        .cardIn{animation:fadeUp .6s cubic-bezier(.16,1,.3,1) forwards}
-        .inputF{transition:border-color .2s ease, box-shadow .2s ease}
-        .inputF:focus{outline:none;border-color:#2563EB!important;box-shadow:0 0 0 3px rgba(37,99,235,0.12)}
-        .btnP{transition:all .2s ease}
-        .btnP:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(37,99,235,0.3)!important}
-        .linkBack{transition:opacity .2s ease}
-        .linkBack:hover{opacity:.7}
-        .roleCard{transition:all .2s ease;cursor:pointer}
-      `}</style>
-      <div className="blobA" style={S.blob1}></div>
-      <div className="blobB" style={S.blob2}></div>
-
-      <Link to="/" className="linkBack" style={S.backLink}>← CareerBridge</Link>
-
-      <div className="cardIn" style={S.card}>
-        <h1 style={S.logo}>CareerBridge</h1>
-        <h2 style={S.title}>Create your account</h2>
-        <p style={S.sub}>Join CareerBridge today</p>
-
-        {error && <div style={S.error}>{error}</div>}
-        {success && <div style={S.successBox}>{success} <Link to="/login" style={S.link}>Log in now</Link></div>}
-
-        <form onSubmit={handleSignup}>
-          <div style={S.field}>
-            <label style={S.label}>Full name</label>
-            <input className="inputF" style={S.input} type="text" placeholder="Your full name" value={fullName} onChange={e => setFullName(e.target.value)} required />
+    <div style={styles.page}>
+      
+      {/* 🎨 ANIMATED CINEMATIC BACKGROUND (Teal & Emerald Theme) */}
+      <div style={styles.bgContainer}>
+        <div style={styles.bgGradient}></div>
+        <div style={styles.vignette}></div>
+        
+        {/* Floating Geometric Blobs (Re-colored to Emerald/Teal) */}
+        <div style={{...styles.shape, ...styles.shape1}} className="animShape"></div>
+        <div style={{...styles.shape, ...styles.shape2}} className="animShape"></div>
+        <div style={{...styles.shape, ...styles.shape3}} className="animShape"></div>
+        
+        {/* ✨ ANIMATED SCROLLING TEXT BACKGROUND (Customized for Signup) */}
+        <div className="textScroller" style={styles.textScroller}>
+          <div style={styles.textRow1}>
+            <span>Welcome to the Family • Start Your Journey • </span>
+            <span>Welcome to the Family • Start Your Journey • </span>
+            <span>Welcome to the Family • Start Your Journey • </span>
+            <span>Welcome to the Family • Start Your Journey • </span>
           </div>
-          <div style={S.field}>
-            <label style={S.label}>Email</label>
-            <input className="inputF" style={S.input} type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
+          <div style={styles.textRow2}>
+            <span>Shape Your Future • New Opportunities • </span>
+            <span>Shape Your Future • New Opportunities • </span>
+            <span>Shape Your Future • New Opportunities • </span>
+            <span>Shape Your Future • New Opportunities • </span>
           </div>
-          <div style={S.field}>
-            <label style={S.label}>Password</label>
-            <input className="inputF" style={S.input} type="password" placeholder="Min. 6 characters" value={password} onChange={e => setPassword(e.target.value)} required />
+        </div>
+        
+        <div style={styles.glowSpot}></div>
+      </div>
+
+      {/* 🃏 FLOATING SIGNUP CARD (Green Accents) */}
+      <div className="cardIn" style={styles.signupCard}>
+        <div style={styles.cardGlowBorder}></div>
+        
+        {/* Brand Logo */}
+        <div style={styles.cardLogoContainer}>
+          <div style={styles.logoIconSmall}><Rocket size={18} color="#fff" /></div>
+          <span style={styles.cardLogoText}>CareerBridge</span>
+        </div>
+
+        <div style={styles.cardHeader}>
+          <h2 style={styles.title}>Start your journey</h2>
+          <p style={styles.sub}>Join thousands of students and employers shaping the future.</p>
+        </div>
+
+        {/* Alerts */}
+        {error && <div style={styles.errorBanner}><span style={styles.errorIcon}>!</span> {error}</div>}
+        {success && <div style={styles.successBanner}>✅ {success} <Link to="/login" style={styles.successLink}>Log in now</Link></div>}
+
+        {/* Form */}
+        <form onSubmit={handleSignup} style={styles.form}>
+          
+          <div style={styles.field}>
+            <label style={styles.label}>Full name</label>
+            <div style={styles.inputWrapper}>
+              <User size={18} style={styles.inputIcon} color="#94A3B8" />
+              <input
+                className="inputF"
+                style={styles.input}
+                type="text"
+                placeholder="Your full name"
+                value={fullName}
+                onChange={e => setFullName(e.target.value)}
+                required
+              />
+            </div>
           </div>
-          <div style={S.field}>
-            <label style={S.label}>I am a</label>
-            <div style={S.roleRow}>
+
+          <div style={styles.field}>
+            <label style={styles.label}>Email address</label>
+            <div style={styles.inputWrapper}>
+              <Mail size={18} style={styles.inputIcon} color="#94A3B8" />
+              <input
+                className="inputF"
+                style={styles.input}
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div style={styles.field}>
+            <label style={styles.label}>Password</label>
+            <div style={styles.inputWrapper}>
+              <Lock size={18} style={styles.inputIcon} color="#94A3B8" />
+              <input
+                className="inputF"
+                style={{ ...styles.input, paddingRight: '44px' }}
+                type="password"
+                placeholder="Min. 6 characters"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div style={styles.field}>
+            <label style={styles.label}>I am a...</label>
+            <div style={styles.roleRow}>
               {roles.map(r => (
-                <div key={r.value} className="roleCard" style={{...S.roleCard, ...(role === r.value ? S.roleCardActive : {})}} onClick={() => setRole(r.value)}>
-                  <div style={S.roleIcon}>{r.icon}</div>
-                  <div style={S.roleLabel}>{r.label}</div>
+                <div 
+                  key={r.value} 
+                  className="roleCard" 
+                  style={{...styles.roleCard, ...(role === r.value ? styles.roleCardActive : {})}} 
+                  onClick={() => setRole(r.value)}
+                >
+                  <div style={styles.roleIcon}>{r.icon}</div>
+                  <div style={styles.roleLabel}>{r.label}</div>
                 </div>
               ))}
             </div>
           </div>
-          <button className="btnP" style={S.btn} type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create account'}
+
+          <button className="btnP" style={styles.btn} type="submit" disabled={loading}>
+            {loading ? 'Creating account...' : 'Create account'} 
+            {!loading && <ArrowRight size={18} />}
           </button>
         </form>
 
-        <p style={S.footer}>Already have an account? <Link to="/login" style={S.link}>Log in</Link></p>
+        <p style={styles.footer}>
+          Already have an account? <Link to="/login" style={styles.link}>Log in</Link>
+        </p>
       </div>
+
+      {/* 🎬 GLOBAL ANIMATIONS & MEDIA QUERIES */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        /* Card Entry Animation */
+        @keyframes fadeUp {
+          from { opacity:0; transform:translateY(40px) scale(0.96); }
+          to { opacity:1; transform:translateY(0) scale(1); }
+        }
+        
+        /* Shape Floating Animations */
+        @keyframes floatShape1 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          33% { transform: translate(40px, -40px) rotate(120deg); }
+          66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        @keyframes floatShape2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-50px, 30px) scale(1.1); }
+        }
+        @keyframes floatShape3 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          50% { transform: translate(30px, 30px) rotate(180deg); }
+        }
+        
+        /* Text Scroll Animation */
+        @keyframes scrollTextRight {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes scrollTextLeft {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
+        }
+        
+        .cardIn { animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animShape { animation: floatShape1 20s ease-in-out infinite; }
+        .animShape:nth-child(2) { animation-name: floatShape2; animation-duration: 25s; }
+        .animShape:nth-child(3) { animation-name: floatShape3; animation-duration: 18s; }
+        
+        /* Input Focus States (Changed to Emerald Green) */
+        .inputF { transition: all 0.2s ease; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); }
+        .inputF:focus { 
+          outline: none; 
+          border-color: #10B981 !important; 
+          background: rgba(255,255,255,0.1);
+          box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15) !important; 
+          transform: translateY(-1px);
+        }
+        
+        /* Button States (Changed to Emerald Gradient) */
+        .btnP { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); display: flex; align-items: center; justify-content: center; gap: 8px; position: relative; overflow: hidden; }
+        .btnP:hover:not(:disabled) { transform: translateY(-2px) scale(1.02); box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4) !important; }
+        .btnP:active { transform: scale(0.95); }
+        
+        /* Role Card States */
+        .roleCard { transition: all 0.2s ease; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03); }
+        .roleCard:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
+        
+        @media(max-width: 768px) {
+          .signupCard { max-width: 100% !important; margin: 0 20px; padding: 32px 24px !important; }
+          .roleRow { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
     </div>
   )
 }
 
-const S = {
-  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', position: 'relative', overflow: 'hidden', fontFamily: "'Inter', sans-serif" },
-  blob1: { position: 'absolute', top: '-100px', right: '-100px', width: '340px', height: '340px', borderRadius: '50%', background: 'radial-gradient(circle, #DBEAFE 0%, transparent 70%)' },
-  blob2: { position: 'absolute', bottom: '-120px', left: '-100px', width: '320px', height: '320px', borderRadius: '50%', background: 'radial-gradient(circle, #D1FAE5 0%, transparent 70%)' },
-  backLink: { position: 'absolute', top: '28px', left: '40px', fontSize: '14px', fontWeight: '700', color: '#2563EB', textDecoration: 'none', zIndex: 2 },
-  card: { background: '#fff', padding: '40px 40px', borderRadius: '20px', width: '100%', maxWidth: '480px', boxShadow: '0 24px 60px -12px rgba(15,23,42,0.15)', position: 'relative', zIndex: 1 },
-  logo: { fontSize: '22px', fontWeight: '800', color: '#2563EB', marginBottom: '10px', letterSpacing: '-0.5px' },
-  title: { fontSize: '22px', fontWeight: '800', marginBottom: '5px', color: '#0F172A' },
-  sub: { color: '#94A3B8', fontSize: '14px', marginBottom: '24px' },
-  field: { marginBottom: '16px' },
-  label: { display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '7px', color: '#374151' },
-  input: { width: '100%', padding: '12px 14px', border: '1.5px solid #E5E7EB', borderRadius: '10px', fontSize: '14px', boxSizing: 'border-box' },
-  roleRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' },
-  roleCard: { border: '1.5px solid #E5E7EB', borderRadius: '12px', padding: '16px', textAlign: 'center' },
-  roleCardActive: { border: '1.5px solid #2563EB', background: '#EFF6FF' },
-  roleIcon: { fontSize: '24px', marginBottom: '6px' },
-  roleLabel: { fontSize: '13px', fontWeight: '600', color: '#374151' },
-  btn: { width: '100%', padding: '13px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '14.5px', fontWeight: '700', cursor: 'pointer', marginTop: '8px', boxShadow: '0 4px 12px rgba(37,99,235,0.3)' },
-  error: { background: '#FEF2F2', color: '#DC2626', padding: '11px 14px', borderRadius: '10px', fontSize: '13px', marginBottom: '18px', fontWeight: '500' },
-  successBox: { background: '#ECFDF5', color: '#059669', padding: '11px 14px', borderRadius: '10px', fontSize: '13px', marginBottom: '18px', fontWeight: '500' },
-  footer: { textAlign: 'center', fontSize: '13.5px', color: '#94A3B8', marginTop: '22px' },
-  link: { color: '#2563EB', textDecoration: 'none', fontWeight: '700' }
+// ============================================
+// 🎨 PREMIUM STYLES OBJECT
+// ============================================
+const styles = {
+  page: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontFamily: "'Inter', sans-serif",
+    position: 'relative',
+    overflow: 'hidden',
+    background: '#05100A', // Much darker forest green base
+    padding: '20px',
+  },
+
+  // 🌌 FULL PAGE ANIMATED BACKGROUND
+  bgContainer: {
+    position: 'absolute',
+    inset: 0,
+    zIndex: 0,
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden',
+    background: '#05100A',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bgGradient: {
+    position: 'absolute',
+    inset: 0,
+    background: 'radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.3) 0%, rgba(6, 78, 59, 0.5) 40%, #05100A 100%)',
+  },
+  vignette: {
+    position: 'absolute',
+    inset: 0,
+    background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.7) 100%)',
+  },
+  glowSpot: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '600px',
+    height: '600px',
+    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.15), transparent 70%)',
+    borderRadius: '50%',
+    filter: 'blur(60px)',
+    pointerEvents: 'none',
+  },
+  
+  // ✨ ANIMATED SCROLLING TEXT
+  textScroller: {
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '60px',
+    overflow: 'hidden',
+    pointerEvents: 'none',
+    opacity: 0.10,
+    zIndex: 1,
+  },
+  textRow1: {
+    display: 'flex',
+    whiteSpace: 'nowrap',
+    fontSize: '120px',
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: '-4px',
+    animation: 'scrollTextRight 30s linear infinite',
+  },
+  textRow2: {
+    display: 'flex',
+    whiteSpace: 'nowrap',
+    fontSize: '100px',
+    fontWeight: '800',
+    color: '#6EE7B7', // Teal text instead of Blue
+    letterSpacing: '-3px',
+    animation: 'scrollTextLeft 35s linear infinite',
+  },
+
+  // Floating Shapes (Now Emerald/Teal Tinted)
+  shape: {
+    position: 'absolute',
+    borderRadius: '50%',
+    filter: 'blur(2px)',
+    pointerEvents: 'none',
+    zIndex: 1,
+  },
+  shape1: {
+    top: '10%',
+    left: '10%',
+    width: '300px',
+    height: '300px',
+    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.05))',
+    borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%',
+  },
+  shape2: {
+    bottom: '20%',
+    right: '15%',
+    width: '400px',
+    height: '400px',
+    background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(16, 185, 129, 0.05))',
+    borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%',
+  },
+  shape3: {
+    top: '40%',
+    right: '30%',
+    width: '200px',
+    height: '200px',
+    background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(16, 185, 129, 0.05))',
+    borderRadius: '50%',
+  },
+
+  // 🃏 FLOATING SIGNUP CARD
+  signupCard: {
+    position: 'relative',
+    zIndex: 10,
+    width: '100%',
+    maxWidth: '520px',
+    padding: '40px 36px',
+    borderRadius: '24px',
+    background: 'rgba(5, 16, 10, 0.7)', // Darker forest green glass
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+    border: '1px solid rgba(16, 185, 129, 0.15)', // Green tinted border
+    boxShadow: '0 30px 80px rgba(0, 0, 0, 0.6)',
+    overflow: 'hidden',
+  },
+  cardGlowBorder: {
+    position: 'absolute',
+    inset: 0,
+    borderRadius: '24px',
+    padding: '1px',
+    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.4), transparent 40%, rgba(52, 211, 153, 0.1))',
+    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+    WebkitMaskComposite: 'xor',
+    maskComposite: 'exclude',
+    pointerEvents: 'none',
+  },
+
+  // Card Content
+  cardLogoContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    marginBottom: '24px',
+  },
+  logoIconSmall: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    background: 'linear-gradient(135deg, #10B981, #059669)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+  },
+  cardLogoText: {
+    fontSize: '18px',
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: '-0.5px',
+  },
+  cardHeader: {
+    marginBottom: '24px',
+    textAlign: 'center',
+  },
+  title: {
+    fontSize: '24px',
+    fontWeight: '800',
+    color: '#FFFFFF',
+    margin: '0 0 4px 0',
+    letterSpacing: '-0.5px',
+  },
+  sub: {
+    color: '#94A3B8',
+    fontSize: '14px',
+    margin: 0,
+    lineHeight: 1.5,
+  },
+  
+  // Alerts
+  errorBanner: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    background: 'rgba(239, 68, 68, 0.15)',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+    color: '#FCA5A5',
+    padding: '10px 14px',
+    borderRadius: '12px',
+    fontSize: '13px',
+    fontWeight: '500',
+    marginBottom: '20px',
+  },
+  errorIcon: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '18px',
+    height: '18px',
+    borderRadius: '50%',
+    background: '#EF4444',
+    color: '#fff',
+    fontSize: '11px',
+    fontWeight: '700',
+    flexShrink: 0,
+  },
+  successBanner: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    flexWrap: 'wrap',
+    background: 'rgba(16, 185, 129, 0.15)',
+    color: '#6EE7B7',
+    padding: '10px 14px',
+    borderRadius: '12px',
+    fontSize: '13px',
+    fontWeight: '500',
+    marginBottom: '20px',
+    border: '1px solid rgba(16, 185, 129, 0.2)',
+  },
+  successLink: {
+    color: '#FCD34D',
+    textDecoration: 'underline',
+    fontWeight: '700',
+    marginLeft: '4px',
+  },
+
+  // Form Elements
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '14px',
+  },
+  field: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  label: {
+    display: 'block',
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#CBD5E1',
+  },
+  inputWrapper: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  inputIcon: {
+    position: 'absolute',
+    left: '12px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    pointerEvents: 'none',
+  },
+  input: {
+    width: '100%',
+    padding: '12px 12px 12px 42px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    color: '#F1F5F9',
+    fontFamily: 'inherit',
+    boxSizing: 'border-box',
+  },
+
+  // Role Selection
+  roleRow: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '10px',
+  },
+  roleCard: {
+    borderRadius: '12px',
+    padding: '16px 8px',
+    textAlign: 'center',
+    cursor: 'pointer',
+  },
+  roleCardActive: {
+    border: '1px solid #10B981',
+    background: 'rgba(16, 185, 129, 0.15)',
+    boxShadow: '0 0 20px rgba(16, 185, 129, 0.1)',
+  },
+  roleIcon: {
+    fontSize: '22px',
+    marginBottom: '4px',
+  },
+  roleLabel: {
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#E2E8F0',
+    lineHeight: 1.2,
+  },
+
+  // Buttons & Footer
+  btn: {
+    width: '100%',
+    padding: '12px',
+    background: 'linear-gradient(135deg, #10B981, #059669)',
+    color: '#FFFFFF',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '15px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    marginTop: '4px',
+    boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4)',
+    fontFamily: 'inherit',
+  },
+  footer: {
+    textAlign: 'center',
+    fontSize: '14px',
+    color: '#94A3B8',
+    marginTop: '24px',
+  },
+  link: {
+    color: '#6EE7B7',
+    textDecoration: 'none',
+    fontWeight: '700',
+    transition: 'color 0.2s ease',
+  },
 }

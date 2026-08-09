@@ -6,16 +6,36 @@ export default function Landing() {
   const [scrolled, setScrolled] = useState(false)
   const [visible, setVisible] = useState({})
   const [userRole, setUserRole] = useState('Student')
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const refs = useRef({})
+  const heroRef = useRef(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10)
     window.addEventListener('scroll', onScroll)
+
+    // Mouse tracker for Spotlight effect
+    const onMouseMove = (e) => {
+      if (heroRef.current) {
+        const rect = heroRef.current.getBoundingClientRect()
+        setMousePos({
+          x: ((e.clientX - rect.left) / rect.width) * 100,
+          y: ((e.clientY - rect.top) / rect.height) * 100,
+        })
+      }
+    }
+    window.addEventListener('mousemove', onMouseMove)
+
     const obs = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) setVisible(p => ({ ...p, [e.target.dataset.k]: true })) })
     }, { threshold: 0.12 })
     Object.values(refs.current).forEach(el => el && obs.observe(el))
-    return () => { window.removeEventListener('scroll', onScroll); obs.disconnect() }
+
+    return () => { 
+      window.removeEventListener('scroll', onScroll) 
+      window.removeEventListener('mousemove', onMouseMove)
+      obs.disconnect() 
+    }
   }, [])
 
   const setRef = useCallback(k => el => { refs.current[k] = el }, [])
@@ -24,55 +44,73 @@ export default function Landing() {
   return (
     <div style={S.page}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes floatPanel{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(-1deg)}}
-        @keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-16px)}}
-        .reveal{opacity:0}
-        .reveal.show{animation:fadeUp .7s cubic-bezier(.16,1,.3,1) forwards}
-        .navLink{position:relative;padding:4px 0;transition:color .15s ease;cursor:pointer}
+        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap');
+        
+        * { box-sizing: border-box; }
+        
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes floatPanel{0%,100%{transform:translateY(0px) rotate(0deg)}50%{transform:translateY(-12px) rotate(2deg)}}
+        @keyframes drift{0%,100%{transform:translate(0,0)}33%{transform:translate(15px,-15px)}66%{transform:translate(-10px,10px)}}
+        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+        
+        .reveal{opacity:0; transform: translateY(20px); transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);}
+        .reveal.show{opacity:1; transform: translateY(0);}
+        
+        .navLink{position:relative;padding:4px 0;transition:color .2s ease;cursor:pointer;font-weight:500;}
         .navLink:hover{color:#0F172A!important}
-        .navLink.active::after{content:'';position:absolute;left:0;right:0;bottom:-4px;height:2px;background:#EA4E1B;border-radius:2px}
-        .btnGhost{transition:background .15s ease}
-        .btnGhost:hover{background:#F7F8FA!important}
-        .btnDark{transition:transform .15s ease,box-shadow .15s ease}
-        .btnDark:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(15,23,42,.22)}
-        .ctaPrimary{transition:transform .15s ease,box-shadow .15s ease}
-        .ctaPrimary:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(234,78,27,.38)}
+        .navLink::after{content:'';position:absolute;left:0;right:0;bottom:-4px;height:2px;background:#EA4E1B;border-radius:2px;transform:scaleX(0);transition:transform .2s ease;}
+        .navLink:hover::after{transform:scaleX(1);}
+        
+        .btnGhost{transition:all .2s ease;border: 1px solid transparent;}
+        .btnGhost:hover{background:#F1F5F9!important;border-color:#E2E8F0;}
+        
+        .btnDark{transition:all .2s ease;}
+        .btnDark:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(15,23,42,.25);}
+        
+        .ctaPrimary{transition:all .2s ease;}
+        .ctaPrimary:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(234,78,27,.4);}
+        
         .roleBtn{transition:all .15s ease;cursor:pointer}
-        .roleBtn:hover:not(.active){background:#EDEEF1!important}
-        .blob{animation:drift 12s ease-in-out infinite}
-        .miniMockup{animation:floatPanel 6s ease-in-out infinite}
-        .featureCard{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
-        .featureCard:hover{transform:translateY(-4px);box-shadow:0 16px 32px rgba(15,23,42,.08);border-color:transparent}
-        .testiCard{transition:transform .2s ease,box-shadow .2s ease}
-        .testiCard:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(15,23,42,.08)}
-        .footerLink{transition:color .15s ease}
+        .roleBtn:hover:not(.active){background:#F1F5F9!important}
+        
+        .floaty{transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);}
+        .floaty:hover{transform: scale(1.05) translateY(-5px)!important;}
+        
+        .featureCard{transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid #E2E8F0;}
+        .featureCard:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 20px 40px rgba(15,23,42,.06);border-color:#EA4E1B;}
+        
+        .testiCard{transition:all .3s ease; border: 1px solid #E2E8F0;}
+        .testiCard:hover{transform:translateY(-6px);box-shadow:0 16px 32px rgba(15,23,42,.06);border-color:#0F172A;}
+        
+        .footerLink{transition:color .2s ease;cursor:pointer}
         .footerLink:hover{color:#EA4E1B!important}
-        .ctaWhite{transition:opacity .15s ease}
-        .ctaWhite:hover{opacity:.9}
-        .ctaOutline{transition:background .15s ease}
-        .ctaOutline:hover{background:rgba(255,255,255,.08)}
+        
+        .ctaWhite{transition:transform .15s ease,box-shadow .15s ease}
+        .ctaWhite:hover{transform:scale(1.02);box-shadow:0 8px 20px rgba(255,255,255,.2);}
+        
+        .ctaOutline{transition: all .2s ease;}
+        .ctaOutline:hover{background:rgba(255,255,255,.1);border-color:#fff;}
 
         @media(max-width:1024px){
-          .heroInner{grid-template-columns:1fr!important}
-          .statsGrid{grid-template-columns:1fr 1fr!important}
+          .heroInner{grid-template-columns:1fr!important; gap: 40px!important;}
           .featuresGrid{grid-template-columns:1fr 1fr!important}
           .stepsGrid{grid-template-columns:1fr 1fr!important;row-gap:36px!important}
           .stepsLine{display:none!important}
           .testimonialGrid{grid-template-columns:1fr!important}
-          .footerGrid{grid-template-columns:1fr 1fr!important}
+          .footerGrid{grid-template-columns:1fr 1fr!important; gap: 40px!important;}
         }
-        @media(max-width:640px){
+        @media(max-width:768px){
           .navCenter{display:none!important}
-          .h1{font-size:32px!important;letter-spacing:-1px!important}
-          .statsGrid{grid-template-columns:1fr 1fr!important}
+          .h1{font-size:36px!important;letter-spacing:-1px!important}
           .featuresGrid{grid-template-columns:1fr!important}
           .stepsGrid{grid-template-columns:1fr!important}
-          .searchRow{flex-direction:column!important}
+          .searchRow{flex-direction:column!important; align-items: stretch!important;}
+          .searchBox{width: 100%!important;}
           .miniMockup{display:none!important}
           .floaty{display:none!important}
-          .impactContent{flex-direction:column!important;align-items:flex-start!important}
+          .impactContent{flex-direction:column!important;align-items:flex-start!important; gap: 20px!important;}
+          .statsGrid{grid-template-columns:1fr 1fr!important}
+          .statDivider{border-right: none!important; border-bottom: 1px solid #E2E8F0;}
         }
       `}</style>
 
@@ -80,15 +118,16 @@ export default function Landing() {
       <nav style={{...S.nav, ...(scrolled ? S.navScrolled : {})}}>
         <div style={S.logoRow}>
           <div style={S.logoMark}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
-              <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
-              <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.84-1 .5-2.5.5-2.5s-1.5-.34-2.5.5z" />
+              <path d="M11.5 4.5c1.5-1.26 5-2 5-2s.5 3.74-2 5c-1 .84-2.5.5-2.5.5s-.34-1.5.5-2.5z" />
+              <path d="M15.5 8.5c3 3 5 7 5 10s-3 3-5 2-7-2-10-5c-.84 1-1.5 2.5-1.5 2.5s-1.5-.34-2.5.5c-1.26 1.5-2 5-2 5s3.74-.5 5-2c.84-1 .5-2.5.5-2.5s2.5-1.5 3.5-2.5c-3-3-5-7-5-10s3-3 5-2 7 2 10 5z" />
             </svg>
           </div>
           <span style={S.logoText}>CareerBridge</span>
         </div>
         <div style={S.navCenter} className="navCenter">
-          <span className="navLink active" style={S.navLink}>Home</span>
+          <span className="navLink" style={S.navLink}>Home</span>
           <span className="navLink" style={S.navLink} onClick={() => navigate('/browse-jobs')}>Browse Jobs</span>
           <span className="navLink" style={S.navLink}>For Universities</span>
           <span className="navLink" style={S.navLink}>For Employers</span>
@@ -101,12 +140,19 @@ export default function Landing() {
       </nav>
 
       {/* Hero */}
-      <section style={S.hero}>
+      <section ref={heroRef} style={S.hero}>
+        {/* Dynamic glowing spotlight effect */}
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+          background: `radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(234, 78, 27, 0.08), transparent 40%)`
+        }} />
+        
         <div className="blob" style={S.blob1}></div>
         <div className="blob" style={{...S.blob2, animationDelay: '3s'}}></div>
+        <div style={S.gridBg}></div>
 
         <div style={S.heroInner} className="heroInner">
-          <div>
+          <div style={{position: 'relative', zIndex: 1}}>
             <div style={S.eyebrow}>
               <span style={S.dots}>
                 <span style={{...S.dot, opacity: .5}}></span>
@@ -116,13 +162,13 @@ export default function Landing() {
               Trusted by 500+ universities
             </div>
 
-            <h1 style={S.h1} className="h1">Where students, universities <span style={S.h1Accent}>&amp; employers</span> connect</h1>
-            <p style={S.lead}>CareerBridge is the all-in-one platform that links ambitious students with leading employers — powered by real university partnerships and actionable analytics.</p>
+            <h1 style={S.h1} className="h1">Where <span style={S.h1Accent}>students</span>, universities <span style={S.h1Accent}>&amp; employers</span> connect</h1>
+            <p style={S.lead}>CareerBridge is the all-in-one platform linking ambitious students with leading employers. Powered by real partnerships and actionable analytics.</p>
 
             <div style={S.searchRow} className="searchRow">
               <div style={S.searchBox}>
                 <span style={S.searchIcon}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8593A6" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
                 </span>
                 <input type="text" placeholder="Search roles, companies, skills..." style={S.searchInput} />
               </div>
@@ -144,16 +190,15 @@ export default function Landing() {
                 ))}
               </div>
             </div>
-            <div style={S.heroHint}>Discover internships and graduate roles matched to your degree.</div>
           </div>
 
-          <div style={S.photoWrap}>
+          <div style={{...S.photoWrap, position: 'relative', zIndex: 1}}>
             <div className="floaty" style={S.floaty1}>
               <span style={{...S.floatyDot, background: '#0E9C8F'}}></span> 92% placement rate
             </div>
             <img
               style={S.heroPhoto}
-              alt="Students collaborating on laptops in a university setting"
+              alt="Students collaborating on laptops"
               src="https://images.unsplash.com/photo-1758270705290-62b6294dd044?fm=jpg&q=70&w=900&auto=format&fit=crop"
             />
             <div className="miniMockup" style={S.miniMockup}>
@@ -163,7 +208,7 @@ export default function Landing() {
               </div>
               <div style={S.mmBars}>
                 {[35, 55, 40, 70, 60, 85, 95].map((h, i) => (
-                  <div key={i} style={{...S.mmBar, height: `${h}%`}}></div>
+                  <div key={i} style={{...S.mmBar, height: `${h}%`, animationDelay: `${i * 0.1}s`}}></div>
                 ))}
               </div>
             </div>
@@ -195,7 +240,7 @@ export default function Landing() {
       <section style={S.section}>
         <div className={`reveal ${v('feat')}`} ref={setRef('feat')} data-k="feat" style={S.sectionHead}>
           <h2 style={S.h2}>Everything you need to bridge the gap</h2>
-          <p style={S.sectionSub}>A single platform that brings together job discovery, partnerships, and insight.</p>
+          <p style={S.sectionSub}>A single platform bringing together job discovery, partnerships, and insight.</p>
         </div>
 
         <div style={S.featuresGrid} className="featuresGrid">
@@ -218,7 +263,7 @@ export default function Landing() {
       <section style={{...S.section, paddingTop: 0}}>
         <div className={`reveal ${v('steps')}`} ref={setRef('steps')} data-k="steps" style={S.sectionHead}>
           <h2 style={S.h2}>How it works</h2>
-          <p style={S.sectionSub}>From profile to placement in four steps.</p>
+          <p style={S.sectionSub}>From profile to placement in four seamless steps.</p>
         </div>
 
         <div style={S.stepsWrap}>
@@ -308,9 +353,10 @@ export default function Landing() {
           <div>
             <div style={S.logoRow}>
               <div style={S.logoMark}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
-                  <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
-                  <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.84-1 .5-2.5.5-2.5s-1.5-.34-2.5.5z" />
+                  <path d="M11.5 4.5c1.5-1.26 5-2 5-2s.5 3.74-2 5c-1 .84-2.5.5-2.5.5s-.34-1.5.5-2.5z" />
+                  <path d="M15.5 8.5c3 3 5 7 5 10s-3 3-5 2-7-2-10-5c-.84 1-1.5 2.5-1.5 2.5s-1.5-.34-2.5.5c-1.26 1.5-2 5-2 5s3.74-.5 5-2c.84-1 .5-2.5.5-2.5s2.5-1.5 3.5-2.5c-3-3-5-7-5-10s3-3 5-2 7 2 10 5z" />
                 </svg>
               </div>
               <span style={S.logoText}>CareerBridge</span>
@@ -357,122 +403,123 @@ const S = {
   wrap: { maxWidth: '1180px', margin: '0 auto' },
 
   /* Nav */
-  nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 48px', position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #ECEFF3' },
-  navScrolled: { boxShadow: '0 1px 2px rgba(0,0,0,0.05)' },
-  logoRow: { display: 'flex', alignItems: 'center', gap: '9px' },
-  logoMark: { width: '26px', height: '26px', borderRadius: '8px', background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  logoText: { fontWeight: '800', fontSize: '17px', letterSpacing: '-.4px', color: '#0F172A' },
-  navCenter: { display: 'flex', gap: '30px', alignItems: 'center' },
-  navLink: { fontSize: '13.5px', fontWeight: '600', color: '#8593A6' },
+  nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 48px', position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,.75)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #F1F5F9' },
+  navScrolled: { boxShadow: '0 4px 20px rgba(0,0,0,0.03)' },
+  logoRow: { display: 'flex', alignItems: 'center', gap: '10px' },
+  logoMark: { width: '32px', height: '32px', borderRadius: '10px', background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(15,23,42,0.15)' },
+  logoText: { fontWeight: '800', fontSize: '18px', letterSpacing: '-.4px', color: '#0F172A' },
+  navCenter: { display: 'flex', gap: '32px', alignItems: 'center' },
+  navLink: { fontSize: '14px', fontWeight: '600', color: '#64748B' },
   navRight: { display: 'flex', alignItems: 'center', gap: '10px' },
-  loginBtn: { padding: '9px 16px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '13.5px', fontWeight: '700', borderRadius: '9px', color: '#0F172A' },
-  signupBtn: { padding: '9px 18px', background: '#0F172A', color: '#fff', border: 'none', borderRadius: '9px', cursor: 'pointer', fontSize: '13.5px', fontWeight: '700' },
+  loginBtn: { padding: '10px 18px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '700', borderRadius: '10px', color: '#0F172A' },
+  signupBtn: { padding: '10px 20px', background: '#0F172A', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '700' },
 
   /* Hero */
-  hero: { position: 'relative', overflow: 'hidden', padding: '76px 48px 64px' },
-  blob1: { position: 'absolute', width: '420px', height: '420px', borderRadius: '50%', filter: 'blur(60px)', opacity: .35, background: '#EA4E1B', top: '-160px', right: '-120px', zIndex: 0 },
-  blob2: { position: 'absolute', width: '320px', height: '320px', borderRadius: '50%', filter: 'blur(60px)', opacity: .18, background: '#0E9C8F', bottom: '-140px', right: '220px', zIndex: 0 },
-  heroInner: { position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: '1.05fr .95fr', gap: '56px', alignItems: 'center', maxWidth: '1180px', margin: '0 auto' },
+  hero: { position: 'relative', overflow: 'hidden', padding: '80px 48px 80px' },
+  gridBg: { position: 'absolute', inset: 0, zIndex: 0, opacity: 0.4, backgroundImage: `radial-gradient(#E2E8F0 1px, transparent 1px)`, backgroundSize: '32px 32px' },
+  blob1: { position: 'absolute', width: '500px', height: '500px', borderRadius: '50%', filter: 'blur(80px)', opacity: .15, background: '#EA4E1B', top: '-180px', right: '-160px', zIndex: 0, animation: 'drift 16s ease-in-out infinite' },
+  blob2: { position: 'absolute', width: '400px', height: '400px', borderRadius: '50%', filter: 'blur(80px)', opacity: .1, background: '#0E9C8F', bottom: '-160px', right: '200px', zIndex: 0, animation: 'drift 14s ease-in-out infinite' },
+  heroInner: { position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: '1.1fr .9fr', gap: '60px', alignItems: 'center', maxWidth: '1180px', margin: '0 auto' },
 
-  eyebrow: { display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', fontWeight: '700', letterSpacing: '.09em', color: '#8593A6', textTransform: 'uppercase', marginBottom: '18px' },
-  dots: { display: 'flex', gap: '4px' },
+  eyebrow: { display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '12px', fontWeight: '700', letterSpacing: '.05em', color: '#64748B', textTransform: 'uppercase', marginBottom: '20px' },
+  dots: { display: 'flex', gap: '5px' },
   dot: { width: '6px', height: '6px', borderRadius: '50%', background: '#EA4E1B' },
 
-  h1: { fontSize: '52px', lineHeight: '1.04', fontWeight: '800', letterSpacing: '-1.6px', marginBottom: '20px', color: '#0F172A' },
+  h1: { fontSize: '54px', lineHeight: '1.05', fontWeight: '900', letterSpacing: '-2px', marginBottom: '24px', color: '#0F172A' },
   h1Accent: { color: '#EA4E1B' },
-  lead: { fontSize: '16px', lineHeight: '1.6', color: '#8593A6', maxWidth: '480px', marginBottom: '28px' },
+  lead: { fontSize: '17px', lineHeight: '1.6', color: '#64748B', maxWidth: '480px', marginBottom: '32px' },
 
-  searchRow: { display: 'flex', gap: '10px', marginBottom: '20px', maxWidth: '520px' },
-  searchBox: { flex: 1, display: 'flex', alignItems: 'center', gap: '10px', background: '#fff', border: '1.5px solid #ECEFF3', borderRadius: '12px', padding: '0 16px', boxShadow: '0 2px 10px rgba(15,23,42,.03)' },
+  searchRow: { display: 'flex', gap: '12px', marginBottom: '24px', maxWidth: '540px' },
+  searchBox: { flex: 1, display: 'flex', alignItems: 'center', gap: '12px', background: '#fff', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '0 16px', boxShadow: '0 2px 10px rgba(15,23,42,.02)' },
   searchIcon: { display: 'flex', flexShrink: 0 },
-  searchInput: { border: 'none', outline: 'none', padding: '14px 0', fontSize: '14px', fontFamily: 'inherit', flex: 1, color: '#0F172A', background: 'transparent', width: '100%' },
-  ctaPrimary: { padding: '14px 24px', background: '#EA4E1B', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 6px 18px rgba(234,78,27,.3)', whiteSpace: 'nowrap' },
+  searchInput: { border: 'none', outline: 'none', padding: '15px 0', fontSize: '15px', fontFamily: 'inherit', flex: 1, color: '#0F172A', background: 'transparent', width: '100%' },
+  ctaPrimary: { padding: '15px 28px', background: '#EA4E1B', color: '#fff', border: 'none', borderRadius: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 6px 20px rgba(234,78,27,.25)', whiteSpace: 'nowrap' },
 
-  whoRow: { display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12.5px', fontWeight: '600', color: '#8593A6', marginBottom: '10px' },
-  segmented: { display: 'inline-flex', gap: '3px', background: '#F7F8FA', padding: '3px', borderRadius: '10px' },
-  segBtn: { padding: '7px 15px', borderRadius: '8px', fontSize: '13px', fontWeight: '700', color: '#8593A6' },
-  segBtnActive: { background: '#0F172A', color: '#fff' },
-  heroHint: { fontSize: '12.5px', color: '#8593A6', marginTop: '14px' },
+  whoRow: { display: 'flex', alignItems: 'center', gap: '16px', fontSize: '13px', fontWeight: '600', color: '#64748B', marginBottom: '10px' },
+  segmented: { display: 'inline-flex', gap: '4px', background: '#F1F5F9', padding: '4px', borderRadius: '12px' },
+  segBtn: { padding: '8px 18px', borderRadius: '9px', fontSize: '13px', fontWeight: '700', color: '#64748B' },
+  segBtnActive: { background: '#0F172A', color: '#fff', boxShadow: '0 2px 8px rgba(15,23,42,0.1)' },
+  heroHint: { fontSize: '13px', color: '#94A3B8', marginTop: '14px' },
 
   photoWrap: { position: 'relative' },
-  heroPhoto: { width: '100%', aspectRatio: '4 / 4.6', objectFit: 'cover', borderRadius: '22px', boxShadow: '0 30px 60px -18px rgba(15,23,42,.28), 0 10px 24px rgba(15,23,42,.08)' },
-  miniMockup: { position: 'absolute', left: '-8%', bottom: '-10%', width: '62%', minWidth: '220px', background: '#fff', borderRadius: '16px', border: '1px solid #ECEFF3', boxShadow: '0 20px 40px rgba(15,23,42,.2)', padding: '14px 16px' },
-  mmTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' },
-  mmLabel: { fontSize: '10px', fontWeight: '700', color: '#8593A6', textTransform: 'uppercase', letterSpacing: '.05em' },
-  mmPct: { fontSize: '22px', fontWeight: '800', color: '#EA4E1B' },
-  mmBars: { display: 'flex', alignItems: 'flex-end', gap: '4px', height: '36px' },
-  mmBar: { flex: 1, background: 'linear-gradient(180deg,#EA4E1B,#ff8a5c)', borderRadius: '2px 2px 0 0' },
-  floaty1: { position: 'absolute', top: '8%', left: '-8%', background: '#fff', border: '1px solid #ECEFF3', borderRadius: '12px', boxShadow: '0 14px 30px rgba(15,23,42,.14)', padding: '10px 14px', fontSize: '12px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' },
-  floaty2: { position: 'absolute', bottom: '10%', right: '-10%', background: '#fff', border: '1px solid #ECEFF3', borderRadius: '12px', boxShadow: '0 14px 30px rgba(15,23,42,.14)', padding: '10px 14px', fontSize: '12px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' },
-  floatyDot: { width: '8px', height: '8px', borderRadius: '50%' },
+  heroPhoto: { width: '100%', aspectRatio: '4 / 5', objectFit: 'cover', borderRadius: '28px', boxShadow: '0 40px 70px -20px rgba(15,23,42,.25)' },
+  miniMockup: { position: 'absolute', left: '-10%', bottom: '-8%', width: '65%', minWidth: '230px', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.6)', boxShadow: '0 24px 48px rgba(15,23,42,.15)', padding: '16px 18px' },
+  mmTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' },
+  mmLabel: { fontSize: '11px', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: '.05em' },
+  mmPct: { fontSize: '24px', fontWeight: '900', color: '#EA4E1B' },
+  mmBars: { display: 'flex', alignItems: 'flex-end', gap: '5px', height: '40px' },
+  mmBar: { flex: 1, background: 'linear-gradient(180deg,#EA4E1B,#f97316)', borderRadius: '3px 3px 0 0', animation: 'shimmer 2s infinite', backgroundSize: '200% 100%' },
+  floaty1: { position: 'absolute', top: '6%', left: '-12%', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '14px', boxShadow: '0 16px 32px rgba(15,23,42,.08)', padding: '12px 18px', fontSize: '13px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '10px', color: '#0F172A' },
+  floaty2: { position: 'absolute', bottom: '6%', right: '-14%', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '14px', boxShadow: '0 16px 32px rgba(15,23,42,.08)', padding: '12px 18px', fontSize: '13px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '10px', color: '#0F172A' },
+  floatyDot: { width: '10px', height: '10px', borderRadius: '50%' },
 
   /* Stats */
-  statsSection: { background: '#F7F8FA', borderTop: '1px solid #ECEFF3', borderBottom: '1px solid #ECEFF3', padding: '40px 48px' },
+  statsSection: { background: '#F8FAFC', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0', padding: '32px 48px' },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', maxWidth: '1180px', margin: '0 auto' },
-  stat: { textAlign: 'center', padding: '0 16px', position: 'relative' },
-  statDivider: { borderRight: '1px solid #ECEFF3' },
-  statNum: { fontSize: '30px', fontWeight: '800', letterSpacing: '-1px', color: '#0F172A' },
-  statLabel: { fontSize: '12.5px', color: '#8593A6', fontWeight: '600', marginTop: '4px' },
+  stat: { textAlign: 'center', padding: '8px 16px', position: 'relative' },
+  statDivider: { borderRight: '1px solid #E2E8F0' },
+  statNum: { fontSize: '32px', fontWeight: '900', letterSpacing: '-1px', color: '#0F172A' },
+  statLabel: { fontSize: '13px', color: '#64748B', fontWeight: '600', marginTop: '4px' },
 
   /* Shared section */
   section: { maxWidth: '1180px', margin: '0 auto', padding: '88px 48px' },
   sectionHead: { textAlign: 'center', maxWidth: '560px', margin: '0 auto 48px' },
-  h2: { fontSize: '32px', fontWeight: '800', letterSpacing: '-.8px', marginBottom: '10px', color: '#0F172A' },
-  sectionSub: { fontSize: '14.5px', color: '#8593A6' },
+  h2: { fontSize: '36px', fontWeight: '900', letterSpacing: '-1px', marginBottom: '10px', color: '#0F172A' },
+  sectionSub: { fontSize: '15px', color: '#64748B' },
 
   /* Features */
-  featuresGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px' },
-  featureCard: { background: '#fff', border: '1px solid #ECEFF3', borderRadius: '16px', padding: '24px' },
-  featureIcon: { width: '42px', height: '42px', borderRadius: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '19px' },
-  featureTitle: { fontSize: '15px', fontWeight: '800', marginBottom: '7px', color: '#0F172A' },
-  featureDesc: { fontSize: '13px', color: '#8593A6', lineHeight: '1.55' },
+  featuresGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' },
+  featureCard: { background: '#fff', borderRadius: '20px', padding: '28px 24px' },
+  featureIcon: { width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '18px', fontSize: '22px' },
+  featureTitle: { fontSize: '16px', fontWeight: '800', marginBottom: '6px', color: '#0F172A' },
+  featureDesc: { fontSize: '14px', color: '#64748B', lineHeight: '1.6' },
 
   /* Steps */
   stepsWrap: { position: 'relative' },
-  stepsLine: { position: 'absolute', top: '22px', left: '12.5%', right: '12.5%', height: '1.5px', background: 'repeating-linear-gradient(to right, #ECEFF3 0 6px, transparent 6px 12px)' },
+  stepsLine: { position: 'absolute', top: '22px', left: '12.5%', right: '12.5%', height: '2px', background: 'repeating-linear-gradient(to right, #E2E8F0 0 8px, transparent 8px 16px)' },
   stepsGrid: { position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' },
   step: { position: 'relative', textAlign: 'center' },
-  stepNum: { width: '44px', height: '44px', borderRadius: '50%', color: '#fff', fontWeight: '800', fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', position: 'relative', zIndex: 1 },
-  stepTitle: { fontSize: '14.5px', fontWeight: '800', marginBottom: '6px', color: '#0F172A' },
-  stepDesc: { fontSize: '12.5px', color: '#8593A6', lineHeight: '1.5', maxWidth: '200px', margin: '0 auto' },
+  stepNum: { width: '44px', height: '44px', borderRadius: '50%', color: '#fff', fontWeight: '800', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', position: 'relative', zIndex: 1, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' },
+  stepTitle: { fontSize: '16px', fontWeight: '800', marginBottom: '6px', color: '#0F172A' },
+  stepDesc: { fontSize: '13px', color: '#64748B', lineHeight: '1.6', maxWidth: '200px', margin: '0 auto' },
 
   /* Testimonials */
-  testiSection: { background: '#F7F8FA', padding: '88px 48px' },
-  testimonialGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px' },
-  testiCard: { background: '#fff', border: '1px solid #ECEFF3', borderRadius: '16px', padding: '22px', boxShadow: '0 2px 10px rgba(15,23,42,.03)' },
-  stars: { color: '#F0A93A', fontSize: '13px', letterSpacing: '2px', marginBottom: '12px' },
-  testiQuote: { fontSize: '13.5px', lineHeight: '1.6', color: '#0F172A', marginBottom: '18px' },
-  testiPerson: { display: 'flex', alignItems: 'center', gap: '10px' },
-  testiAvatar: { width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '800', fontSize: '13px', flexShrink: 0 },
-  testiName: { fontSize: '13px', fontWeight: '700', color: '#0F172A' },
-  testiRole: { fontSize: '11.5px', color: '#8593A6' },
+  testiSection: { background: '#F8FAFC', padding: '88px 48px' },
+  testimonialGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' },
+  testiCard: { background: '#fff', borderRadius: '20px', padding: '28px 24px', boxShadow: '0 2px 10px rgba(15,23,42,.02)' },
+  stars: { color: '#F0A93A', fontSize: '14px', letterSpacing: '2px', marginBottom: '12px' },
+  testiQuote: { fontSize: '14px', lineHeight: '1.6', color: '#0F172A', marginBottom: '20px' },
+  testiPerson: { display: 'flex', alignItems: 'center', gap: '12px' },
+  testiAvatar: { width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '800', fontSize: '14px', flexShrink: 0 },
+  testiName: { fontSize: '14px', fontWeight: '700', color: '#0F172A' },
+  testiRole: { fontSize: '12px', color: '#64748B' },
 
   /* Impact band */
-  impactBand: { position: 'relative', borderRadius: '24px', overflow: 'hidden', minHeight: '320px', display: 'flex', alignItems: 'flex-end' },
+  impactBand: { position: 'relative', borderRadius: '28px', overflow: 'hidden', minHeight: '340px', display: 'flex', alignItems: 'flex-end' },
   impactImg: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 },
-  impactOverlay: { position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(11,20,33,.88) 10%, rgba(11,20,33,.25) 60%, rgba(11,20,33,.05))', zIndex: 1 },
-  impactContent: { position: 'relative', zIndex: 2, padding: '36px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%', gap: '24px', flexWrap: 'wrap' },
-  impactTitle: { color: '#fff', fontSize: '24px', fontWeight: '800', letterSpacing: '-.5px', maxWidth: '420px', lineHeight: '1.25' },
-  impactStats: { display: 'flex', gap: '28px' },
-  impactStatN: { color: '#fff', fontSize: '26px', fontWeight: '800' },
-  impactStatL: { color: '#CBD5E1', fontSize: '11.5px', fontWeight: '600' },
+  impactOverlay: { position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(11,20,33,.92) 10%, rgba(11,20,33,.2) 60%, rgba(11,20,33,0))', zIndex: 1 },
+  impactContent: { position: 'relative', zIndex: 2, padding: '40px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%', gap: '24px', flexWrap: 'wrap' },
+  impactTitle: { color: '#fff', fontSize: '26px', fontWeight: '900', letterSpacing: '-.5px', maxWidth: '420px', lineHeight: '1.25' },
+  impactStats: { display: 'flex', gap: '32px' },
+  impactStatN: { color: '#fff', fontSize: '28px', fontWeight: '900' },
+  impactStatL: { color: '#CBD5E1', fontSize: '12px', fontWeight: '600' },
 
   /* CTA */
-  ctaBlock: { background: '#0F172A', borderRadius: '24px', padding: '64px 40px', textAlign: 'center', position: 'relative', overflow: 'hidden' },
-  ctaGlow: { position: 'absolute', width: '300px', height: '300px', background: '#EA4E1B', opacity: .25, filter: 'blur(80px)', borderRadius: '50%', top: '-100px', left: '-60px' },
-  ctaTitle: { position: 'relative', fontSize: '38px', fontWeight: '800', color: '#fff', letterSpacing: '-1px', maxWidth: '560px', margin: '0 auto 14px', lineHeight: '1.15' },
-  ctaSub: { position: 'relative', fontSize: '14.5px', color: '#94A3B8', marginBottom: '28px', maxWidth: '560px', marginLeft: 'auto', marginRight: 'auto' },
+  ctaBlock: { background: '#0F172A', borderRadius: '28px', padding: '72px 40px', textAlign: 'center', position: 'relative', overflow: 'hidden' },
+  ctaGlow: { position: 'absolute', width: '400px', height: '400px', background: '#EA4E1B', opacity: .15, filter: 'blur(80px)', borderRadius: '50%', top: '-150px', left: '-100px' },
+  ctaTitle: { position: 'relative', fontSize: '42px', fontWeight: '900', color: '#fff', letterSpacing: '-1px', maxWidth: '560px', margin: '0 auto 14px', lineHeight: '1.15' },
+  ctaSub: { position: 'relative', fontSize: '15px', color: '#94A3B8', marginBottom: '32px', maxWidth: '560px', marginLeft: 'auto', marginRight: 'auto' },
   ctaButtons: { position: 'relative', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' },
-  ctaWhite: { padding: '13px 24px', background: '#fff', color: '#0F172A', border: 'none', borderRadius: '11px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
-  ctaOutline: { padding: '13px 24px', background: 'transparent', color: '#fff', border: '1.5px solid rgba(255,255,255,.3)', borderRadius: '11px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
+  ctaWhite: { padding: '14px 28px', background: '#fff', color: '#0F172A', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' },
+  ctaOutline: { padding: '14px 28px', background: 'transparent', color: '#fff', border: '1.5px solid rgba(255,255,255,.15)', borderRadius: '12px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' },
 
   /* Footer */
-  footer: { borderTop: '1px solid #ECEFF3', padding: '56px 48px 28px' },
-  footerGrid: { display: 'grid', gridTemplateColumns: '1.4fr repeat(3, 1fr)', gap: '32px', maxWidth: '1180px', margin: '0 auto 40px' },
-  footerTag: { fontSize: '13px', color: '#8593A6', lineHeight: '1.6', maxWidth: '220px', marginTop: '12px' },
-  footerHead: { fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '.06em', color: '#8593A6', marginBottom: '14px' },
-  footerLink: { display: 'block', fontSize: '13.5px', color: '#0F172A', fontWeight: '500', marginBottom: '10px', cursor: 'pointer' },
-  footerBottom: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '24px', borderTop: '1px solid #ECEFF3', fontSize: '12.5px', color: '#8593A6', flexWrap: 'wrap', gap: '12px', maxWidth: '1180px', margin: '0 auto' },
+  footer: { borderTop: '1px solid #E2E8F0', padding: '56px 48px 28px' },
+  footerGrid: { display: 'grid', gridTemplateColumns: '1.4fr repeat(3, 1fr)', gap: '40px', maxWidth: '1180px', margin: '0 auto 48px' },
+  footerTag: { fontSize: '14px', color: '#64748B', lineHeight: '1.6', maxWidth: '240px', marginTop: '12px' },
+  footerHead: { fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '.05em', color: '#64748B', marginBottom: '16px' },
+  footerLink: { display: 'block', fontSize: '14px', color: '#0F172A', fontWeight: '500', marginBottom: '10px', cursor: 'pointer' },
+  footerBottom: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '28px', borderTop: '1px solid #E2E8F0', fontSize: '13px', color: '#64748B', flexWrap: 'wrap', gap: '12px', maxWidth: '1180px', margin: '0 auto' },
   socials: { display: 'flex', gap: '10px' },
-  socialIc: { width: '32px', height: '32px', borderRadius: '9px', background: '#F7F8FA', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8593A6' },
+  socialIc: { width: '36px', height: '36px', borderRadius: '10px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', transition: 'all 0.2s', cursor: 'pointer' },
 }
