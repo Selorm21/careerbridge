@@ -20,8 +20,9 @@ import DocumentUpload from './pages/DocumentUpload'
 import AdminDashboard from './pages/AdminDashboard'
 import ResumeBuilder from './pages/ResumeBuilder'
 
-// Layout
+// Layouts
 import StudentLayout from './components/StudentLayout'
+import EmployerLayout from './components/EmployerLayout' // <--- NEW IMPORT
 
 function App() {
   const [session, setSession] = useState(null)
@@ -145,11 +146,22 @@ function App() {
         <Route path="documents" element={<DocumentUpload />} />
       </Route>
 
-      {/* EMPLOYER ROUTES */}
-      <Route path="/employer" element={session && role === 'employer' ? <EmployerDashboard /> : <Navigate to="/login" replace />} />
-      <Route path="/post-job" element={session && role === 'employer' ? <PostJob /> : <Navigate to="/login" replace />} />
-      <Route path="/applicants/:jobId" element={session && role === 'employer' ? <ViewApplicants /> : <Navigate to="/login" replace />} />
-      <Route path="/schedule/:applicationId" element={session && role === 'employer' ? <ScheduleInterview /> : <Navigate to="/login" replace />} />
+      {/* EMPLOYER ROUTES - NOW WRAPPED IN EMPLOYER LAYOUT */}
+      <Route
+        path="/employer"
+        element={
+          session && role === 'employer' ? (
+            <EmployerLayout /> // <--- WRAPPED HERE
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      >
+        <Route index element={<EmployerDashboard />} />
+        <Route path="post-job" element={<PostJob />} />
+        <Route path="applicants/:jobId" element={<ViewApplicants />} />
+        <Route path="schedule/:applicationId" element={<ScheduleInterview />} />
+      </Route>
 
       {/* COORDINATOR & ADMIN */}
       <Route path="/coordinator" element={session && role === 'coordinator' ? <CoordinatorDashboard /> : <Navigate to="/login" replace />} />

@@ -73,6 +73,17 @@ export default function Login() {
   return (
     <div style={styles.page}>
       
+            {/* 🏠 FLOATING BACK BUTTON (Goes to Landing Page) */}
+      <Link to="/" style={styles.backButton}>
+        <span style={styles.backIcon}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E2E8F0" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5" />
+            <path d="M12 19l-7-7 7-7" />
+          </svg>
+        </span>
+        Back
+      </Link>
+
       {/* 🎨 ANIMATED CINEMATIC BACKGROUND */}
       <div style={styles.bgContainer}>
         {/* Deep Base */}
@@ -223,7 +234,7 @@ export default function Login() {
 
       {/* 🎬 GLOBAL ANIMATIONS */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
         
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
         
@@ -307,6 +318,35 @@ const styles = {
     background: '#050B14',
   },
 
+  // 🏠 FLOATING BACK BUTTON
+  backButton: {
+    position: 'fixed',
+    top: '24px',
+    left: '24px',
+    zIndex: 50,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 20px',
+    background: 'rgba(255, 255, 255, 0.08)',
+    backdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '50px',
+    color: '#E2E8F0',
+    fontSize: '14px',
+    fontWeight: '600',
+    textDecoration: 'none',
+    transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+    fontFamily: "'Inter', sans-serif",
+    boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+  },
+   backIcon: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+  },
   // 🌌 FULL PAGE ANIMATED BACKGROUND
   bgContainer: {
     position: 'absolute',

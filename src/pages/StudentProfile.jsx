@@ -25,21 +25,16 @@ const icons = {
 }
 
 const C = {
-  bg: '#F8F9FB',
+  bg: '#F8FAFC',
   ink: '#0F172A',
-  sub: '#94A3B8',
-  border: '#EEF1F5',
-  card: '#FFFFFF',
-  navActiveBg: '#111827',
-  navActiveText: '#FFFFFF',
+  sub: '#64748B',
+  border: '#E2E8F0',
+  card: 'rgba(255, 255, 255, 0.75)',
   navText: '#475569',
   accent: '#EA4E1B',
   teal: '#0E9C8F',
-  navy: '#0B3B57',
-  gold: '#F0A93A',
-  green: '#0E9C6B',
+  green: '#10B981',
   red: '#DC2626',
-  blue: '#2563EB',
 }
 
 export default function StudentProfile() {
@@ -161,28 +156,38 @@ export default function StudentProfile() {
   return (
     <div style={S.app}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes pulseGlow{0%,100%{opacity:0.3}50%{opacity:0.6}}
         @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-        .pageIn{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) forwards}
-        .inputF{transition:border-color .2s ease,box-shadow .2s ease}
-        .inputF:focus{outline:none;border-color:${C.accent}!important;box-shadow:0 0 0 3px rgba(234,78,27,0.1)!important}
-        .saveBtn{transition:all .2s ease}
-        .saveBtn:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(234,78,27,0.3)!important}
-        .uploadArea{transition:all .2s ease;cursor:pointer}
-        .uploadArea:hover{border-color:${C.accent}!important;background:#FFF6F0!important}
-        .progressBar{background:linear-gradient(90deg,${C.accent},#FF8552,${C.accent});background-size:200% 100%;animation:shimmer 2s linear infinite}
-        @media(max-width:1000px){
-          .mainEl{padding-left:24px!important;padding-right:24px!important}
-        }
-        @media(max-width:900px){
-          .layoutGrid{grid-template-columns:1fr!important}
-        }
-        @media(max-width:768px){
-          .grid2El{grid-template-columns:1fr!important}
-          .mainEl{padding:20px 16px!important}
-        }
+        
+        .pageIn{animation:fadeUp .6s cubic-bezier(.16,1,.3,1) forwards}
+        .glowPulse{animation:pulseGlow 6s ease-in-out infinite}
+        
+        .cardIn{transition:all 0.4s cubic-bezier(.34,1.56,.64,1);}
+        .cardIn:hover{box-shadow:0 20px 40px rgba(15,23,42,0.06)!important;border-color:rgba(234,78,27,0.2)!important;}
+        
+        .inputF{transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease; background: rgba(255,255,255,0.6);}
+        .inputF:focus{outline:none;border-color:${C.accent}!important;box-shadow:0 0 0 4px rgba(234,78,27,0.12)!important;transform:translateY(-1px); background: #FFFFFF;}
+        
+        .saveBtn{transition:all 0.3s cubic-bezier(.34,1.56,.64,1);}
+        .saveBtn:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 12px 24px rgba(234,78,27,0.35)!important;}
+        
+        .uploadArea{transition:all .3s ease;cursor:pointer}
+        .uploadArea:hover{border-color:${C.accent}!important;background:rgba(234,78,27,0.04)!important; transform: scale(1.01);}
+        .progressBar{background:linear-gradient(90deg,${C.accent},#FF8552,${C.accent});background-size:200% 100%;animation:shimmer 2s linear infinite; border-radius: 4px;}
+        
+        @media(max-width:1000px){.mainEl{padding-left:24px!important;padding-right:24px!important}}
+        @media(max-width:900px){.layoutGrid{grid-template-columns:1fr!important}}
+        @media(max-width:768px){.grid2El{grid-template-columns:1fr!important};.mainEl{padding:20px 16px!important}}
       `}</style>
+
+      {/* 🌟 Ambient Glowing Background */}
+      <div style={S.bgEffects}>
+        <div style={S.glowOrb1} className="glowPulse"></div>
+        <div style={S.glowOrb2} className="glowPulse"></div>
+        <div style={S.gridPattern}></div>
+      </div>
 
       {/* ---------------- Main ---------------- */}
       <div className="pageIn mainEl" style={S.main}>
@@ -197,7 +202,9 @@ export default function StudentProfile() {
             {success && <div style={S.successBox}><Icon path={icons.check} size={16} /> {success}</div>}
 
             <form onSubmit={handleSave}>
-              <div style={S.card}>
+              
+              {/* --- PERSONAL INFO CARD --- */}
+              <div className="cardIn" style={S.card}>
                 <div style={S.cardTitle}>Personal Information</div>
                 <div className="grid2El" style={S.grid2}>
                   <div style={S.field}>
@@ -225,7 +232,8 @@ export default function StudentProfile() {
                 </div>
               </div>
 
-              <div style={{ ...S.card, marginTop: '16px' }}>
+              {/* --- SKILLS & BIO CARD --- */}
+              <div className="cardIn" style={{ ...S.card, marginTop: '20px' }}>
                 <div style={S.cardTitle}>Skills & Bio</div>
                 <div style={S.field}>
                   <label style={S.label}>Your skills</label>
@@ -246,7 +254,8 @@ export default function StudentProfile() {
                 </div>
               </div>
 
-              <div style={{ ...S.card, marginTop: '16px' }}>
+              {/* --- CV UPLOAD CARD --- */}
+              <div className="cardIn" style={{ ...S.card, marginTop: '20px' }}>
                 <div style={S.cardTitle}>CV / Resume</div>
                 <label className="uploadArea" style={{ ...S.uploadArea, ...(cvUrl ? S.uploadAreaDone : {}) }}>
                   <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => e.target.files[0] && handleCvUpload(e.target.files[0])} />
@@ -257,13 +266,13 @@ export default function StudentProfile() {
                     </div>
                   ) : cvUrl ? (
                     <div style={S.uploadContent}>
-                      <div style={{ ...S.uploadIconWrap, background: '#ECFDF5', color: C.teal }}><Icon path={icons.check} size={24} /></div>
+                      <div style={{ ...S.uploadIconWrap, background: 'rgba(16, 185, 129, 0.1)', color: C.teal }}><Icon path={icons.check} size={24} /></div>
                       <div style={S.uploadText}>CV uploaded successfully</div>
                       <div style={S.uploadSub}>Click to replace · <a href={cvUrl} target="_blank" rel="noreferrer" style={S.viewLink} onClick={e => e.stopPropagation()}>View CV →</a></div>
                     </div>
                   ) : (
                     <div style={S.uploadContent}>
-                      <div style={{ ...S.uploadIconWrap, background: '#FFF1EA', color: C.accent }}><Icon path={icons.file} size={24} /></div>
+                      <div style={{ ...S.uploadIconWrap, background: 'rgba(234, 78, 27, 0.08)', color: C.accent }}><Icon path={icons.file} size={24} /></div>
                       <div style={S.uploadText}>Upload your CV</div>
                       <div style={S.uploadSub}>Click to browse · PDF only · Max 5MB</div>
                     </div>
@@ -278,7 +287,9 @@ export default function StudentProfile() {
           </div>
 
           <div style={S.sideCol}>
-            <div style={S.strengthCard}>
+            
+            {/* --- PROFILE STRENGTH CARD --- */}
+            <div className="cardIn" style={S.strengthCard}>
               <div style={S.strengthTitle}>Profile strength</div>
               <div style={S.strengthPct}>{profileStrength()}%</div>
               <div style={S.strengthTrack}>
@@ -293,15 +304,20 @@ export default function StudentProfile() {
                   { label: 'Bio', done: !!bio },
                 ].map((item, i) => (
                   <div key={i} style={S.strengthItem}>
-                    <span style={{ ...S.strengthDot, background: item.done ? C.green : '#E5E7EB' }}>{item.done ? '✓' : ''}</span>
-                    <span style={{ ...S.strengthItemLabel, color: item.done ? C.green : C.sub }}>{item.label}</span>
+                    <span style={{ ...S.strengthDot, background: item.done ? C.green : '#E2E8F0' }}>
+                      {item.done ? '✓' : ''}
+                    </span>
+                    <span style={{ ...S.strengthItemLabel, color: item.done ? C.ink : C.sub }}>{item.label}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div style={{ ...S.strengthCard, marginTop: '16px', background: '#FFFBEB', border: '1px solid #FDE68A' }}>
-              <div style={{ ...S.strengthTitle, color: '#D97706', display: 'flex', alignItems: 'center', gap: '7px' }}><Icon path={icons.bulb} size={16} /> Tips</div>
+            {/* --- TIPS CARD --- */}
+            <div className="cardIn" style={{ ...S.strengthCard, marginTop: '20px', background: 'rgba(245, 158, 11, 0.06)', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+              <div style={{ ...S.strengthTitle, color: '#D97706', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                <Icon path={icons.bulb} size={16} /> Tips
+              </div>
               <div style={S.tipItem}>Add all your technical skills</div>
               <div style={S.tipItem}>Upload an up-to-date CV</div>
               <div style={S.tipItem}>Write a compelling bio</div>
@@ -314,45 +330,190 @@ export default function StudentProfile() {
   )
 }
 
+// ============================================================
+// 🎨 PREMIUM STYLES
+// ============================================================
 const S = {
-  app: { minHeight: '100vh', background: C.bg, fontFamily: "'Inter', -apple-system, sans-serif" },
+  app: { minHeight: '100vh', background: C.bg, fontFamily: "'Inter', -apple-system, sans-serif", position: 'relative' },
 
-  main: { flex: 1, minWidth: 0, padding: '32px 40px 60px' },
-  pageHead: { marginBottom: '26px' },
-  heading: { fontSize: '25px', fontWeight: '800', color: C.ink, marginBottom: '6px', letterSpacing: '-0.5px' },
-  headSub: { fontSize: '14px', color: C.sub },
+  // Ambient Background Effects
+  bgEffects: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 0,
+    pointerEvents: 'none',
+    overflow: 'hidden',
+  },
+  glowOrb1: {
+    position: 'absolute',
+    top: '-20%',
+    right: '-10%',
+    width: '600px',
+    height: '600px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(99, 102, 241, 0.06), transparent 70%)',
+  },
+  glowOrb2: {
+    position: 'absolute',
+    bottom: '-20%',
+    left: '-10%',
+    width: '500px',
+    height: '500px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.04), transparent 70%)',
+  },
+  gridPattern: {
+    position: 'absolute',
+    inset: 0,
+    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,0,0,0.03) 1px, transparent 0)',
+    backgroundSize: '32px 32px',
+  },
 
-  layout: { display: 'grid', gridTemplateColumns: '1fr 280px', gap: '20px' },
+  main: { 
+    position: 'relative',
+    zIndex: 1,
+    flex: 1, 
+    minWidth: 0, 
+    padding: '32px 40px 60px' 
+  },
+  pageHead: { marginBottom: '28px' },
+  heading: { fontSize: '32px', fontWeight: '900', color: C.ink, marginBottom: '8px', letterSpacing: '-1px' },
+  headSub: { fontSize: '15px', color: C.sub },
+
+  layout: { display: 'grid', gridTemplateColumns: '1fr 280px', gap: '24px' },
   formCol: {},
   sideCol: {},
-  card: { background: C.card, borderRadius: '16px', padding: '24px', border: `1px solid ${C.border}`, boxShadow: '0 2px 8px rgba(15,23,42,0.04)' },
-  cardTitle: { fontSize: '15px', fontWeight: '800', color: C.ink, marginBottom: '18px' },
+  
+  // Form Cards
+  card: { 
+    background: 'rgba(255, 255, 255, 0.7)', 
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    borderRadius: '20px', 
+    padding: '26px', 
+    border: '1px solid rgba(255, 255, 255, 0.8)', 
+    boxShadow: '0 4px 20px rgba(15,23,42,0.03)' 
+  },
+  cardTitle: { fontSize: '16px', fontWeight: '800', color: C.ink, marginBottom: '20px' },
   grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
-  field: { marginBottom: '4px' },
+  field: { marginBottom: '6px' },
   label: { display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '7px', color: C.navText },
   required: { color: C.red },
-  hint: { fontSize: '11.5px', color: C.sub, marginTop: '5px' },
-  input: { width: '100%', padding: '12px 14px', border: `1.5px solid ${C.border}`, borderRadius: '10px', fontSize: '14px', boxSizing: 'border-box', fontFamily: 'inherit', color: C.ink },
-  skillsPreview: { display: 'flex', flexWrap: 'wrap', gap: '7px', marginTop: '10px' },
-  skillChip: { background: '#FFF4EE', color: C.accent, padding: '5px 13px', borderRadius: '20px', fontSize: '12.5px', fontWeight: '600' },
-  uploadArea: { display: 'block', border: '2px dashed #E5E7EB', borderRadius: '14px', padding: '32px', textAlign: 'center' },
-  uploadAreaDone: { border: '2px dashed #A7F3D0', background: '#F0FDF4' },
+  hint: { fontSize: '12px', color: C.sub, marginTop: '6px' },
+  input: { 
+    width: '100%', 
+    padding: '12px 14px', 
+    border: `1.5px solid ${C.border}`, 
+    borderRadius: '12px', 
+    fontSize: '14px', 
+    boxSizing: 'border-box', 
+    fontFamily: 'inherit', 
+    color: C.ink,
+    transition: 'all 0.2s ease'
+  },
+  
+  skillsPreview: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' },
+  skillChip: { background: 'rgba(234, 78, 27, 0.08)', color: C.accent, padding: '5px 14px', borderRadius: '20px', fontSize: '12.5px', fontWeight: '600' },
+  
+  // CV Upload
+  uploadArea: { 
+    display: 'block', 
+    border: '2px dashed rgba(148, 163, 184, 0.4)', 
+    borderRadius: '14px', 
+    padding: '32px 20px', 
+    textAlign: 'center',
+    background: 'rgba(255,255,255,0.5)'
+  },
+  uploadAreaDone: { border: '2px dashed rgba(16, 185, 129, 0.4)', background: 'rgba(16, 185, 129, 0.04)' },
   uploadContent: {},
-  uploadIconWrap: { width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: '24px' },
-  uploadText: { fontSize: '14.5px', fontWeight: '700', color: C.navText, marginBottom: '6px' },
-  uploadSub: { fontSize: '12.5px', color: C.sub },
+  uploadIconWrap: { 
+    width: '56px', 
+    height: '56px', 
+    borderRadius: '16px', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    margin: '0 auto 14px', 
+    fontSize: '24px' 
+  },
+  uploadText: { fontSize: '15px', fontWeight: '700', color: C.navText, marginBottom: '6px' },
+  uploadSub: { fontSize: '13px', color: C.sub },
   viewLink: { color: C.accent, fontWeight: '700', textDecoration: 'none' },
-  saveBtn: { width: '100%', padding: '14px', background: C.accent, color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '700', marginTop: '16px', boxShadow: '0 4px 14px rgba(234,78,27,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' },
-  error: { display: 'flex', alignItems: 'center', gap: '8px', background: '#FEF2F2', color: C.red, padding: '13px 16px', borderRadius: '10px', fontSize: '13.5px', fontWeight: '600', marginBottom: '16px' },
-  successBox: { display: 'flex', alignItems: 'center', gap: '8px', background: '#ECFDF5', color: C.green, padding: '13px 16px', borderRadius: '10px', fontSize: '13.5px', fontWeight: '600', marginBottom: '16px' },
-  strengthCard: { background: C.card, borderRadius: '16px', padding: '22px', border: `1px solid ${C.border}`, boxShadow: '0 2px 8px rgba(15,23,42,0.04)' },
-  strengthTitle: { fontSize: '14px', fontWeight: '800', color: C.ink, marginBottom: '12px' },
-  strengthPct: { fontSize: '32px', fontWeight: '800', color: C.accent, marginBottom: '10px' },
+  
+  // Buttons & Alerts
+  saveBtn: { 
+    width: '100%', 
+    padding: '14px', 
+    background: 'linear-gradient(135deg, #EA4E1B, #F97316)',
+    color: '#fff', 
+    border: 'none', 
+    borderRadius: '12px', 
+    cursor: 'pointer', 
+    fontSize: '15px', 
+    fontWeight: '700', 
+    marginTop: '20px', 
+    boxShadow: '0 4px 16px rgba(234,78,27,0.3)', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    gap: '8px' 
+  },
+  error: { 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: '8px', 
+    background: 'rgba(239, 68, 68, 0.08)', 
+    color: C.red, 
+    padding: '13px 16px', 
+    borderRadius: '12px', 
+    fontSize: '13.5px', 
+    fontWeight: '600', 
+    marginBottom: '20px',
+    border: '1px solid rgba(239, 68, 68, 0.15)'
+  },
+  successBox: { 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: '8px', 
+    background: 'rgba(16, 185, 129, 0.08)', 
+    color: C.green, 
+    padding: '13px 16px', 
+    borderRadius: '12px', 
+    fontSize: '13.5px', 
+    fontWeight: '600', 
+    marginBottom: '20px',
+    border: '1px solid rgba(16, 185, 129, 0.15)'
+  },
+
+  // Strength Side Panel
+  strengthCard: { 
+    background: 'rgba(255, 255, 255, 0.7)', 
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    borderRadius: '20px', 
+    padding: '24px', 
+    border: '1px solid rgba(255, 255, 255, 0.8)', 
+    boxShadow: '0 4px 20px rgba(15,23,42,0.03)' 
+  },
+  strengthTitle: { fontSize: '15px', fontWeight: '800', color: C.ink, marginBottom: '12px' },
+  strengthPct: { fontSize: '34px', fontWeight: '900', color: C.accent, marginBottom: '10px' },
   strengthTrack: { height: '8px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden', marginBottom: '16px' },
-  strengthFill: { height: '100%', borderRadius: '4px', transition: 'width 1s ease' },
-  strengthItems: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  strengthFill: { height: '100%', transition: 'width 1s ease' },
+  strengthItems: { display: 'flex', flexDirection: 'column', gap: '10px' },
   strengthItem: { display: 'flex', alignItems: 'center', gap: '10px' },
-  strengthDot: { width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '800', color: '#fff', flexShrink: 0 },
+  strengthDot: { 
+    width: '22px', 
+    height: '22px', 
+    borderRadius: '50%', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    fontSize: '12px', 
+    fontWeight: '800', 
+    color: '#fff', 
+    flexShrink: 0,
+    transition: 'background 0.3s ease'
+  },
   strengthItemLabel: { fontSize: '13px', fontWeight: '600' },
-  tipItem: { fontSize: '13px', color: '#92400E', marginBottom: '7px', lineHeight: '1.5' }
+  tipItem: { fontSize: '13px', color: '#92400E', marginBottom: '8px', lineHeight: '1.5' }
 }
