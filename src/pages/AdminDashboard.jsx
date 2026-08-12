@@ -76,19 +76,74 @@ export default function AdminDashboard() {
     setLoading(false)
   }
 
-  async function handleSuspendUser(userId) {
+  // ✅ Toggle Suspension (Suspend / Unsuspend)
+  async function handleToggleSuspend(user) {
+    const newStatus = !user.suspended
+    const action = newStatus ? 'suspend' : 'unsuspend'
+
+    if (!confirm(`Are you sure you want to ${action} ${user.full_name || user.email}?`)) {
+      return
+    }
+
     setLoading(true)
-    const { error } = await supabase.from('profiles').update({ suspended: true }).eq('id', userId)
-    if (!error) setUsers(users.map(u => u.id === userId ? { ...u, suspended: true } : u))
+    const { error } = await supabase.from('profiles').update({ suspended: newStatus }).eq('id', user.id)
+
+    if (error) {
+      alert(`Could not ${action} user: ${error.message}`)
+    } else {
+      setUsers(prevUsers => prevUsers.map(u => u.id === user.id ? { ...u, suspended: newStatus } : u))
+    }
     setLoading(false)
   }
 
+  // ✅ FIXED: Deletes user dependencies before deleting the user
   async function handleDeleteUser(userId) {
     if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       setLoading(true)
-      const { error } = await supabase.from('profiles').delete().eq('id', userId)
-      if (!error) setUsers(users.filter(u => u.id !== userId))
-      setLoading(false)
+      
+      try {
+        // 1. Delete all applications made by this user
+        const { error: appsError } = await supabase
+          .from('applications')
+          .delete()
+          .eq('student_id', userId)
+
+        if (appsError) {
+          console.error('Error deleting applications:', appsError)
+        }
+
+        // 2. Delete all jobs posted by this user (if they are an employer)
+        const { error: jobsError } = await supabase
+          .from('jobs')
+          .delete()
+          .eq('employer_id', userId)
+
+        if (jobsError) {
+          console.error('Error deleting jobs:', jobsError)
+        }
+
+        // 3. Finally, delete the user profile itself
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', userId)
+
+        if (profileError) {
+          console.error('Error deleting profile:', profileError)
+          alert('Could not delete user: ' + profileError.message)
+          setLoading(false)
+          return
+        }
+
+        // 4. Update the UI
+        setUsers(prevUsers => prevUsers.filter(u => u.id !== userId))
+        
+      } catch (error) {
+        console.error('Unexpected error during deletion:', error)
+        alert('An unexpected error occurred while deleting the user.')
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -171,7 +226,7 @@ export default function AdminDashboard() {
 
       <div style={S.layout}>
         {/* ======================================================
-            FLOATING GLASS SIDEBAR (LIGHT THEME, RED ACCENTS)
+            FLOATING GLASS SIDEBAR
         ====================================================== */}
         <aside 
           className="sidebar" 
@@ -359,14 +414,32 @@ export default function AdminDashboard() {
                         <td style={{...S.tableCell, textAlign: 'center'}}>
                           <div style={{display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap'}}>
                             {user.role !== 'coordinator' && (
-                              <button className="actionBtn" style={{...S.actionBtn, background: 'rgba(37,99,235,0.1)', color: '#2563EB'}} onClick={() => handlePromoteToCoordinator(user.id)} disabled={loading}>
+                              <button 
+                                className="actionBtn" 
+                                style={{...S.actionBtn, background: 'rgba(37,99,235,0.1)', color: '#2563EB'}} 
+                                onClick={(e) => { e.stopPropagation(); handlePromoteToCoordinator(user.id); }} 
+                                disabled={loading}
+                              >
                                 Promote
                               </button>
                             )}
-                            <button className="actionBtn" style={{...S.actionBtn, background: 'rgba(245,158,11,0.1)', color: '#D97706'}} onClick={() => handleSuspendUser(user.id)} disabled={loading}>
-                              Suspend
+                            
+                            {/* One button that dynamically changes to Suspend / Unsuspend */}
+                            <button 
+                              className="actionBtn" 
+                              style={{...S.actionBtn, background: user.suspended ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', color: user.suspended ? '#10B981' : '#D97706'}} 
+                              onClick={(e) => { e.stopPropagation(); handleToggleSuspend(user); }} 
+                              disabled={loading}
+                            >
+                              {user.suspended ? 'Unsuspend' : 'Suspend'}
                             </button>
-                            <button className="actionBtn" style={{...S.actionBtn, background: 'rgba(234,78,27,0.1)', color: '#EA4E1B'}} onClick={() => handleDeleteUser(user.id)} disabled={loading}>
+
+                            <button 
+                              className="actionBtn" 
+                              style={{...S.actionBtn, background: 'rgba(234,78,27,0.1)', color: '#EA4E1B'}} 
+                              onClick={(e) => { e.stopPropagation(); handleDeleteUser(user.id); }} 
+                              disabled={loading}
+                            >
                               Delete
                             </button>
                           </div>

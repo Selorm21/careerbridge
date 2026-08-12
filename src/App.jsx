@@ -26,7 +26,6 @@ import AllApplicants from './pages/AllApplicants'
 import StudentLayout from './components/StudentLayout'
 import EmployerLayout from './components/EmployerLayout'
 
-
 function App() {
   const [session, setSession] = useState(null)
   const [role, setRole] = useState(null)
@@ -35,12 +34,7 @@ function App() {
   useEffect(() => {
     let mounted = true
 
-    // -------------------------------------------------------
-    // FETCH USER ROLE
-    // -------------------------------------------------------
     const fetchRole = async (userId) => {
-      console.log('🔎 Fetching role for user:', userId)
-
       try {
         const { data, error } = await supabase
           .from('profiles')
@@ -51,114 +45,59 @@ function App() {
         if (!mounted) return
 
         if (error) {
-          console.error('❌ Error fetching role:', error)
-
+          console.error('Error fetching role:', error)
           setRole(null)
           setLoading(false)
-
           return
         }
 
         if (!data) {
-          console.error('❌ No profile found for user:', userId)
-
+          console.error('No profile found for user:', userId)
           setRole(null)
           setLoading(false)
-
           return
         }
 
-        console.log('✅ Role from database:', data.role)
-
         setRole(data.role)
         setLoading(false)
-
       } catch (error) {
-        if (!mounted) return
-
-        console.error('❌ Unexpected role error:', error)
-
+        console.error('Unexpected error:', error)
         setRole(null)
         setLoading(false)
       }
     }
 
-
-    // -------------------------------------------------------
-    // INITIAL SESSION
-    // -------------------------------------------------------
     const initializeAuth = async () => {
-      console.log('🔐 Checking initial session...')
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
+      const { data: { session } } = await supabase.auth.getSession()
       if (!mounted) return
-
-      console.log(
-        '🔐 Initial session:',
-        session?.user?.email || 'No session'
-      )
-
       setSession(session)
-
       if (!session) {
         setRole(null)
         setLoading(false)
         return
       }
-
-      // Keep loading until role is known
       setLoading(true)
-
       await fetchRole(session.user.id)
     }
 
-
     initializeAuth()
 
-
-    // -------------------------------------------------------
-    // AUTH STATE CHANGES
-    // -------------------------------------------------------
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, newSession) => {
       if (!mounted) return
-
-      console.log('🔄 Auth event:', event)
-
       setSession(newSession)
-
       if (!newSession) {
-        console.log('🚪 User logged out')
-
         setRole(null)
         setLoading(false)
-
         return
       }
-
-      // New login/user
-      console.log(
-        '👤 Authenticated user:',
-        newSession.user.email
-      )
-
-      // IMPORTANT:
-      // Clear old role before fetching new user's role.
       setRole(null)
       setLoading(true)
-
-      // Run role lookup outside the auth callback.
       setTimeout(() => {
-        if (mounted) {
-          fetchRole(newSession.user.id)
-        }
+        if (mounted) fetchRole(newSession.user.id)
       }, 0)
     })
-
 
     return () => {
       mounted = false
@@ -166,21 +105,6 @@ function App() {
     }
   }, [])
 
-
-  // -------------------------------------------------------
-  // DEBUG STATE
-  // -------------------------------------------------------
-  console.log('🧭 App state:', {
-    email: session?.user?.email,
-    session: !!session,
-    role,
-    loading,
-  })
-
-
-  // -------------------------------------------------------
-  // LOADING SCREEN
-  // -------------------------------------------------------
   if (loading) {
     return (
       <div
@@ -208,277 +132,58 @@ function App() {
             animation: 'spin 0.8s linear infinite',
           }}
         />
-
-        <div>
-          Loading your account...
-        </div>
-
-        <style>
-          {`
-            @keyframes spin {
-              from {
-                transform: rotate(0deg);
-              }
-
-              to {
-                transform: rotate(360deg);
-              }
-            }
-          `}
-        </style>
+        <div>Loading your account...</div>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     )
   }
 
-
-  // -------------------------------------------------------
-  // ROOT REDIRECT
-  // -------------------------------------------------------
   const getDashboardPath = () => {
     switch (role) {
-      case 'student':
-        return '/student'
-
-      case 'employer':
-        return '/employer'
-
-      case 'coordinator':
-        return '/coordinator'
-
-      case 'admin':
-        return '/admin'
-
-      default:
-        return '/login'
+      case 'student': return '/student'
+      case 'employer': return '/employer'
+      case 'coordinator': return '/coordinator'
+      case 'admin': return '/admin'
+      default: return '/login'
     }
   }
 
-
   return (
     <Routes>
-
-      {/* =====================================================
-          PUBLIC
-      ===================================================== */}
-
-      <Route
-        path="/"
-        element={
-          !session
-            ? <Landing />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      />
-
-      <Route
-        path="/login"
-        element={
-          !session
-            ? <Login />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      />
-
-      <Route
-        path="/signup"
-        element={
-          !session
-            ? <Signup />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      />
-
-
-      {/* =====================================================
-          STUDENT
-      ===================================================== */}
-
-      <Route
-        path="/student"
-        element={
-          session && role === 'student'
-            ? <StudentLayout />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      >
-        <Route
-          index
-          element={<StudentDashboard />}
-        />
-
-        <Route
-          path="analytics"
-          element={<Analytics />}
-        />
-
-        <Route
-          path="browse-jobs"
-          element={<BrowseJobs />}
-        />
-
-        <Route
-          path="profile"
-          element={<StudentProfile />}
-        />
-
-        <Route
-          path="resume-builder"
-          element={<ResumeBuilder />}
-        />
-
-        <Route
-          path="documents"
-          element={<DocumentUpload />}
-        />
+      <Route path="/" element={!session ? <Landing /> : <Navigate to={getDashboardPath()} replace />} />
+      <Route path="/login" element={!session ? <Login /> : <Navigate to={getDashboardPath()} replace />} />
+      <Route path="/signup" element={!session ? <Signup /> : <Navigate to={getDashboardPath()} replace />} />
+      
+      <Route path="/student" element={session && role === 'student' ? <StudentLayout /> : <Navigate to={getDashboardPath()} replace />}>
+        <Route index element={<StudentDashboard />} />
+        <Route path="analytics" element={<Analytics />} />
+        <Route path="browse-jobs" element={<BrowseJobs />} />
+        <Route path="profile" element={<StudentProfile />} />
+        <Route path="resume-builder" element={<ResumeBuilder />} />
+        <Route path="documents" element={<DocumentUpload />} />
       </Route>
 
-
-      {/* =====================================================
-          EMPLOYER
-      ===================================================== */}
-
-      <Route
-        path="/employer"
-        element={
-          session && role === 'employer'
-            ? <EmployerLayout />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      >
-        <Route
-          index
-          element={<EmployerDashboard />}
-        />
-
-        <Route
-          path="post-job"
-          element={<PostJob />}
-        />
-
-        <Route
-          path="browse-jobs"
-          element={<BrowseJobs />}
-        />
-
-        <Route
-          path="analytics"
-          element={<Analytics />}
-        />
-
-        <Route
-          path="listings"
-          element={<AllApplicants />}
-        />
-
-        <Route
-          path="applicants"
-          element={<AllApplicants />}
-        />
-
-        <Route
-          path="applicants/:jobId"
-          element={<ViewApplicants />}
-        />
-
-        <Route
-          path="schedule/:applicationId"
-          element={<ScheduleInterview />}
-        />
+      <Route path="/employer" element={session && role === 'employer' ? <EmployerLayout /> : <Navigate to={getDashboardPath()} replace />}>
+        <Route index element={<EmployerDashboard />} />
+        <Route path="post-job" element={<PostJob />} />
+        <Route path="browse-jobs" element={<BrowseJobs />} />
+        <Route path="analytics" element={<Analytics />} />
+        <Route path="listings" element={<AllApplicants />} />
+        <Route path="applicants" element={<AllApplicants />} />
+        <Route path="applicants/:jobId" element={<ViewApplicants />} />
+        <Route path="schedule/:applicationId" element={<ScheduleInterview />} />
       </Route>
 
-
-      {/* =====================================================
-          COORDINATOR
-      ===================================================== */}
-
-      <Route
-        path="/coordinator"
-        element={
-          session && role === 'coordinator'
-            ? <CoordinatorDashboard />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      />
-
-
-      {/* =====================================================
-          ADMIN
-      ===================================================== */}
-
-      <Route
-        path="/admin"
-        element={
-          session && role === 'admin'
-            ? <AdminDashboard />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      />
-
-
-      {/* =====================================================
-          OLD STUDENT URLS
-      ===================================================== */}
-
-      <Route
-        path="/analytics"
-        element={
-          session && role === 'student'
-            ? <Navigate to="/student/analytics" replace />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      />
-
-      <Route
-        path="/browse-jobs"
-        element={
-          session && role === 'student'
-            ? <Navigate to="/student/browse-jobs" replace />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      />
-
-      <Route
-        path="/student-profile"
-        element={
-          session && role === 'student'
-            ? <Navigate to="/student/profile" replace />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      />
-
-      <Route
-        path="/resume-builder"
-        element={
-          session && role === 'student'
-            ? <Navigate to="/student/resume-builder" replace />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      />
-
-      <Route
-        path="/documents"
-        element={
-          session && role === 'student'
-            ? <Navigate to="/student/documents" replace />
-            : <Navigate to={getDashboardPath()} replace />
-        }
-      />
-
-
-      {/* =====================================================
-          404
-      ===================================================== */}
-
-      <Route
-        path="*"
-        element={
-          <Navigate
-            to={session ? getDashboardPath() : '/'}
-            replace
-          />
-        }
-      />
-
+      <Route path="/coordinator" element={session && role === 'coordinator' ? <CoordinatorDashboard /> : <Navigate to={getDashboardPath()} replace />} />
+      <Route path="/admin" element={session && role === 'admin' ? <AdminDashboard /> : <Navigate to={getDashboardPath()} replace />} />
+      
+      <Route path="/analytics" element={session && role === 'student' ? <Navigate to="/student/analytics" replace /> : <Navigate to={getDashboardPath()} replace />} />
+      <Route path="/browse-jobs" element={session && role === 'student' ? <Navigate to="/student/browse-jobs" replace /> : <Navigate to={getDashboardPath()} replace />} />
+      <Route path="/student-profile" element={session && role === 'student' ? <Navigate to="/student/profile" replace /> : <Navigate to={getDashboardPath()} replace />} />
+      <Route path="/resume-builder" element={session && role === 'student' ? <Navigate to="/student/resume-builder" replace /> : <Navigate to={getDashboardPath()} replace />} />
+      <Route path="/documents" element={session && role === 'student' ? <Navigate to="/student/documents" replace /> : <Navigate to={getDashboardPath()} replace />} />
+      
+      <Route path="*" element={<Navigate to={session ? getDashboardPath() : '/'} replace />} />
     </Routes>
   )
 }
