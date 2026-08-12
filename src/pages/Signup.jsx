@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Rocket, Mail, Lock, User, ArrowRight } from 'lucide-react'
 
 export default function Signup() {
   const navigate = useNavigate()
+  const location = useLocation()
+  
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -12,6 +14,15 @@ export default function Signup() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showAdmin, setShowAdmin] = useState(false)
+
+  // 🪄 SECRET: Look for ?admin=true in the URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    if (params.get('admin') === 'true') {
+      setShowAdmin(true)
+    }
+  }, [location])
 
   async function handleSignup(e) {
     e.preventDefault()
@@ -32,17 +43,22 @@ export default function Signup() {
     setLoading(false)
   }
 
+  // ✅ BEST PRACTICE: Admin is removed from public list
   const roles = [
     { value: 'student', icon: '🎓', label: 'Student' },
     { value: 'employer', icon: '🏢', label: 'Employer' },
     { value: 'coordinator', icon: '📚', label: 'Coordinator' },
-    { value: 'admin', icon: '⚙️', label: 'Admin' }
   ]
 
   return (
     <div style={styles.page}>
       
-      {/* 🏠 FLOATING BACK BUTTON (Goes to Landing Page - Broad Arrow) */}
+      {/* 🎨 FIXED: Font Import moved here so it doesn't conflict */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      `}</style>
+
+      {/* 🏠 FLOATING BACK BUTTON */}
       <Link to="/" style={styles.backButton}>
         <span style={styles.backIcon}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E2E8F0" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -53,17 +69,15 @@ export default function Signup() {
         Back 
       </Link>
 
-      {/* 🎨 ANIMATED CINEMATIC BACKGROUND (Teal & Emerald Theme) */}
+      {/* 🎨 ANIMATED CINEMATIC BACKGROUND */}
       <div style={styles.bgContainer}>
         <div style={styles.bgGradient}></div>
         <div style={styles.vignette}></div>
         
-        {/* Floating Geometric Blobs (Re-colored to Emerald/Teal) */}
         <div style={{...styles.shape, ...styles.shape1}} className="animShape"></div>
         <div style={{...styles.shape, ...styles.shape2}} className="animShape"></div>
         <div style={{...styles.shape, ...styles.shape3}} className="animShape"></div>
         
-        {/* ✨ ANIMATED SCROLLING TEXT BACKGROUND (Customized for Signup) */}
         <div className="textScroller" style={styles.textScroller}>
           <div style={styles.textRow1}>
             <span>Welcome to the Family • Start Your Journey • </span>
@@ -82,11 +96,10 @@ export default function Signup() {
         <div style={styles.glowSpot}></div>
       </div>
 
-      {/* 🃏 FLOATING SIGNUP CARD (Green Accents) */}
+      {/* 🃏 FLOATING SIGNUP CARD */}
       <div className="cardIn" style={styles.signupCard}>
         <div style={styles.cardGlowBorder}></div>
         
-        {/* Brand Logo */}
         <div style={styles.cardLogoContainer}>
           <div style={styles.logoIconSmall}><Rocket size={18} color="#fff" /></div>
           <span style={styles.cardLogoText}>CareerBridge</span>
@@ -155,6 +168,7 @@ export default function Signup() {
           <div style={styles.field}>
             <label style={styles.label}>I am a...</label>
             <div style={styles.roleRow}>
+              {/* ✅ PUBLIC ROLES */}
               {roles.map(r => (
                 <div 
                   key={r.value} 
@@ -166,6 +180,18 @@ export default function Signup() {
                   <div style={styles.roleLabel}>{r.label}</div>
                 </div>
               ))}
+              
+              {/* 🪄 SECRET ADMIN OPTION (Only shows if ?admin=true is in URL) */}
+              {showAdmin && (
+                <div 
+                  className="roleCard" 
+                  style={{...styles.roleCard, ...(role === 'admin' ? styles.roleCardActive : {})}} 
+                  onClick={() => setRole('admin')}
+                >
+                  <div style={styles.roleIcon}>⚙️</div>
+                  <div style={styles.roleLabel}>Admin</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -182,16 +208,6 @@ export default function Signup() {
 
       {/* 🎬 GLOBAL ANIMATIONS & MEDIA QUERIES */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        
-        /* Card Entry Animation */
-        @keyframes fadeUp {
-          from { opacity:0; transform:translateY(40px) scale(0.96); }
-          to { opacity:1; transform:translateY(0) scale(1); }
-        }
-        
         /* Shape Floating Animations */
         @keyframes floatShape1 {
           0%, 100% { transform: translate(0, 0) rotate(0deg); }
@@ -222,7 +238,7 @@ export default function Signup() {
         .animShape:nth-child(2) { animation-name: floatShape2; animation-duration: 25s; }
         .animShape:nth-child(3) { animation-name: floatShape3; animation-duration: 18s; }
         
-        /* Input Focus States (Changed to Emerald Green) */
+        /* Input Focus States (Emerald Green) */
         .inputF { transition: all 0.2s ease; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); }
         .inputF:focus { 
           outline: none; 
@@ -232,7 +248,7 @@ export default function Signup() {
           transform: translateY(-1px);
         }
         
-        /* Button States (Changed to Emerald Gradient) */
+        /* Button States (Emerald Gradient) */
         .btnP { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); display: flex; align-items: center; justify-content: center; gap: 8px; position: relative; overflow: hidden; }
         .btnP:hover:not(:disabled) { transform: translateY(-2px) scale(1.02); box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4) !important; }
         .btnP:active { transform: scale(0.95); }
@@ -262,11 +278,11 @@ const styles = {
     fontFamily: "'Inter', sans-serif",
     position: 'relative',
     overflow: 'hidden',
-    background: '#05100A', // Much darker forest green base
+    background: '#05100A',
     padding: '20px',
   },
 
-  // 🏠 FLOATING BACK BUTTON (NEW - Matches Login)
+  // 🏠 FLOATING BACK BUTTON
   backButton: {
     position: 'fixed',
     top: '24px',
@@ -276,9 +292,9 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '10px 20px',
-    background: 'rgba(16, 185, 129, 0.1)', // Green tinted glass
+    background: 'rgba(16, 185, 129, 0.1)',
     backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(16, 185, 129, 0.2)', // Green border
+    border: '1px solid rgba(16, 185, 129, 0.2)',
     borderRadius: '50px',
     color: '#E2E8F0',
     fontSize: '14px',
@@ -361,12 +377,12 @@ const styles = {
     whiteSpace: 'nowrap',
     fontSize: '100px',
     fontWeight: '800',
-    color: '#6EE7B7', // Teal text instead of Blue
+    color: '#6EE7B7',
     letterSpacing: '-3px',
     animation: 'scrollTextLeft 35s linear infinite',
   },
 
-  // Floating Shapes (Now Emerald/Teal Tinted)
+  // Floating Shapes
   shape: {
     position: 'absolute',
     borderRadius: '50%',
@@ -407,10 +423,10 @@ const styles = {
     maxWidth: '520px',
     padding: '40px 36px',
     borderRadius: '24px',
-    background: 'rgba(5, 16, 10, 0.7)', // Darker forest green glass
+    background: 'rgba(5, 16, 10, 0.7)',
     backdropFilter: 'blur(24px)',
     WebkitBackdropFilter: 'blur(24px)',
-    border: '1px solid rgba(16, 185, 129, 0.15)', // Green tinted border
+    border: '1px solid rgba(16, 185, 129, 0.15)',
     boxShadow: '0 30px 80px rgba(0, 0, 0, 0.6)',
     overflow: 'hidden',
   },

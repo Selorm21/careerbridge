@@ -1,236 +1,676 @@
+// src/components/EmployerLayout.jsx
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
-import { useNavigate } from 'react-router-dom'
 
-// ---------- inline icon set (shared visual language across CareerBridge pages) ----------
+// ============================================================
+// ICONS
+// ============================================================
 const Icon = ({ path, size = 18, ...rest }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-    strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...rest}>
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...rest}
+  >
     {path}
   </svg>
 )
+
 const icons = {
-  briefcase: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></>,
+  grid: (
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </>
+  ),
   plus: <path d="M12 5v14M5 12h14" />,
-  search: <><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></>,
-  users: <><circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c0-3.3 3-6 6.5-6s6.5 2.7 6.5 6" /><path d="M16 8.2a3 3 0 1 1 3.6 3M21.5 20c0-2.6-1.8-4.8-4.3-5.6" /></>,
-  star: <path d="M12 3.5l2.5 5.5 6 .7-4.4 4.2 1.2 6-5.3-3-5.3 3 1.2-6-4.4-4.2 6-.7z" />,
-  trophy: <><path d="M8 21h8M12 17v4" /><path d="M7 4h10v6a5 5 0 0 1-10 0V4z" /><path d="M7 5H4a3 3 0 0 0 3 4M17 5h3a3 3 0 0 1-3 4" /></>,
-  inbox: <><path d="M3 12h4l2 3h6l2-3h4" /><path d="M5 5h14l2 7v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-7z" /></>,
-  grid: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>,
+  search: (
+    <>
+      <circle cx="11" cy="11" r="7" />
+      <path d="M21 21l-4.3-4.3" />
+    </>
+  ),
+  analytics: (
+    <>
+      <path d="M5 20V10" />
+      <path d="M12 20V4" />
+      <path d="M19 20v-7" />
+    </>
+  ),
+  users: (
+    <>
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M2.5 20c0-3.3 3-6 6.5-6s6.5 2.7 6.5 6" />
+      <path d="M16 8.2a3 3 0 1 1 3.6 3" />
+      <path d="M21.5 20c0-2.6-1.8-4.8-4.3-5.6" />
+    </>
+  ),
+  logout: (
+    <>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
+    </>
+  ),
+  chevron: <path d="M9 18l6-6-6-6" />,
+  sparkle: (
+    <>
+      <path d="M12 3l1.2 4.8L18 9l-4.8 1.2L12 15l-1.2-4.8L6 9l4.8-1.2z" />
+      <path d="M19 15l.6 2.4L22 18l-2.4.6L19 21l-.6-2.4L16 18l2.4-.6z" />
+    </>
+  ),
+  usersSmall: (
+    <>
+      <circle cx="9" cy="8" r="2.8" />
+      <path d="M3.5 19c.5-3.2 2.4-5 5.5-5s5 1.8 5.5 5" />
+    </>
+  ),
+  briefcase: (
+    <>
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </>
+  ),
 }
 
-const C = {
-  bg: '#F8F9FB',
-  ink: '#0F172A',
-  sub: '#94A3B8',
-  border: '#EEF1F5',
-  card: '#FFFFFF',
-  navActiveBg: '#111827',
-  navActiveText: '#FFFFFF',
-  navText: '#475569',
-  accent: '#EA4E1B',
-  teal: '#0E9C8F',
-  navy: '#0B3B57',
-  gold: '#F0A93A',
-  green: '#0E9C6B',
-  red: '#DC2626',
-  blue: '#2563EB',
-}
-
-export default function EmployerDashboard() {
-  const [profile, setProfile] = useState(null)
-  const [jobs, setJobs] = useState([])
-  const [totalApplicants, setTotalApplicants] = useState(0)
-  const [totalShortlisted, setTotalShortlisted] = useState(0)
+// ============================================================
+// MAIN LAYOUT
+// ============================================================
+export default function EmployerLayout() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const [isHovered, setIsHovered] = useState(false)
+  const [jobs, setJobs] = useState([])
+  const [profile, setProfile] = useState(null)
+  const [totalApplicants, setTotalApplicants] = useState(0)
 
   useEffect(() => {
+    let mounted = true
     async function getData() {
-      const { data: { user } } = await supabase.auth.getUser()
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      setProfile(profileData)
-      const { data: jobsData } = await supabase.from('jobs').select('*').eq('employer_id', user.id).order('created_at', { ascending: false })
-      setJobs(jobsData || [])
-      if (jobsData && jobsData.length > 0) {
-        const jobIds = jobsData.map(j => j.id)
-        const { data: appsData } = await supabase.from('applications').select('*').in('job_id', jobIds)
-        setTotalApplicants(appsData?.length || 0)
-        setTotalShortlisted(appsData?.filter(a => a.status === 'interview' || a.status === 'offer').length || 0)
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError || !user) return
+
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+
+        if (!profileError && mounted) {
+          setProfile({ ...profileData, email: profileData?.email || user.email })
+        }
+
+        const { data: jobsData, error: jobsError } = await supabase
+          .from('jobs')
+          .select('*')
+          .eq('employer_id', user.id)
+          .order('created_at', { ascending: false })
+
+        if (jobsError) {
+          if (mounted) { setJobs([]); setTotalApplicants(0) }
+          return
+        }
+
+        const safeJobs = Array.isArray(jobsData) ? jobsData : []
+        if (!mounted) return
+        setJobs(safeJobs)
+
+        if (safeJobs.length === 0) {
+          setTotalApplicants(0)
+          return
+        }
+
+        const jobIds = safeJobs.map((job) => job.id).filter(Boolean)
+        if (jobIds.length === 0) {
+          setTotalApplicants(0)
+          return
+        }
+
+        const { count: applicantCount, error: applicantsError } = await supabase
+          .from('applications')
+          .select('id', { count: 'exact', head: true })
+          .in('job_id', jobIds)
+
+        if (applicantsError) {
+          if (mounted) setTotalApplicants(0)
+          return
+        }
+
+        if (mounted) setTotalApplicants(applicantCount || 0)
+      } catch (error) {
+        console.error('EmployerLayout error:', error)
       }
     }
     getData()
+    return () => { mounted = false }
   }, [])
 
-  const initials = (name) => (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+  async function handleLogout() {
+    try {
+      await supabase.auth.signOut()
+      navigate('/')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
+
+  const navItems = [
+    { path: '/employer', icon: icons.grid, label: 'Overview' },
+    { path: '/employer/post-job', icon: icons.plus, label: 'Post a Job' },
+    { path: '/employer/browse-jobs', icon: icons.search, label: 'Browse All Jobs' },
+    { path: '/employer/applicants', icon: icons.users, label: 'View Applicants' },
+    { path: '/employer/analytics', icon: icons.analytics, label: 'Analytics' },
+  ]
+
+  const initials = (name) => {
+    if (!name) return 'E'
+    return name.trim().split(/\s+/).map((word) => word[0]).slice(0, 2).join('').toUpperCase()
+  }
+
+  const isRouteActive = (path) => {
+    if (path === '/employer') return location.pathname === '/employer'
+    return location.pathname === path || location.pathname.startsWith(`${path}/`)
+  }
 
   return (
-    <div style={S.container}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-        .pageIn{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) forwards}
-        .cardIn{animation:fadeUp .6s cubic-bezier(.16,1,.3,1) forwards}
-        .c2{animation-delay:.08s;opacity:0}
-        .c3{animation-delay:.16s;opacity:0}
-        .c4{animation-delay:.24s;opacity:0}
-        .metCard{transition:transform .25s ease,box-shadow .25s ease;cursor:default}
-        .metCard:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(15,23,42,0.1)!important}
-        .jobRow{transition:all .2s ease}
-        .jobRow:hover{border-color:#FFDCC7!important;box-shadow:0 8px 24px rgba(234,78,27,0.09)!important}
-        .postBtn{transition:all .2s ease}
-        .postBtn:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(234,78,27,0.3)!important}
-        .viewBtn{transition:all .2s ease}
-        .viewBtn:hover{background:#FFF4EE!important;color:${C.accent}!important;border-color:#FFDCC7!important}
-        .quickAction{transition:all .2s ease}
-        .quickAction:hover{background:#FFF4EE!important;border-color:#FFDCC7!important}
-        .progressBar{background:linear-gradient(90deg,${C.teal},#3ECFB8);background-size:200% 100%;animation:shimmer 2s linear infinite}
-        @media(max-width:1024px){
-          .grid2{grid-template-columns:1fr!important}
-        }
-        @media(max-width:768px){
-          .main{padding:20px 16px!important}
-          .metricsRow{grid-template-columns:1fr 1fr!important}
-        }
-      `}</style>
+    <div style={styles.mainWrapper}>
+      <div style={styles.backgroundLayer}>
+        <div style={styles.meshOne} />
+        <div style={styles.meshTwo} />
+        <div style={styles.meshThree} />
+        <div style={styles.noiseLayer} />
+        <div style={styles.gridPattern} />
+      </div>
 
-      <main className="main" style={S.main}>
-        <div className="pageIn" style={S.topBar}>
-          <div>
-            <h1 style={S.heading}>Welcome back, {profile?.full_name?.split(' ')[0] || 'Employer'}</h1>
-            <p style={S.headSub}>Manage your job listings and find the best candidates</p>
-          </div>
-          <button className="postBtn" style={S.postBtn} onClick={() => navigate('/post-job')}>
-            <Icon path={icons.plus} size={16} /> Post a job
-          </button>
-        </div>
-
-        <div className="metricsRow" style={S.metricsRow}>
-          {[
-            { label: 'Active Listings', val: jobs.length, color: C.blue, bg: '#EFF6FF', icon: icons.briefcase },
-            { label: 'Total Applicants', val: totalApplicants, color: C.teal, bg: '#ECFDF5', icon: icons.users },
-            { label: 'Shortlisted', val: totalShortlisted, color: C.gold, bg: '#FEFCE8', icon: icons.star },
-            { label: 'Hired', val: 0, color: C.accent, bg: '#FFF1EA', icon: icons.trophy },
-          ].map((m, i) => (
-            <div key={i} className={`metCard cardIn c${i + 1}`} style={{ ...S.metCard, borderTop: `3px solid ${m.color}` }}>
-              <div style={{ ...S.metIcon, background: m.bg, color: m.color }}><Icon path={m.icon} size={18} /></div>
-              <div style={{ ...S.metVal, color: m.color }}>{m.val}</div>
-              <div style={S.metLabel}>{m.label}</div>
+      <aside
+        style={{
+          ...styles.sidebar,
+          width: isHovered ? '272px' : '82px',
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div style={styles.sidebarTop}>
+          <div style={styles.logoRow}>
+            <div
+              style={{
+                ...styles.logoMark,
+                transform: isHovered ? 'rotate(-3deg) scale(1.02)' : 'none',
+              }}
+            >
+              <Icon path={icons.grid} size={19} strokeWidth={2} />
             </div>
-          ))}
-        </div>
-
-        {/* ------------- OVERVIEW CONTENT ------------- */}
-        <div className="grid2" style={S.grid2}>
-          <div className="cardIn c3" style={S.card}>
-            <div style={S.cardHead}>
-              <div style={S.cardTitle}>Recent Job Listings</div>
-              {/* 🟢 Changed from internal state to direct URL navigation */}
-              <span style={S.cardLink} onClick={() => navigate('/employer/listings')}>View all →</span>
-            </div>
-            {jobs.length === 0 && (
-              <div style={S.empty}>
-                <div style={{ color: C.sub, display: 'flex', justifyContent: 'center', marginBottom: '10px' }}><Icon path={icons.inbox} size={32} /></div>
-                <div style={S.emptyText}>No jobs posted yet</div>
-                <div style={S.emptySubText}>Post your first job to start receiving applications</div>
-                <button className="postBtn" style={{ ...S.postBtn, marginTop: '14px', fontSize: '13px', padding: '10px 20px' }} onClick={() => navigate('/post-job')}>
-                  <Icon path={icons.plus} size={14} /> Post a job
-                </button>
+            {isHovered && (
+              <div style={styles.brandContainer}>
+                <span style={styles.logoText}>CareerBridge</span>
+                <span style={styles.brandTag}>EMPLOYER</span>
               </div>
             )}
-            {jobs.slice(0, 4).map(job => (
-              <div key={job.id} className="jobRow" style={S.jobRow}>
-                <div style={S.jobLeft}>
-                  <div style={S.jobTitle}>{job.title}</div>
-                  <div style={S.jobMeta}>{job.company} · {job.location} · {job.type}</div>
-                  {job.skills && (
-                    <div style={S.skillsWrap}>
-                      {job.skills.split(',').slice(0, 3).map((s, i) => (
-                        <span key={i} style={S.skillChip}>{s.trim()}</span>
-                      ))}
-                    </div>
-                  )}
+          </div>
+          <div style={styles.divider} />
+        </div>
+
+        <nav style={styles.navList}>
+          {isHovered && <div style={styles.navHeading}>Workspace</div>}
+          {navItems.map((item) => {
+            const isActive = isRouteActive(item.path)
+            return (
+              <div
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={isActive ? 'cb-nav-item active' : 'cb-nav-item'}
+                style={{
+                  ...styles.navItem,
+                  justifyContent: isHovered ? 'flex-start' : 'center',
+                  padding: isHovered ? '0 14px' : '0',
+                }}
+              >
+                {isActive && <div style={styles.activeBackground} />}
+                <div
+                  style={{
+                    ...styles.navIconBox,
+                    color: isActive ? '#F59E0B' : '#64748B',
+                    background: isActive ? 'rgba(245,158,11,0.12)' : 'transparent',
+                  }}
+                >
+                  <Icon path={item.icon} size={18} strokeWidth={isActive ? 2 : 1.8} />
                 </div>
-                <button className="viewBtn" style={S.viewBtn} onClick={() => navigate(`/applicants/${job.id}`)}>View applicants</button>
+                {isHovered && (
+                  <span
+                    style={{
+                      ...styles.navLabel,
+                      color: isActive ? '#111827' : '#64748B',
+                      fontWeight: isActive ? '700' : '500',
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                )}
+                {isActive && isHovered && <div style={styles.activeDot} />}
               </div>
-            ))}
+            )
+          })}
+        </nav>
+
+        {isHovered && (
+          <div style={styles.statsBox}>
+            <div style={styles.statsHeader}>
+              <div>
+                <div style={styles.statsTitle}>At a glance</div>
+                <div style={styles.statsSubtitle}>Your recruitment activity</div>
+              </div>
+              <div style={styles.statsSpark}>
+                <Icon path={icons.sparkle} size={15} />
+              </div>
+            </div>
+            <div style={styles.statsGrid}>
+              <div style={styles.statItem}>
+                <div style={styles.statIcon}><Icon path={icons.usersSmall} size={16} /></div>
+                <div>
+                  <div style={styles.statNumber}>{totalApplicants}</div>
+                  <div style={styles.statLabel}>Applicants</div>
+                </div>
+              </div>
+              <div style={styles.statItem}>
+                <div style={styles.statIcon}><Icon path={icons.briefcase} size={15} /></div>
+                <div>
+                  <div style={styles.statNumber}>{jobs.length}</div>
+                  <div style={styles.statLabel}>Active jobs</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div style={styles.bottomSection}>
+          <div
+            style={{
+              ...styles.profileCard,
+              justifyContent: isHovered ? 'flex-start' : 'center',
+            }}
+          >
+            <div style={styles.avatarWrapper}>
+              <div style={styles.userAvatar}>{initials(profile?.full_name || 'Employer')}</div>
+              <div style={styles.onlineDot} />
+            </div>
+            {isHovered && (
+              <div style={styles.userInfo}>
+                <div style={styles.userName}>{profile?.full_name || 'Employer'}</div>
+                <div style={styles.userRole}>Employer account</div>
+              </div>
+            )}
           </div>
 
-          <div style={S.rightCol}>
-            <div className="cardIn c4" style={{ ...S.card, marginBottom: '16px' }}>
-              <div style={S.cardTitle}>Company Profile</div>
-              <div style={S.profileRow}><span style={S.profileLabel}>Name</span><span style={S.profileVal}>{profile?.full_name || '-'}</span></div>
-              <div style={S.profileRow}><span style={S.profileLabel}>Email</span><span style={S.profileVal}>{profile?.email || '-'}</span></div>
-              <div style={{ ...S.profileRow, border: 'none' }}><span style={S.profileLabel}>Role</span><span style={S.roleBadge}>Employer</span></div>
+          <div
+            onClick={handleLogout}
+            className="cb-logout"
+            style={{
+              ...styles.logoutWrapper,
+              justifyContent: isHovered ? 'flex-start' : 'center',
+              padding: isHovered ? '0 14px' : '0',
+            }}
+          >
+            <div style={styles.logoutIconWrapper}>
+              <Icon path={icons.logout} size={17} />
             </div>
-            <div className="cardIn c4" style={S.card}>
-              <div style={S.cardTitle}>Quick Actions</div>
-              <div style={S.quickActions}>
-                <div className="quickAction" style={S.quickAction} onClick={() => navigate('/post-job')}>
-                  <Icon path={icons.plus} size={20} style={{ color: C.accent }} />
-                  <span style={S.qaLabel}>Post Job</span>
-                </div>
-                <div className="quickAction" style={S.quickAction} onClick={() => navigate('/browse-jobs')}>
-                  <Icon path={icons.search} size={20} style={{ color: C.accent }} />
-                  <span style={S.qaLabel}>Browse Jobs</span>
-                </div>
-                <div className="quickAction" style={S.quickAction} onClick={() => navigate('/analytics')}>
-                  <Icon path={icons.grid} size={20} style={{ color: C.accent }} />
-                  <span style={S.qaLabel}>Analytics</span>
-                </div>
-              </div>
-            </div>
+            {isHovered && <span style={styles.logoutLabel}>Sign out</span>}
+            {isHovered && (
+              <Icon path={icons.chevron} size={14} style={{ marginLeft: 'auto', opacity: 0.4 }} />
+            )}
           </div>
         </div>
+      </aside>
+
+      <main
+        style={{
+          ...styles.contentArea,
+          marginLeft: isHovered ? '272px' : '82px',
+        }}
+      >
+        <Outlet />
       </main>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; }
+        @keyframes cbFadeIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes cbPulse { 0%,100% { opacity:.45; transform:scale(1); } 50% { opacity:.8; transform:scale(1.04); } }
+        @keyframes cbFloat { 0%,100% { transform:translate3d(0,0,0) scale(1); } 50% { transform:translate3d(15px,-10px,0) scale(1.04); } }
+        .cb-nav-item { transition: transform .22s cubic-bezier(.2,.8,.2,1), background .22s ease; }
+        .cb-nav-item:hover { transform: translateX(3px); background: rgba(15,23,42,.035); }
+        .cb-nav-item.active:hover { transform: translateX(3px); }
+        .cb-logout { transition: background .2s ease, color .2s ease, transform .2s ease; }
+        .cb-logout:hover { background: rgba(239,68,68,.06); color: #DC2626; transform: translateX(2px); }
+        @media (max-width: 768px) { .cb-nav-item { min-height: 48px; } }
+      `}</style>
     </div>
   )
 }
 
 // ============================================================
-// 🎨 STYLES
+// 🎨 PREMIUM LAYOUT STYLES
 // ============================================================
-const S = {
-  container: { minHeight: '100vh', background: C.bg, fontFamily: "'Inter', -apple-system, sans-serif" },
+const styles = {
+  mainWrapper: {
+    display: 'flex',
+    minHeight: '100vh',
+    width: '100%',
+    minWidth: 0,
+    boxSizing: 'border-box',
+    background: '#F8FAFC',
+    fontFamily: "'Inter', -apple-system, sans-serif",
+    position: 'relative',
+    overflowX: 'hidden',
+  },
+  backgroundLayer: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 0,
+    pointerEvents: 'none',
+    overflow: 'hidden',
+  },
+  meshOne: {
+    position: 'absolute',
+    width: '700px', height: '700px',
+    top: '-300px', right: '-180px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(245,158,11,.085), transparent 68%)',
+    filter: 'blur(20px)',
+    animation: 'cbFloat 18s ease-in-out infinite',
+  },
+  meshTwo: {
+    position: 'absolute',
+    width: '650px', height: '650px',
+    bottom: '-350px', left: '-220px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(59,130,246,.055), transparent 68%)',
+    filter: 'blur(25px)',
+    animation: 'cbFloat 23s ease-in-out infinite reverse',
+  },
+  meshThree: {
+    position: 'absolute',
+    width: '500px', height: '500px',
+    top: '40%', right: '20%',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(139,92,246,.035), transparent 68%)',
+    filter: 'blur(30px)',
+  },
+  noiseLayer: {
+    position: 'absolute',
+    inset: 0,
+    opacity: 0.025,
+    backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 180 180\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'.4\'/%3E%3C/svg%3E")',
+  },
+  gridPattern: {
+    position: 'absolute',
+    inset: 0,
+    opacity: 0.35,
+    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(15,23,42,.035) 1px, transparent 0)',
+    backgroundSize: '34px 34px',
+  },
 
-  main: { padding: '32px 36px', overflowY: 'auto' },
-  topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px', marginBottom: '28px' },
-  heading: { fontSize: '22px', fontWeight: '800', color: C.ink, marginBottom: '4px' },
-  headSub: { fontSize: '14px', color: C.sub },
-  postBtn: { display: 'flex', alignItems: 'center', gap: '7px', padding: '11px 22px', background: C.accent, color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '700', boxShadow: '0 4px 12px rgba(234,78,27,0.28)' },
+  // ✅ FIXED SIDEBAR: Perfectly contained layout
+  sidebar: {
+    display: 'flex',
+    flexDirection: 'column',
 
-  metricsRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px', marginBottom: '24px' },
-  metCard: { background: C.card, borderRadius: '14px', padding: '20px', border: `1px solid ${C.border}`, boxShadow: '0 2px 8px rgba(15,23,42,0.04)' },
-  metIcon: { width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' },
-  metVal: { fontSize: '28px', fontWeight: '800', marginBottom: '4px' },
-  metLabel: { fontSize: '12.5px', color: C.sub, fontWeight: '600' },
+    /* Keeps the floating sidebar completely inside the viewport */
+    height: 'calc(100vh - 32px)',
+    minHeight: 0,
+    boxSizing: 'border-box',
 
-  grid2: { display: 'grid', gridTemplateColumns: '1fr 360px', gap: '16px' },
-  rightCol: {},
-  card: { background: C.card, borderRadius: '16px', padding: '22px', border: `1px solid ${C.border}`, boxShadow: '0 2px 8px rgba(15,23,42,0.04)', marginBottom: '0' },
-  cardHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' },
-  cardTitle: { fontSize: '15px', fontWeight: '800', color: C.ink, marginBottom: '16px' },
-  cardLink: { fontSize: '13px', color: C.accent, fontWeight: '700', cursor: 'pointer', marginBottom: '16px' },
+    margin: '16px 0 16px 16px',
+    padding: '20px 10px 12px',
 
-  jobRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: '10px', border: `1px solid ${C.border}`, marginBottom: '10px', background: '#FAFBFC' },
-  jobLeft: { flex: 1 },
-  jobTitle: { fontSize: '14px', fontWeight: '700', color: C.ink, marginBottom: '3px' },
-  jobMeta: { fontSize: '12px', color: C.sub, marginBottom: '6px' },
-  skillsWrap: { display: 'flex', flexWrap: 'wrap', gap: '5px' },
-  skillChip: { background: '#FFF4EE', color: C.accent, padding: '3px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: '600' },
-  viewBtn: { padding: '8px 16px', background: C.card, color: C.navText, border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', marginLeft: '12px' },
+    background: 'linear-gradient(145deg, rgba(255,255,255,.78), rgba(255,255,255,.56))',
+    backdropFilter: 'blur(30px) saturate(150%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(150%)',
 
-  profileRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: `1px solid ${C.border}` },
-  profileLabel: { fontSize: '12.5px', color: C.sub, fontWeight: '500' },
-  profileVal: { fontSize: '13px', fontWeight: '600', color: C.navText },
-  roleBadge: { background: '#ECFDF5', color: C.teal, padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' },
+    border: '1px solid rgba(255,255,255,.82)',
+    borderRadius: '26px',
 
-  quickActions: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '4px' },
-  quickAction: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px 10px', background: '#FAFBFC', borderRadius: '12px', cursor: 'pointer', border: `1px solid ${C.border}` },
-  qaLabel: { fontSize: '12px', fontWeight: '700', color: C.navText, textAlign: 'center' },
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    zIndex: 100,
 
-  empty: { textAlign: 'center', padding: '40px 0', color: C.sub },
-  emptyText: { fontSize: '14px', fontWeight: '700', color: C.navText, marginBottom: '4px' },
-  emptySubText: { fontSize: '13px' }
+    overflow: 'hidden',
+
+    transition: 'width .34s cubic-bezier(.22,1,.36,1)',
+
+    boxShadow: '0 25px 70px rgba(15,23,42,.08), 0 8px 24px rgba(15,23,42,.04), inset 0 1px 0 rgba(255,255,255,.95)',
+  },
+
+  sidebarTop: {
+    width: '100%',
+    flexShrink: 0,
+  },
+
+  navList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '5px',
+
+    /* This is the important part */
+    flex: '1 1 auto',
+    minHeight: 0,
+
+    width: '100%',
+
+    /* Allows navigation to shrink instead of pushing Logout down */
+    overflowY: 'auto',
+    overflowX: 'hidden',
+
+    /* Keeps scrollbar subtle */
+    scrollbarWidth: 'thin',
+    scrollbarColor: 'rgba(148,163,184,.25) transparent',
+  },
+
+  logoRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '12px',
+    width: '100%',
+    minHeight: '48px',
+    padding: '0 4px',
+  },
+  logoMark: {
+    width: '46px', height: '46px', minWidth: '46px',
+    borderRadius: '15px',
+    background: 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 45%, #D97706 100%)',
+    color: '#FFFFFF',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 10px 24px rgba(245,158,11,.24), inset 0 1px 0 rgba(255,255,255,.35)',
+    transition: 'transform .3s cubic-bezier(.2,.8,.2,1)',
+  },
+  brandContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    minWidth: 0,
+    animation: 'cbFadeIn .25s ease forwards',
+  },
+  logoText: {
+    fontSize: '20px', lineHeight: 1, fontWeight: '800',
+    letterSpacing: '-.7px', color: '#0F172A', whiteSpace: 'nowrap',
+  },
+  brandTag: {
+    marginTop: '5px', fontSize: '8px', lineHeight: 1,
+    fontWeight: '800', letterSpacing: '1.5px', color: '#F59E0B',
+  },
+  divider: {
+    height: '1px',
+    margin: '20px 8px 18px',
+    background: 'linear-gradient(90deg, transparent, rgba(148,163,184,.22), transparent)',
+  },
+  navHeading: {
+    padding: '0 14px 9px',
+    fontSize: '9px', fontWeight: '800', color: '#94A3B8',
+    textTransform: 'uppercase', letterSpacing: '1.4px',
+    animation: 'cbFadeIn .25s ease forwards',
+  },
+  navItem: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
+    height: '50px',
+    borderRadius: '15px',
+    cursor: 'pointer',
+    overflow: 'hidden',
+  },
+  activeBackground: {
+    position: 'absolute', inset: 0,
+    background: 'linear-gradient(90deg, rgba(245,158,11,.13), rgba(245,158,11,.055))',
+    border: '1px solid rgba(245,158,11,.10)',
+    borderRadius: '15px',
+    pointerEvents: 'none',
+  },
+  navIconBox: {
+    position: 'relative', zIndex: 2,
+    width: '36px', height: '36px', minWidth: '36px',
+    borderRadius: '11px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all .22s ease',
+  },
+  navLabel: {
+    position: 'relative', zIndex: 2,
+    fontSize: '13.5px', lineHeight: 1,
+    letterSpacing: '-.15px', whiteSpace: 'nowrap',
+    marginLeft: '11px',
+    animation: 'cbFadeIn .25s ease forwards',
+  },
+  activeDot: {
+    position: 'absolute',
+    right: '13px',
+    width: '5px', height: '5px',
+    borderRadius: '50%',
+    background: '#F59E0B',
+    boxShadow: '0 0 0 4px rgba(245,158,11,.08), 0 0 12px rgba(245,158,11,.35)',
+    animation: 'cbPulse 2s ease-in-out infinite',
+  },
+
+  // ✅ FIXED: Shrinkable stats box
+  statsBox: {
+    flexShrink: 0,
+    margin: '12px 4px 12px',
+    padding: '16px',
+    borderRadius: '18px',
+    background: 'linear-gradient(145deg, rgba(255,255,255,.75), rgba(248,250,252,.55))',
+    border: '1px solid rgba(255,255,255,.8)',
+    boxShadow: '0 12px 30px rgba(15,23,42,.045)',
+    animation: 'cbFadeIn .28s ease forwards',
+  },
+  statsHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '14px',
+  },
+  statsTitle: { fontSize: '11px', fontWeight: '800', color: '#334155', letterSpacing: '.3px' },
+  statsSubtitle: { marginTop: '3px', fontSize: '9px', color: '#94A3B8', fontWeight: '500' },
+  statsSpark: {
+    width: '28px', height: '28px',
+    borderRadius: '9px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    color: '#F59E0B',
+    background: 'rgba(245,158,11,.10)',
+  },
+  statsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' },
+  statItem: {
+    display: 'flex', alignItems: 'center', gap: '8px',
+    padding: '9px',
+    borderRadius: '12px',
+    background: 'rgba(248,250,252,.75)',
+  },
+  statIcon: {
+    width: '28px', height: '28px', minWidth: '28px',
+    borderRadius: '9px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    color: '#64748B',
+    background: '#FFFFFF',
+  },
+  statNumber: { fontSize: '15px', fontWeight: '800', lineHeight: 1, color: '#0F172A' },
+  statLabel: { marginTop: '4px', fontSize: '8px', fontWeight: '600', color: '#94A3B8', whiteSpace: 'nowrap' },
+
+  // ✅ FIXED: Pinned to bottom
+  bottomSection: {
+    width: '100%',
+    marginTop: 'auto',
+    paddingTop: '8px',
+    flexShrink: 0,
+  },
+  profileCard: {
+    display: 'flex', alignItems: 'center', gap: '10px',
+    minHeight: '58px', padding: '8px 8px',
+    borderRadius: '15px',
+    transition: 'background .2s ease',
+  },
+  avatarWrapper: { position: 'relative' },
+  userAvatar: {
+    width: '40px', height: '40px', minWidth: '40px',
+    borderRadius: '13px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'linear-gradient(135deg, #F1F5F9, #E2E8F0)',
+    color: '#334155', fontSize: '12px', fontWeight: '800',
+    border: '1px solid rgba(255,255,255,.9)',
+    boxShadow: '0 5px 15px rgba(15,23,42,.06)',
+  },
+  onlineDot: {
+    position: 'absolute',
+    right: '-1px', bottom: '-1px',
+    width: '10px', height: '10px',
+    borderRadius: '50%',
+    background: '#22C55E',
+    border: '2px solid #FFFFFF',
+    boxShadow: '0 0 0 2px rgba(34,197,94,.08)',
+  },
+  userInfo: { minWidth: 0, animation: 'cbFadeIn .25s ease forwards' },
+  userName: {
+    maxWidth: '160px',
+    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+    fontSize: '12.5px', fontWeight: '700', color: '#0F172A',
+  },
+  userRole: { marginTop: '3px', fontSize: '9.5px', fontWeight: '500', color: '#94A3B8' },
+  logoutWrapper: {
+    display: 'flex', alignItems: 'center',
+    width: '100%', height: '42px',
+    borderRadius: '13px',
+    cursor: 'pointer',
+    color: '#64748B',
+    marginTop: '4px', fontWeight: '600',
+  },
+  logoutIconWrapper: {
+    width: '36px', height: '36px', minWidth: '36px',
+    borderRadius: '11px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    transition: 'all .2s ease',
+  },
+  logoutLabel: { marginLeft: '11px', fontSize: '13px', animation: 'cbFadeIn .25s ease forwards' },
+  
+  // Content
+  contentArea: {
+    flex: '1 1 auto',
+    minWidth: 0,
+    width: 'auto',
+    maxWidth: 'none',
+    boxSizing: 'border-box',
+    padding: '32px 40px',
+    position: 'relative',
+    transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  }
 }

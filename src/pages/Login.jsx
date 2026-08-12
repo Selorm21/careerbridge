@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom' // 🟢 Removed useNavigate
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Rocket } from 'lucide-react'
 
 export default function Login() {
-  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -61,7 +60,8 @@ export default function Login() {
     if (error) {
       setError(error.message)
     } else {
-      navigate('/student')
+      // ✅ FIXED: Removed navigate('/student'). App.jsx handles the routing now!
+      console.log('✅ Login successful. App.jsx will now route you based on your role.')
     }
     setLoading(false)
   }
@@ -73,7 +73,7 @@ export default function Login() {
   return (
     <div style={styles.page}>
       
-            {/* 🏠 FLOATING BACK BUTTON (Goes to Landing Page) */}
+      {/* 🏠 FLOATING BACK BUTTON */}
       <Link to="/" style={styles.backButton}>
         <span style={styles.backIcon}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E2E8F0" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -86,16 +86,13 @@ export default function Login() {
 
       {/* 🎨 ANIMATED CINEMATIC BACKGROUND */}
       <div style={styles.bgContainer}>
-        {/* Deep Base */}
         <div style={styles.bgGradient}></div>
         <div style={styles.vignette}></div>
         
-        {/* Floating Geometric Blobs */}
         <div style={{...styles.shape, ...styles.shape1}} className="animShape"></div>
         <div style={{...styles.shape, ...styles.shape2}} className="animShape"></div>
         <div style={{...styles.shape, ...styles.shape3}} className="animShape"></div>
         
-        {/* ✨ ANIMATED SCROLLING TEXT BACKGROUND (Visible through glass & on sides) */}
         <div className="textScroller" style={styles.textScroller}>
           <div style={styles.textRow1}>
             <span>CareerBridge • Launch Your Future • </span>
@@ -111,7 +108,6 @@ export default function Login() {
           </div>
         </div>
         
-        {/* Central Glowing Spot */}
         <div style={styles.glowSpot}></div>
       </div>
 
@@ -121,13 +117,12 @@ export default function Login() {
         className="cardIn"
         style={{
           ...styles.loginCard,
-          background: `radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(255,255,255,0.08), transparent 40%)`,
-          backgroundColor: 'rgba(15, 23, 42, 0.65)'
+          // ✅ FIXED: Combined background and backgroundColor into one string
+          background: `radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(255,255,255,0.08), transparent 40%), rgba(15, 23, 42, 0.65)`
         }}
       >
         <div style={styles.cardGlowBorder}></div>
         
-        {/* Brand Logo at Top of Card */}
         <div style={styles.cardLogoContainer}>
           <div style={styles.logoIconSmall}><Rocket size={18} color="#fff" /></div>
           <span style={styles.cardLogoText}>CareerBridge</span>
@@ -138,56 +133,27 @@ export default function Login() {
           <p style={styles.sub}>Enter your credentials to access your account.</p>
         </div>
 
-        {/* Alerts */}
         {error && <div style={styles.errorBanner}><span style={styles.errorIcon}>!</span> {error}</div>}
         {success && <div style={styles.successBanner}>✅ {success}</div>}
 
-        {/* Form */}
         <form onSubmit={handleLogin} style={styles.form}>
           <div style={styles.field}>
             <label style={styles.label}>Email address</label>
             <div style={styles.inputWrapper}>
               <Mail size={18} style={styles.inputIcon} color="#94A3B8" />
-              <input
-                className="inputF"
-                style={styles.input}
-                type="email"
-                placeholder="you@university.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <input className="inputF" style={styles.input} type="email" placeholder="you@university.edu" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
           </div>
 
           <div style={styles.field}>
             <div style={styles.labelRow}>
               <label style={styles.label}>Password</label>
-              <span
-                className="forgotLink"
-                style={styles.forgotLink}
-                onClick={handleForgotPassword}
-              >
-                Forgot password?
-              </span>
+              <span className="forgotLink" style={styles.forgotLink} onClick={handleForgotPassword}>Forgot password?</span>
             </div>
             <div style={styles.inputWrapper}>
               <Lock size={18} style={styles.inputIcon} color="#94A3B8" />
-              <input
-                className="inputF"
-                style={{ ...styles.input, paddingRight: '44px' }}
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={styles.eyeBtn}
-                aria-label="Toggle password visibility"
-              >
+              <input className="inputF" style={{ ...styles.input, paddingRight: '44px' }} type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
                 {showPassword ? <EyeOff size={18} color="#64748B" /> : <Eye size={18} color="#64748B" />}
               </button>
             </div>
@@ -200,18 +166,12 @@ export default function Login() {
             </label>
           </div>
 
-          <button
-            className="btnP"
-            style={styles.btn}
-            type="submit"
-            disabled={loading}
-          >
+          <button className="btnP" style={styles.btn} type="submit" disabled={loading}>
             {loading ? 'Authenticating...' : 'Sign in'} 
             {!loading && <ArrowRight size={18} />}
           </button>
         </form>
 
-        {/* Social Login */}
         <div style={styles.orRow}>
           <div style={styles.rule}></div>
           <div style={styles.orText}>OR CONTINUE WITH</div>
@@ -232,19 +192,13 @@ export default function Login() {
         </p>
       </div>
 
-      {/* 🎬 GLOBAL ANIMATIONS */}
       <style>{`
-        
-        
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
         
-        /* Card Entry Animation */
         @keyframes fadeUp {
           from { opacity:0; transform:translateY(40px) scale(0.96); }
           to { opacity:1; transform:translateY(0) scale(1); }
         }
-        
-        /* Shape Floating Animations */
         @keyframes floatShape1 {
           0%, 100% { transform: translate(0, 0) rotate(0deg); }
           33% { transform: translate(40px, -40px) rotate(120deg); }
@@ -258,8 +212,6 @@ export default function Login() {
           0%, 100% { transform: translate(0, 0) rotate(0deg); }
           50% { transform: translate(30px, 30px) rotate(180deg); }
         }
-        
-        /* 🌟 TEXT SCROLLER ANIMATIONS */
         @keyframes scrollTextRight {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
@@ -274,7 +226,6 @@ export default function Login() {
         .animShape:nth-child(2) { animation-name: floatShape2; animation-duration: 25s; }
         .animShape:nth-child(3) { animation-name: floatShape3; animation-duration: 18s; }
         
-        /* Input Focus States */
         .inputF { transition: all 0.2s ease; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); }
         .inputF:focus { 
           outline: none; 
@@ -317,8 +268,6 @@ const styles = {
     overflow: 'hidden',
     background: '#050B14',
   },
-
-  // 🏠 FLOATING BACK BUTTON
   backButton: {
     position: 'fixed',
     top: '24px',
@@ -340,14 +289,13 @@ const styles = {
     fontFamily: "'Inter', sans-serif",
     boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
   },
-   backIcon: {
+  backIcon: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     width: '24px',
     height: '24px',
   },
-  // 🌌 FULL PAGE ANIMATED BACKGROUND
   bgContainer: {
     position: 'absolute',
     inset: 0,
@@ -383,8 +331,6 @@ const styles = {
     filter: 'blur(60px)',
     pointerEvents: 'none',
   },
-  
-  // ✨ ANIMATED SCROLLING TEXT
   textScroller: {
     position: 'absolute',
     inset: 0,
@@ -416,8 +362,6 @@ const styles = {
     letterSpacing: '-3px',
     animation: 'scrollTextLeft 35s linear infinite',
   },
-
-  // Geometric Shapes
   shape: {
     position: 'absolute',
     borderRadius: '50%',
@@ -449,16 +393,13 @@ const styles = {
     background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.05))',
     borderRadius: '50%',
   },
-
-  // 🃏 FLOATING LOGIN CARD
   loginCard: {
     position: 'relative',
-    zIndex: 10, // Sits *above* the text scroller
+    zIndex: 10,
     width: '100%',
     maxWidth: '420px',
     padding: '40px 36px',
     borderRadius: '24px',
-    background: 'rgba(15, 23, 42, 0.65)',
     backdropFilter: 'blur(24px)',
     WebkitBackdropFilter: 'blur(24px)',
     border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -476,8 +417,6 @@ const styles = {
     maskComposite: 'exclude',
     pointerEvents: 'none',
   },
-
-  // Card Form
   cardLogoContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -518,8 +457,6 @@ const styles = {
     margin: 0,
     lineHeight: 1.5,
   },
-  
-  // Alerts
   errorBanner: {
     display: 'flex',
     alignItems: 'center',
@@ -556,8 +493,6 @@ const styles = {
     marginBottom: '20px',
     border: '1px solid rgba(16, 185, 129, 0.2)',
   },
-
-  // Form Elements
   form: {
     display: 'flex',
     flexDirection: 'column',
@@ -656,8 +591,6 @@ const styles = {
     boxShadow: '0 4px 16px rgba(99, 102, 241, 0.4)',
     fontFamily: 'inherit',
   },
-
-  // Social
   orRow: {
     display: 'flex',
     alignItems: 'center',
