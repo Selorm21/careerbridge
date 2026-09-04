@@ -166,7 +166,7 @@ export default function EmployerLayout() {
   const navItems = [
     { path: '/employer', icon: icons.grid, label: 'Overview' },
     { path: '/employer/post-job', icon: icons.plus, label: 'Post a Job' },
-    { path: '/employer/browse-jobs', icon: icons.search, label: 'Browse All Jobs' },
+    { path: '/employer/my-jobs', icon: icons.briefcase, label: 'My Job Listings' },
     { path: '/employer/applicants', icon: icons.users, label: 'View Applicants' },
     { path: '/employer/analytics', icon: icons.analytics, label: 'Analytics' },
   ]
@@ -418,35 +418,25 @@ const styles = {
     backgroundSize: '34px 34px',
   },
 
-  // ✅ FIXED SIDEBAR: Perfectly contained layout
   sidebar: {
     display: 'flex',
     flexDirection: 'column',
-
-    /* Keeps the floating sidebar completely inside the viewport */
     height: 'calc(100vh - 32px)',
     minHeight: 0,
     boxSizing: 'border-box',
-
     margin: '16px 0 16px 16px',
     padding: '20px 10px 12px',
-
     background: 'linear-gradient(145deg, rgba(255,255,255,.78), rgba(255,255,255,.56))',
     backdropFilter: 'blur(30px) saturate(150%)',
     WebkitBackdropFilter: 'blur(30px) saturate(150%)',
-
     border: '1px solid rgba(255,255,255,.82)',
     borderRadius: '26px',
-
     position: 'fixed',
     top: 0,
     left: 0,
     zIndex: 100,
-
     overflow: 'hidden',
-
     transition: 'width .34s cubic-bezier(.22,1,.36,1)',
-
     boxShadow: '0 25px 70px rgba(15,23,42,.08), 0 8px 24px rgba(15,23,42,.04), inset 0 1px 0 rgba(255,255,255,.95)',
   },
 
@@ -459,18 +449,11 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '5px',
-
-    /* This is the important part */
     flex: '1 1 auto',
     minHeight: 0,
-
     width: '100%',
-
-    /* Allows navigation to shrink instead of pushing Logout down */
     overflowY: 'auto',
     overflowX: 'hidden',
-
-    /* Keeps scrollbar subtle */
     scrollbarWidth: 'thin',
     scrollbarColor: 'rgba(148,163,184,.25) transparent',
   },
@@ -564,7 +547,6 @@ const styles = {
     animation: 'cbPulse 2s ease-in-out infinite',
   },
 
-  // ✅ FIXED: Shrinkable stats box
   statsBox: {
     flexShrink: 0,
     margin: '12px 4px 12px',
@@ -607,7 +589,6 @@ const styles = {
   statNumber: { fontSize: '15px', fontWeight: '800', lineHeight: 1, color: '#0F172A' },
   statLabel: { marginTop: '4px', fontSize: '8px', fontWeight: '600', color: '#94A3B8', whiteSpace: 'nowrap' },
 
-  // ✅ FIXED: Pinned to bottom
   bottomSection: {
     width: '100%',
     marginTop: 'auto',
@@ -661,8 +642,7 @@ const styles = {
     transition: 'all .2s ease',
   },
   logoutLabel: { marginLeft: '11px', fontSize: '13px', animation: 'cbFadeIn .25s ease forwards' },
-  
-  // Content
+
   contentArea: {
     flex: '1 1 auto',
     minWidth: 0,

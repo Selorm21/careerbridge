@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
+import VerifiedBadge, { isStudentFullyVerified } from '../components/VerifiedBadge'
 
 const Icon = ({ path, size = 18, ...rest }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -53,11 +54,21 @@ export default function AllApplicants() {
         // Fetch all applications for these jobs, including student profile info
         const { data: appsData } = await supabase
           .from('applications')
-          .select('*, profiles(full_name, email, university, course), jobs(title, company)')
+          .select('*, profiles(full_name, email, university, course, id), jobs(title, company)')
           .in('job_id', jobIds)
           .order('created_at', { ascending: false })
           
-        setApplications(appsData || [])
+        // Fetch verification status for each applicant using shared helper
+        const appsWithVerification = await Promise.all((appsData || []).map(async (app) => {
+          const { data: docs } = await supabase
+            .from('documents')
+            .select('doc_type, status')
+            .eq('student_id', app.profiles?.id)
+          
+          return { ...app, isFullyVerified: isStudentFullyVerified(docs) }
+        }))
+        
+        setApplications(appsWithVerification || [])
       }
       setLoading(false)
     }
@@ -145,7 +156,10 @@ export default function AllApplicants() {
                         <div style={S.studentCell}>
                           <div style={S.avatar}>{initials(app.profiles?.full_name)}</div>
                           <div>
-                            <div style={S.studentName}>{app.profiles?.full_name || 'Unknown'}</div>
+                            <div style={S.studentName}>
+                              {app.profiles?.full_name || 'Unknown'}
+                              {app.isFullyVerified && <VerifiedBadge size={14} />}
+                            </div>
                             <div style={S.studentSub}>{app.profiles?.university || app.profiles?.email || 'No details'}</div>
                           </div>
                         </div>
@@ -196,7 +210,7 @@ const S = {
   td: { padding: '16px 20px', fontSize: '14px', color: C.ink, verticalAlign: 'middle', borderBottom: `1px solid ${C.border}` },
   studentCell: { display: 'flex', alignItems: 'center', gap: '12px' },
   avatar: { width: '40px', height: '40px', borderRadius: '50%', background: '#F1F5F9', color: C.ink, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, flexShrink: 0 },
-  studentName: { fontSize: '14px', fontWeight: 700, color: C.ink },
+  studentName: { fontSize: '14px', fontWeight: 700, color: C.ink, display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' },
   studentSub: { fontSize: '12px', color: C.sub, marginTop: '2px' },
   dateBadge: { fontSize: '13px', color: C.sub, fontWeight: 500 },
   badge: { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap' },

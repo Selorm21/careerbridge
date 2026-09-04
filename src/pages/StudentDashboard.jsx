@@ -183,15 +183,25 @@ export default function StudentDashboard() {
     },
   ]
 
-  const handleTabChange = (tab) => {
-    const stateTabs = ['overview', 'applications', 'recommended', 'interviews']
-    if (stateTabs.includes(tab)) {
-      if (tab === 'overview') navigate('/student')
-      else navigate(`/student?tab=${tab}`)
-    } else {
-      navigate(`/student/${tab}`)
-    }
+ const handleTabChange = (tab) => {
+  const routeMap = {
+    'overview': '/student',
+    'browse': '/student/browse-jobs',        // ✅ Fixed
+    'profile': '/student/profile',           // ✅ Already working
+    'applications': '/student/applications', // ⏳ Leave for now
+    'resume': '/student/resume-builder',     // ✅ Fixed
+    'recommended': '/student?tab=recommended',
+    'interviews': '/student?tab=interviews',
   }
+  
+  const path = routeMap[tab]
+  if (path) {
+    navigate(path)
+  } else {
+    navigate(`/student/${tab}`)
+  }
+}
+
 
   const formatDate = (dateString) => {
     const date = new Date(dateString)

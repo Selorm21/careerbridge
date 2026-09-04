@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
+import MyJobListings from './pages/MyJobListings'
 
 // Pages
 import Landing from './pages/Landing'
@@ -19,8 +20,8 @@ import CoordinatorDashboard from './pages/CoordinatorDashboard'
 import DocumentUpload from './pages/DocumentUpload'
 import AdminDashboard from './pages/AdminDashboard'
 import ResumeBuilder from './pages/ResumeBuilder'
-
 import AllApplicants from './pages/AllApplicants'
+import Applications from './pages/Applications'
 
 // Layouts
 import StudentLayout from './components/StudentLayout'
@@ -154,19 +155,26 @@ function App() {
       <Route path="/login" element={!session ? <Login /> : <Navigate to={getDashboardPath()} replace />} />
       <Route path="/signup" element={!session ? <Signup /> : <Navigate to={getDashboardPath()} replace />} />
       
+      {/* ============================================
+          🎓 STUDENT ROUTES
+      ============================================ */}
       <Route path="/student" element={session && role === 'student' ? <StudentLayout /> : <Navigate to={getDashboardPath()} replace />}>
         <Route index element={<StudentDashboard />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="browse-jobs" element={<BrowseJobs />} />
+        <Route path="my-applications" element={<Applications />} />
         <Route path="profile" element={<StudentProfile />} />
         <Route path="resume-builder" element={<ResumeBuilder />} />
         <Route path="documents" element={<DocumentUpload />} />
       </Route>
 
+      {/* ============================================
+          👔 EMPLOYER ROUTES
+      ============================================ */}
       <Route path="/employer" element={session && role === 'employer' ? <EmployerLayout /> : <Navigate to={getDashboardPath()} replace />}>
         <Route index element={<EmployerDashboard />} />
         <Route path="post-job" element={<PostJob />} />
-        <Route path="browse-jobs" element={<BrowseJobs />} />
+        <Route path="my-jobs" element={<MyJobListings />} />  {/* ← FIXED: matches sidebar */}
         <Route path="analytics" element={<Analytics />} />
         <Route path="listings" element={<AllApplicants />} />
         <Route path="applicants" element={<AllApplicants />} />
@@ -174,15 +182,28 @@ function App() {
         <Route path="schedule/:applicationId" element={<ScheduleInterview />} />
       </Route>
 
+      {/* ============================================
+          🎯 COORDINATOR ROUTES
+      ============================================ */}
       <Route path="/coordinator" element={session && role === 'coordinator' ? <CoordinatorDashboard /> : <Navigate to={getDashboardPath()} replace />} />
+
+      {/* ============================================
+          👑 ADMIN ROUTES
+      ============================================ */}
       <Route path="/admin" element={session && role === 'admin' ? <AdminDashboard /> : <Navigate to={getDashboardPath()} replace />} />
       
+      {/* ============================================
+          🔀 REDIRECT ROUTES (for cleaner URLs)
+      ============================================ */}
       <Route path="/analytics" element={session && role === 'student' ? <Navigate to="/student/analytics" replace /> : <Navigate to={getDashboardPath()} replace />} />
       <Route path="/browse-jobs" element={session && role === 'student' ? <Navigate to="/student/browse-jobs" replace /> : <Navigate to={getDashboardPath()} replace />} />
       <Route path="/student-profile" element={session && role === 'student' ? <Navigate to="/student/profile" replace /> : <Navigate to={getDashboardPath()} replace />} />
       <Route path="/resume-builder" element={session && role === 'student' ? <Navigate to="/student/resume-builder" replace /> : <Navigate to={getDashboardPath()} replace />} />
       <Route path="/documents" element={session && role === 'student' ? <Navigate to="/student/documents" replace /> : <Navigate to={getDashboardPath()} replace />} />
       
+      {/* ============================================
+          🚫 404 - CATCH ALL
+      ============================================ */}
       <Route path="*" element={<Navigate to={session ? getDashboardPath() : '/'} replace />} />
     </Routes>
   )

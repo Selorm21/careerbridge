@@ -22,6 +22,7 @@ const icons = {
   save: <><path d="M5 3h11l3 3v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" /><path d="M8 3v6h8V3M8 13h8v7H8z" /></>,
   bulb: <><path d="M9 18h6M10 22h4" /><path d="M12 2a6 6 0 0 0-3.5 10.9c.6.4.9 1.1.9 1.8v.3h5.2v-.3c0-.7.3-1.4.9-1.8A6 6 0 0 0 12 2z" /></>,
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
+  idCard: <><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z" /><path d="M8 12h8M8 8h6M8 16h4" /></>,
 }
 
 const C = {
@@ -45,6 +46,7 @@ export default function StudentProfile() {
   const [university, setUniversity] = useState('')
   const [course, setCourse] = useState('')
   const [graduationYear, setGraduationYear] = useState('')
+  const [indexNumber, setIndexNumber] = useState('') // 🆕 NEW FIELD
   const [skills, setSkills] = useState('')
   const [bio, setBio] = useState('')
   const [cvUrl, setCvUrl] = useState('')
@@ -67,6 +69,7 @@ export default function StudentProfile() {
         setUniversity(data.university || '')
         setCourse(data.course || '')
         setGraduationYear(data.graduation_year || '')
+        setIndexNumber(data.index_number || '') // 🆕 Load index number
         setSkills(data.skills || '')
         setBio(data.bio || '')
         setCvUrl(data.cv_url || '')
@@ -132,8 +135,13 @@ export default function StudentProfile() {
     setSuccess('')
     const { data: { user } } = await supabase.auth.getUser()
     const { error } = await supabase.from('profiles').update({
-      full_name: fullName, university, course,
-      graduation_year: graduationYear, skills, bio,
+      full_name: fullName, 
+      university, 
+      course,
+      graduation_year: graduationYear, 
+      index_number: indexNumber, // 🆕 Save index number
+      skills, 
+      bio,
       cv_url: cvUrl || undefined
     }).eq('id', user.id)
     if (error) setError(error.message)
@@ -143,10 +151,11 @@ export default function StudentProfile() {
 
   function profileStrength() {
     let score = 0
-    if (fullName) score += 20
-    if (university) score += 20
-    if (course) score += 20
-    if (skills) score += 20
+    if (fullName) score += 16
+    if (university) score += 16
+    if (course) score += 16
+    if (indexNumber) score += 16 // 🆕 Index number counts toward strength
+    if (skills) score += 16
     if (bio) score += 20
     return score
   }
@@ -227,8 +236,24 @@ export default function StudentProfile() {
                       <option>2026</option>
                       <option>2027</option>
                       <option>2028</option>
+                      <option>2029</option>
+                      <option>2030</option>
                     </select>
                   </div>
+                </div>
+
+                {/* 🆕 INDEX NUMBER - NEW FIELD */}
+                <div style={{ ...S.field, marginTop: '16px' }}>
+                  <label style={S.label}>Index Number / Student ID</label>
+                  <input 
+                    className="inputF" 
+                    style={S.input} 
+                    type="text" 
+                    placeholder="e.g. UG202312345" 
+                    value={indexNumber} 
+                    onChange={e => setIndexNumber(e.target.value)} 
+                  />
+                  <div style={S.hint}>Your student ID or index number for identification by coordinators</div>
                 </div>
               </div>
 
@@ -300,6 +325,7 @@ export default function StudentProfile() {
                   { label: 'Full name', done: !!fullName },
                   { label: 'University', done: !!university },
                   { label: 'Course', done: !!course },
+                  { label: 'Index Number', done: !!indexNumber }, // 🆕 New item
                   { label: 'Skills', done: !!skills },
                   { label: 'Bio', done: !!bio },
                 ].map((item, i) => (

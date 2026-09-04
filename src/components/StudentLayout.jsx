@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { supabase } from '../supabase'
 import { 
   LayoutGrid, Search, Sparkles, FileText, CalendarClock, 
-  UserCircle, LogOut, Rocket 
+  UserCircle, LogOut, Rocket, Briefcase 
 } from 'lucide-react'
 
 export default function StudentLayout() {
@@ -14,6 +14,7 @@ export default function StudentLayout() {
   const navItems = [
     { path: '/student', icon: LayoutGrid, label: 'Overview' },
     { path: '/student/browse-jobs', icon: Search, label: 'Browse Jobs' },
+    { path: '/student/my-applications', icon: Briefcase, label: 'My Applications' },
     { path: '/student/analytics', icon: Sparkles, label: 'Analytics' },
     { path: '/student/resume-builder', icon: FileText, label: 'Resume' },
     { path: '/student/documents', icon: CalendarClock, label: 'Documents' },

@@ -17,54 +17,87 @@ export default function ScheduleInterview() {
 
   useEffect(() => {
     async function fetchApplication() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('applications')
         .select('*, jobs(*), profiles(*)')
         .eq('id', applicationId)
         .single()
+
+      if (error) {
+        setError('Could not load this application: ' + error.message)
+        return
+      }
       setApplication(data)
     }
     fetchApplication()
-  }, [])
+  }, [applicationId])
 
   async function handleSchedule(e) {
     e.preventDefault()
-    setLoading(true)
-    setError('')
-    const { data: { user } } = await supabase.auth.getUser()
 
-    const { error } = await supabase.from('interviews').insert({
-      application_id: applicationId,
-      job_id: application.job_id,
-      student_id: application.student_id,
-      employer_id: user.id,
-      interview_date: date,
-      interview_time: time,
-      location,
-      notes,
-      status: 'scheduled'
-    })
-
-    if (error) { setError(error.message); setLoading(false); return }
-
-   await supabase.from('applications').update({ status: 'interview' }).eq('id', applicationId)
-
-    if (application?.profiles?.email) {
-      const { subject, message } = interviewScheduledEmail(
-        application.profiles.full_name,
-        application.jobs?.title,
-        application.jobs?.company,
-        date,
-        time,
-        location,
-        notes
-      )
-      await sendEmail(application.profiles.email, subject, message)
+    if (!application) {
+      setError('Application data is still loading — please wait a moment and try again.')
+      return
     }
 
-    setSuccess('Interview scheduled! Email sent to candidate.')
-    setTimeout(() => navigate(-1), 2000)
-    setLoading(false)
+    setLoading(true)
+    setError('')
+
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
+      if (!user) throw new Error('You must be logged in to schedule an interview.')
+
+      const { error: insertError } = await supabase.from('interviews').insert({
+        application_id: applicationId,
+        job_id: application.job_id,
+        student_id: application.student_id,
+        employer_id: user.id,
+        interview_date: date,
+        interview_time: time,
+        location,
+        notes,
+        status: 'scheduled'
+      })
+
+      if (insertError) throw insertError
+
+      const { error: updateError } = await supabase
+        .from('applications')
+        .update({ status: 'interview' })
+        .eq('id', applicationId)
+
+      if (updateError) throw updateError
+
+      if (application?.profiles?.email) {
+        const { subject, message } = interviewScheduledEmail(
+          application.profiles.full_name,
+          application.jobs?.title,
+          application.jobs?.company,
+          date,
+          time,
+          location,
+          notes
+        )
+        try {
+          await sendEmail(application.profiles.email, subject, message)
+        } catch (emailErr) {
+          console.error('Interview saved, but email failed to send:', emailErr)
+          setSuccess('Interview scheduled, but the notification email failed to send.')
+          setTimeout(() => navigate(-1), 2000)
+          setLoading(false)
+          return
+        }
+      }
+
+      setSuccess('Interview scheduled! Email sent to candidate.')
+      setTimeout(() => navigate(-1), 2000)
+    } catch (err) {
+      console.error('Schedule interview error:', err)
+      setError(err.message || 'Something went wrong scheduling the interview.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

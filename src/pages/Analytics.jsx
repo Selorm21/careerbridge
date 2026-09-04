@@ -650,7 +650,7 @@ export default function Analytics() {
 
       {/* CSS Animations */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
         
         @keyframes pulseGlow {
           0%, 100% { opacity: 0.3; transform: scale(1); }

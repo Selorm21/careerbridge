@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
+import DocumentVerification from '../components/DocumentVerification'
 
 const Icon = ({ path, size = 18, ...rest }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -62,11 +63,11 @@ export default function CoordinatorDashboard() {
 
   function exportToCSV() {
     const rows = [
-      ['Student Name', 'Email', 'University', 'Course', 'Skills', 'Applications', 'Status'],
+      ['Student Name', 'Email', 'University', 'Course', 'Index Number', 'Skills', 'Applications', 'Status'],
       ...students.map(s => {
         const studentApps = applications.filter(a => a.student_id === s.id)
         const latestStatus = studentApps[0]?.status || 'No applications'
-        return [s.full_name, s.email, s.university || '-', s.course || '-', s.skills || '-', studentApps.length, latestStatus]
+        return [s.full_name || 'Unknown', s.email || '-', s.university || '-', s.course || '-', s.index_number || '-', s.skills || '-', studentApps.length, latestStatus]
       })
     ]
     const csv = rows.map(r => r.join(',')).join('\n')
@@ -115,7 +116,7 @@ export default function CoordinatorDashboard() {
         @media(max-width:768px){.main{padding:20px 16px!important}.metricsRow{grid-template-columns:1fr 1fr!important}}
       `}</style>
 
-      {/* 🌟 Ambient Glowing Background (Shared Design) */}
+      {/* 🌟 Ambient Glowing Background */}
       <div style={S.bgEffects}>
         <div style={S.meshOne} className="glowPulse" />
         <div style={S.meshTwo} className="glowPulse" />
@@ -196,7 +197,7 @@ export default function CoordinatorDashboard() {
             })}
           </nav>
 
-          {/* STATS BOX (Only shown when expanded) */}
+          {/* STATS BOX */}
           {isHovered && (
             <div style={S.statsBox}>
               <div style={S.statsBoxTitle}>At a glance</div>
@@ -292,7 +293,7 @@ export default function CoordinatorDashboard() {
                   <div key={s.id} className="studentRow" style={S.studentRow}>
                     <div style={S.studentAvatar}>{s.full_name?.charAt(0)}</div>
                     <div>
-                      <div style={S.studentName}>{s.full_name}</div>
+                      <div style={S.studentName}>{s.full_name || 'Unknown Student'}</div>
                       <div style={S.studentMeta}>{s.course || 'No course set'} · {s.university || 'No university set'}</div>
                     </div>
                   </div>
@@ -314,7 +315,7 @@ export default function CoordinatorDashboard() {
                 <table style={S.table}>
                   <thead>
                     <tr>
-                      {['Name','Email','University','Course','Skills','Applications','Status'].map(h => (
+                      {['Name','Email','University','Course','Index Number','Skills','Applications','Status'].map(h => (
                         <th key={h} style={S.th}>{h}</th>
                       ))}
                     </tr>
@@ -325,10 +326,11 @@ export default function CoordinatorDashboard() {
                       const bestStatus = studentApps.find(a=>a.status==='offer')?.status || studentApps.find(a=>a.status==='interview')?.status || studentApps[0]?.status || 'No applications'
                       return (
                         <tr key={s.id} className="studentRow" style={S.tr}>
-                          <td style={S.td}><div style={S.tdName}>{s.full_name}</div></td>
-                          <td style={S.td}>{s.email}</td>
-                          <td style={S.td}>{s.university||'-'}</td>
-                          <td style={S.td}>{s.course||'-'}</td>
+                          <td style={S.td}><div style={S.tdName}>{s.full_name || 'Unknown'}</div></td>
+                          <td style={S.td}>{s.email || '-'}</td>
+                          <td style={S.td}>{s.university || '-'}</td>
+                          <td style={S.td}>{s.course || '-'}</td>
+                          <td style={S.td}>{s.index_number || '-'}</td>
                           <td style={S.td}>{s.skills ? s.skills.split(',').slice(0,3).join(', ') : '-'}</td>
                           <td style={{...S.td,textAlign:'center'}}>{studentApps.length}</td>
                           <td style={S.td}>
@@ -396,71 +398,10 @@ export default function CoordinatorDashboard() {
 
           {/* ---------- DOCUMENTS TAB ---------- */}
           {activeTab === 'documents' && (
-            <DocumentsVerification />
+            <DocumentVerification />
           )}
         </main>
       </div>
-    </div>
-  )
-}
-
-// ============================================================
-// DOCUMENTS VERIFICATION SUBCOMPONENT
-// ============================================================
-function DocumentsVerification() {
-  const [documents, setDocuments] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState(null)
-
-  useEffect(() => {
-    async function fetchDocs() {
-      const { data } = await supabase.from('documents').select('*, profiles(full_name, email, university, course)').order('uploaded_at', { ascending: false })
-      setDocuments(data || [])
-      setLoading(false)
-    }
-    fetchDocs()
-  }, [])
-
-  async function updateStatus(id, status) {
-    setUpdating(id)
-    await supabase.from('documents').update({ status }).eq('id', id)
-    const { data } = await supabase.from('documents').select('*, profiles(full_name, email, university, course)').order('uploaded_at', { ascending: false })
-    setDocuments(data || [])
-    setUpdating(null)
-  }
-
-  function getStatusStyle(status) {
-    if (status === 'verified') return { bg: 'rgba(16,185,129,0.1)', color: '#10B981' }
-    if (status === 'rejected') return { bg: 'rgba(239,68,68,0.1)', color: '#EF4444' }
-    return { bg: 'rgba(245,158,11,0.1)', color: '#F59E0B' }
-  }
-
-  const docLabel = { transcript: '🎓 Transcript', national_id: '🪪 National ID', recommendation: '📝 Recommendation' }
-
-  if (loading) return <div style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>Loading documents...</div>
-
-  return (
-    <div style={S.card}>
-      <div style={{ fontSize: '16px', fontWeight: '800', color: '#0F172A', marginBottom: '16px' }}>📁 Document Verification ({documents.length})</div>
-      {documents.length === 0 && <div style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>No documents uploaded yet</div>}
-      {documents.map(doc => {
-        const st = getStatusStyle(doc.status)
-        return (
-          <div key={doc.id} className="docRow" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px', borderRadius: '12px', border: '1px solid #F0F2F5', marginBottom: '10px', background: '#FFFFFF' }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#0F172A', marginBottom: '2px' }}>{doc.profiles?.full_name}</div>
-              <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '4px' }}>{doc.profiles?.email} · {doc.profiles?.university}</div>
-              <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151' }}>{docLabel[doc.doc_type]}</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {doc.file_url && <a href={doc.file_url} target="_blank" rel="noreferrer" style={{ fontSize: '13px', color: '#2563EB', fontWeight: '700', textDecoration: 'none' }}>View <Icon path={icons.chevron} size={14} /></a>}
-              <span style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', background: st.bg, color: st.color }}>{doc.status}</span>
-              <button onClick={() => updateStatus(doc.id, 'verified')} disabled={updating===doc.id||doc.status==='verified'} style={{ padding: '6px 12px', background: '#ECFDF5', color: '#059669', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>✓ Verify</button>
-              <button onClick={() => updateStatus(doc.id, 'rejected')} disabled={updating===doc.id||doc.status==='rejected'} style={{ padding: '6px 12px', background: '#FEF2F2', color: '#DC2626', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>✗ Reject</button>
-            </div>
-          </div>
-        )
-      })}
     </div>
   )
 }
@@ -507,7 +448,7 @@ const S = {
 
   layout: { display: 'grid', gridTemplateColumns: '1fr', minHeight: '100vh', position: 'relative', zIndex: 1 },
   
-  // Sidebar (Glass Floating - Same as Employer)
+  // Sidebar
   sidebar: { 
     display: 'flex',
     flexDirection: 'column',
