@@ -1,59 +1,186 @@
 /* src/index.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
+/* ============================================================
+   RESET
+   ============================================================ */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
-body {
+html, body, #root {
   margin: 0;
   padding: 0;
+  min-height: 100%;
+}
+
+body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background: #F8FAFC;
   color: #0F172A;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Prevent iOS text-size adjust on rotate */
+  -webkit-text-size-adjust: 100%;
+  /* Prevent accidental horizontal scroll from a single wide child */
+  overflow-x: clip;
 }
 
-/* Premium Scrollbar */
+/* Long words / URLs / emails must not break layouts */
+p, h1, h2, h3, h4, h5, h6, span, a, li, td, th, div {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: #F1F5F9; }
 ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
-/* Global Card & Button Polish to apply everywhere */
-.card, .glass-card {
-  background: #FFFFFF;
-  border: 1px solid rgba(226, 232, 240, 0.6);
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.card:hover, .glass-card:hover {
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
-  transform: translateY(-4px);
+/* ============================================================
+   BUTTONS — no more global hijacking.
+   Only buttons that opt in via .btn-primary get the brand style.
+   ============================================================ */
+button {
+  font: inherit;
+  cursor: pointer;
+  /* 44px minimum touch target on all devices */
+  min-height: 40px;
 }
 
-button, .btn-primary {
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* Opt-in brand button */
+.btn-primary {
   background: #EA4E1B;
   color: #FFFFFF;
   border: none;
   border-radius: 12px;
   font-weight: 700;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding: 12px 20px;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease,
+              background 0.2s ease;
   box-shadow: 0 4px 14px rgba(234, 78, 27, 0.25);
-  cursor: pointer;
 }
-button:hover, .btn-primary:hover {
+
+.btn-primary:hover {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 12px 24px rgba(234, 78, 27, 0.3);
 }
-button:active, .btn-primary:active {
-  transform: scale(0.95);
+
+.btn-primary:active {
+  transform: scale(0.97);
 }
 
-/* Responsive adjustments */
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card, .glass-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* Only apply hover lift where hover is a real capability */
+@media (hover: hover) and (pointer: fine) {
+  .card:hover, .glass-card:hover {
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+    transform: translateY(-4px);
+  }
+}
+
+/* ============================================================
+   TABLE — shared scroll wrapper
+   Usage: wrap <table> in <div class="table-scroll">
+   ============================================================ */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  /* subtle scrollbar reservation so rows don't jump */
+  scrollbar-width: thin;
+}
+
+.table-scroll > table {
+  min-width: 640px; /* ensures columns stay readable; adjust per table */
+}
+
+/* ============================================================
+   TOUCH TARGETS — mobile-only enforcement
+   ============================================================ */
 @media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .main-padding { padding: 24px 16px !important; }
+  button,
+  a.touch,
+  [role="button"] {
+    min-height: 44px;
+  }
+}
+
+/* ============================================================
+   VIEWPORT-HEIGHT HELPERS
+   Prefer these over 100vh anywhere in the app.
+   ============================================================ */
+.vh-full {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.vh-screen-fix {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ============================================================
+   FOCUS VISIBILITY (accessibility)
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid #6366F1;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE CONTAINER UTILITY
+   ============================================================ */
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: 32px;
+}
+
+@media (max-width: 1024px) {
+  .container { padding-inline: 24px; }
+}
+
+@media (max-width: 640px) {
+  .container { padding-inline: 16px; }
 }

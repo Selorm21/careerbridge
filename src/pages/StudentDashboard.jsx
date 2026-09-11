@@ -1,73 +1,38 @@
+// src/pages/StudentDashboard.jsx
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getScoreColor } from '../matchScore'
 import {
-  LayoutGrid, ListChecks, Sparkles, CalendarClock, Search, UserCircle,
-  FileText, BarChart3, Send, CheckCircle2, XCircle, ArrowRight,
-  Pencil, MapPin, Clock, StickyNote, ChevronRight, Plus, Check,
-  TrendingUp, Award, Briefcase, Users, Star, Eye, Zap, Target,
-  Rocket, Shield, Crown, Gem, Coffee, Code, Layers, Palette,
-  RefreshCw
+  ListChecks, Sparkles, CalendarClock, Search, UserCircle,
+  FileText, Send, Award, ArrowRight, Pencil, MapPin, Clock,
+  ChevronRight, Check, Eye, RefreshCw
 } from 'lucide-react'
+import DashboardShell from '../components/DashboardShell'
+import useMediaQuery from '../hooks/useMediaQuery'
 
-// ============================================
-// 🎨 PREMIUM DESIGN SYSTEM
-// ============================================
+// ────────────────────────────────────────────────────────────
+// DESIGN TOKENS (kept from original)
+// ────────────────────────────────────────────────────────────
 const DESIGN = {
   colors: {
     primary: {
-      50: '#EEF2FF',
-      100: '#E0E7FF',
-      200: '#C7D2FE',
-      300: '#A5B4FC',
-      400: '#818CF8',
       500: '#6366F1',
       600: '#4F46E5',
-      700: '#4338CA',
-      800: '#3730A3',
-      900: '#312E81',
     },
     gradients: {
       cosmic: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A855F7 100%)',
-      sunset: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 50%, #EC4899 100%)',
+      fire: 'linear-gradient(135deg, #F59E0B 0%, #F97316 50%, #EF4444 100%)',
       ocean: 'linear-gradient(135deg, #3B82F6 0%, #06B6D4 50%, #10B981 100%)',
       aurora: 'linear-gradient(135deg, #8B5CF6 0%, #06B6D4 50%, #34D399 100%)',
-      fire: 'linear-gradient(135deg, #F59E0B 0%, #F97316 50%, #EF4444 100%)',
-      crystal: 'linear-gradient(135deg, #E0E7FF 0%, #F3E8FF 50%, #FCE7F3 100%)',
     },
     success: '#10B981',
-    warning: '#F59E0B',
     danger: '#EF4444',
-    info: '#3B82F6',
     gray: {
-      50: '#F8FAFC',
-      100: '#F1F5F9',
-      200: '#E2E8F0',
-      300: '#CBD5E1',
-      400: '#94A3B8',
-      500: '#64748B',
-      600: '#475569',
-      700: '#334155',
-      800: '#1E293B',
-      900: '#0F172A',
-    }
-  },
-  shadows: {
-    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-    md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-    xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-    '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-    glow: '0 0 40px rgba(99, 102, 241, 0.15)',
-  },
-  borderRadius: {
-    sm: '8px',
-    md: '12px',
-    lg: '16px',
-    xl: '24px',
-    '2xl': '32px',
-    full: '9999px',
+      50: '#F8FAFC', 100: '#F1F5F9', 200: '#E2E8F0', 300: '#CBD5E1',
+      400: '#94A3B8', 500: '#64748B', 600: '#475569', 700: '#334155',
+      800: '#1E293B', 900: '#0F172A',
+    },
   },
 }
 
@@ -77,64 +42,56 @@ export default function StudentDashboard() {
   const [recommendedJobs, setRecommendedJobs] = useState([])
   const [interviews, setInterviews] = useState([])
 
-  // ============================================
-  // 🤖 AI CAREER INSIGHTS STATE
-  // ============================================
   const [aiAnalysis, setAiAnalysis] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
 
-  const [activeTab, setActiveTab] = useState('overview')
   const [loading, setLoading] = useState(true)
-  const [isHovering, setIsHovering] = useState(null)
-
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const tabParam = searchParams.get('tab')
   const containerRef = useRef(null)
+  const isMobile = useMediaQuery('(max-width: 1024px)')
 
-  useEffect(() => {
-    if (
-      tabParam &&
-      ['overview', 'applications', 'recommended', 'interviews'].includes(tabParam)
-    ) {
-      setActiveTab(tabParam)
-    }
-  }, [tabParam])
+  // ============================================================
+  // NAV
+  // ============================================================
+  const navItems = [
+    { path: '/student', label: 'Overview', icon: <ListChecks size={18} />, exact: true },
+    { path: '/student/browse-jobs', label: 'Browse Jobs', icon: <Search size={18} /> },
+    { path: '/student/my-applications', label: 'My Applications', icon: <ListChecks size={18} /> },
+    { path: '/student/analytics', label: 'Analytics', icon: <Sparkles size={18} /> },
+    { path: '/student/resume-builder', label: 'Resume', icon: <FileText size={18} /> },
+    { path: '/student/documents', label: 'Documents', icon: <CalendarClock size={18} /> },
+    { path: '/student/profile', label: 'Profile', icon: <UserCircle size={18} /> },
+  ]
 
-  // ============================================
-  // 🤖 GEMINI AI CAREER ANALYSIS
-  // ============================================
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    navigate('/')
+  }
+
+  // ============================================================
+  // AI
+  // ============================================================
   const getAIRecommendations = async (currentProfile, currentJobs) => {
-    if (!currentProfile || !currentJobs || currentJobs.length === 0) {
-      return
-    }
-
+    if (!currentProfile || !currentJobs?.length) return
     setAiLoading(true)
     setAiError('')
-
     try {
-      const jobsText = currentJobs
-        .map((job, index) => {
-          return `
-JOB ${index + 1}
+      const jobsText = currentJobs.map((job, i) => `
+JOB ${i + 1}
 Title: ${job.title || 'Not provided'}
 Company: ${job.company || 'Not provided'}
 Location: ${job.location || 'Not provided'}
 Required Skills: ${job.skills || 'Not provided'}
 Current Skill Match: ${job.score || 0}%
 Matched Skills: ${job.matched?.join(', ') || 'None'}
-`
-        })
-        .join('\n')
+`).join('\n')
 
-      const prompt = `
-You are CareerBridge AI, an intelligent career advisor inside a student job and internship placement platform.
-
-Analyze the student's profile and recommended job opportunities and provide practical career advice.
+      const prompt = `You are CareerBridge AI...
+Analyze the student's profile and recommended jobs.
 
 STUDENT PROFILE
-
 Name: ${currentProfile.full_name || 'Not provided'}
 University: ${currentProfile.university || 'Not provided'}
 Course: ${currentProfile.course || 'Not provided'}
@@ -145,2659 +102,566 @@ Graduation Year: ${currentProfile.graduation_year || 'Not provided'}
 RECOMMENDED JOBS
 ${jobsText}
 
-TASK
+Provide: 1. TOP RECOMMENDATION 2. STRONGEST SKILLS 3. SKILL GAPS 4. CAREER ADVICE 5. NEXT STEP. Keep concise.`
 
-Please provide the following:
-
-1. TOP RECOMMENDATION
-Identify the strongest opportunity and explain why it is a good fit.
-
-2. STRONGEST SKILLS
-Identify the student's strongest skills based only on the information provided.
-
-3. SKILL GAPS
-Identify the most important skills the student should improve.
-
-4. CAREER ADVICE
-Give practical advice that could improve the student's chances of getting an internship or job.
-
-5. NEXT STEP
-Give one specific action the student should take this week.
-
-Keep the response concise, professional, encouraging and useful.
-
-Do not invent qualifications, experience, companies, or skills that are not present in the supplied information.
-
-Use clear headings and bullet points.
-`
-
-      const { data, error } = await supabase.functions.invoke('gemini', {
-        body: {
-          prompt,
-        },
-      })
-
-      if (error) {
-        console.error('Gemini error:', error)
-        setAiError('Unable to generate AI career insights right now.')
-        return
-      }
-
-      if (!data?.response) {
-        console.error('Unexpected Gemini response:', data)
-        setAiError('The AI returned an empty response.')
-        return
-      }
-
+      const { data, error } = await supabase.functions.invoke('gemini', { body: { prompt } })
+      if (error) { setAiError('Unable to generate AI career insights right now.'); return }
+      if (!data?.response) { setAiError('The AI returned an empty response.'); return }
       setAiAnalysis(data.response)
-    } catch (error) {
-      console.error('AI recommendation error:', error)
-      setAiError(
-        'Something went wrong while generating your AI career insights.'
-      )
+    } catch (e) {
+      console.error(e)
+      setAiError('Something went wrong while generating your AI career insights.')
     } finally {
       setAiLoading(false)
     }
   }
 
-  // ============================================
-  // 📊 LOAD DASHBOARD DATA
-  // ============================================
+  // ============================================================
+  // LOAD DATA
+  // ============================================================
   useEffect(() => {
     async function getData() {
       setLoading(true)
-
       try {
-        const {
-          data: { user },
-          error: userError
-        } = await supabase.auth.getUser()
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError || !user) { setLoading(false); return }
 
-        if (userError || !user) {
-          console.error('Unable to get authenticated user:', userError)
-          setLoading(false)
-          return
-        }
-
-        // Get student profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-
-        if (profileError) {
-          console.error('Profile error:', profileError)
-        }
-
+        const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
         setProfile(profileData)
 
-        // Get applications
-        const {
-          data: appsData,
-          error: appsError
-        } = await supabase
-          .from('applications')
-          .select('*, jobs(*)')
-          .eq('student_id', user.id)
-          .order('created_at', { ascending: false })
+        const { data: appsData } = await supabase.from('applications').select('*, jobs(*)').eq('student_id', user.id).order('created_at', { ascending: false })
+        const safeApps = appsData || []
+        setApplications(safeApps)
 
-        if (appsError) {
-          console.error('Applications error:', appsError)
-        }
-
-        const safeApplications = appsData || []
-        setApplications(safeApplications)
-
-        // Get interviews
-        const {
-          data: interviewsData,
-          error: interviewsError
-        } = await supabase
-          .from('interviews')
-          .select('*')
-          .eq('student_id', user.id)
-
-        if (interviewsError) {
-          console.error('Interviews error:', interviewsError)
-        }
-
+        const { data: interviewsData } = await supabase.from('interviews').select('*').eq('student_id', user.id)
         setInterviews(interviewsData || [])
 
-        // Get jobs
-        const {
-          data: jobsData,
-          error: jobsError
-        } = await supabase
-          .from('jobs')
-          .select('*')
-
-        if (jobsError) {
-          console.error('Jobs error:', jobsError)
-        }
-
+        const { data: jobsData } = await supabase.from('jobs').select('*')
         const studentSkills = profileData?.skills || ''
-        const appliedJobIds = safeApplications.map(a => a.job_id) || []
+        const appliedIds = safeApps.map(a => a.job_id)
 
-        // ============================================
-        // 🎯 EXISTING JOB MATCHING SYSTEM
-        // ============================================
         if (studentSkills && jobsData) {
-          const studentSkillList = studentSkills
-            .toLowerCase()
-            .split(',')
-            .map(s => s.trim())
-            .filter(Boolean)
-
+          const studentSkillList = studentSkills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean)
           const scored = jobsData
-            .filter(job => !appliedJobIds.includes(job.id))
+            .filter(job => !appliedIds.includes(job.id))
             .map(job => {
-              const jobSkillList = job.skills
-                ?.toLowerCase()
-                .split(',')
-                .map(s => s.trim())
-                .filter(Boolean) || []
-
-              const matched = jobSkillList.filter(s =>
-                studentSkillList.some(
-                  sk => sk.includes(s) || s.includes(sk)
-                )
-              )
-
-              const total = jobSkillList.length || 1
-              const score = Math.round((matched.length / total) * 100)
-
-              return {
-                ...job,
-                score,
-                matched,
-              }
+              const jobSkills = job.skills?.toLowerCase().split(',').map(s => s.trim()).filter(Boolean) || []
+              const matched = jobSkills.filter(s => studentSkillList.some(sk => sk.includes(s) || s.includes(sk)))
+              const total = jobSkills.length || 1
+              return { ...job, score: Math.round((matched.length / total) * 100), matched }
             })
-            .filter(job => job.score > 0)
+            .filter(j => j.score > 0)
             .sort((a, b) => b.score - a.score)
             .slice(0, 4)
 
           setRecommendedJobs(scored)
-
-          // ============================================
-          // 🤖 RUN GEMINI AFTER WE HAVE THE DATA
-          // ============================================
-          if (profileData && scored.length > 0) {
-            await getAIRecommendations(profileData, scored)
-          }
+          if (profileData && scored.length > 0) await getAIRecommendations(profileData, scored)
         }
-      } catch (error) {
-        console.error('Dashboard loading error:', error)
+      } catch (e) {
+        console.error('Dashboard loading error:', e)
       } finally {
         setLoading(false)
       }
     }
-
     getData()
   }, [])
 
-  // ============================================
-  // 🔄 MANUALLY REFRESH AI ANALYSIS
-  // ============================================
-  const refreshAIAnalysis = async () => {
-    await getAIRecommendations(profile, recommendedJobs)
+  const refreshAIAnalysis = () => getAIRecommendations(profile, recommendedJobs)
+
+  const getStatusStyle = (status) => {
+    if (status === 'applied') return { bg: '#EEF2FF', color: '#6366F1', dot: '#6366F1', label: 'Applied' }
+    if (status === 'interview') return { bg: '#FEF3C7', color: '#D97706', dot: '#D97706', label: 'Interview' }
+    if (status === 'offer') return { bg: '#D1FAE5', color: '#059669', dot: '#059669', label: 'Offer' }
+    if (status === 'rejected') return { bg: '#FEE2E2', color: '#DC2626', dot: '#DC2626', label: 'Rejected' }
+    return { bg: '#F3F4F6', color: '#6B7280', dot: '#9CA3AF', label: 'Pending' }
   }
 
-  // ============================================
-  // 📌 APPLICATION STATUS
-  // ============================================
-  function getStatusStyle(status) {
-    if (status === 'applied') {
-      return {
-        bg: '#EEF2FF',
-        color: '#6366F1',
-        dot: '#6366F1',
-        label: 'Applied'
-      }
-    }
-
-    if (status === 'interview') {
-      return {
-        bg: '#FEF3C7',
-        color: '#D97706',
-        dot: '#D97706',
-        label: 'Interview'
-      }
-    }
-
-    if (status === 'offer') {
-      return {
-        bg: '#D1FAE5',
-        color: '#059669',
-        dot: '#059669',
-        label: 'Offer'
-      }
-    }
-
-    if (status === 'rejected') {
-      return {
-        bg: '#FEE2E2',
-        color: '#DC2626',
-        dot: '#DC2626',
-        label: 'Rejected'
-      }
-    }
-
-    return {
-      bg: '#F3F4F6',
-      color: '#6B7280',
-      dot: '#9CA3AF',
-      label: 'Pending'
-    }
-  }
-
-  // ============================================
-  // 📊 DASHBOARD METRICS
-  // ============================================
   const metrics = [
-    {
-      label: 'Applications Sent',
-      val: applications.length,
-      Icon: Send,
-      gradient: DESIGN.colors.gradients.cosmic,
-      iconBg: 'rgba(99, 102, 241, 0.12)',
-      iconColor: '#6366F1',
-      change: '+12%',
-      changeType: 'up',
-      description: 'vs last month'
-    },
-    {
-      label: 'Interviews',
-      val: applications.filter(a => a.status === 'interview').length,
-      Icon: CalendarClock,
-      gradient: DESIGN.colors.gradients.fire,
-      iconBg: 'rgba(245, 158, 11, 0.12)',
-      iconColor: '#F59E0B',
-      change: '+3',
-      changeType: 'up',
-      description: 'vs last month'
-    },
-    {
-      label: 'Offers',
-      val: applications.filter(a => a.status === 'offer').length,
-      Icon: Award,
-      gradient: DESIGN.colors.gradients.ocean,
-      iconBg: 'rgba(16, 185, 129, 0.12)',
-      iconColor: '#10B981',
-      change: '+1',
-      changeType: 'up',
-      description: 'vs last month'
-    },
-    {
-      label: 'Profile Views',
-      val: 47,
-      Icon: Eye,
-      gradient: DESIGN.colors.gradients.aurora,
-      iconBg: 'rgba(59, 130, 246, 0.12)',
-      iconColor: '#3B82F6',
-      change: '+8',
-      changeType: 'up',
-      description: 'vs last month'
-    },
+    { label: 'Applications Sent', val: applications.length, Icon: Send, iconBg: 'rgba(99,102,241,.12)', iconColor: '#6366F1', change: '+12%', changeType: 'up' },
+    { label: 'Interviews', val: applications.filter(a => a.status === 'interview').length, Icon: CalendarClock, iconBg: 'rgba(245,158,11,.12)', iconColor: '#F59E0B', change: '+3', changeType: 'up' },
+    { label: 'Offers', val: applications.filter(a => a.status === 'offer').length, Icon: Award, iconBg: 'rgba(16,185,129,.12)', iconColor: '#10B981', change: '+1', changeType: 'up' },
+    { label: 'Profile Views', val: 47, Icon: Eye, iconBg: 'rgba(59,130,246,.12)', iconColor: '#3B82F6', change: '+8', changeType: 'up' },
   ]
 
-  // ============================================
-  // 🧭 NAVIGATION
-  // ============================================
-  const handleTabChange = (tab) => {
-    const routeMap = {
-      overview: '/student',
-      browse: '/student/browse-jobs',
-      profile: '/student/profile',
-      applications: '/student/applications',
-      resume: '/student/resume-builder',
-      recommended: '/student?tab=recommended',
-      interviews: '/student?tab=interviews',
-    }
-
-    const path = routeMap[tab]
-
-    if (path) {
-      navigate(path)
-    } else {
-      navigate(`/student/${tab}`)
-    }
+  const formatDate = (d) => {
+    const date = new Date(d)
+    const days = Math.ceil(Math.abs(new Date() - date) / 86400000)
+    if (days === 0) return 'Today'
+    if (days === 1) return 'Yesterday'
+    if (days < 7) return `${days} days ago`
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
-  // ============================================
-  // 📅 DATE FORMATTER
-  // ============================================
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffTime = Math.abs(now - date)
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-    if (diffDays === 0) return 'Today'
-    if (diffDays === 1) return 'Yesterday'
-    if (diffDays < 7) return `${diffDays} days ago`
-
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
-  // ============================================
-  // 💪 PROFILE STRENGTH
-  // ============================================
   const strength = profile ? (
-    (profile.full_name ? 20 : 0) +
-    (profile.university ? 20 : 0) +
-    (profile.course ? 20 : 0) +
-    (profile.skills ? 20 : 0) +
-    (profile.bio ? 20 : 0)
+    (profile.full_name ? 20 : 0) + (profile.university ? 20 : 0) +
+    (profile.course ? 20 : 0) + (profile.skills ? 20 : 0) + (profile.bio ? 20 : 0)
   ) : 0
 
-  const strengthLevel =
-    strength >= 80
-      ? '🌟 Excellent'
-      : strength >= 60
-        ? '💪 Good'
-        : strength >= 40
-          ? '📈 Fair'
-          : '⚡ Needs Work'
+  const strengthLevel = strength >= 80 ? '🌟 Excellent' : strength >= 60 ? '💪 Good' : strength >= 40 ? '📈 Fair' : '⚡ Needs Work'
+  const strengthColor = strength >= 80 ? '#10B981' : strength >= 60 ? '#F59E0B' : strength >= 40 ? '#F59E0B' : '#EF4444'
 
-  const strengthColor =
-    strength >= 80
-      ? '#10B981'
-      : strength >= 60
-        ? '#F59E0B'
-        : strength >= 40
-          ? '#F59E0B'
-          : '#EF4444'
-
-  // ============================================
-  // ⏳ LOADING SCREEN
-  // ============================================
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.loadingOrbit}>
-          <div style={styles.loadingOrbitRing} />
-          <div style={styles.loadingOrbitRing} />
-          <div style={styles.loadingOrbitRing} />
-          <div style={styles.loadingCenter} />
+      <div style={s.loadingContainer}>
+        <div style={s.loadingOrbit}>
+          <div style={s.loadingOrbitRing} />
+          <div style={s.loadingOrbitRing} />
+          <div style={s.loadingOrbitRing} />
+          <div style={s.loadingCenter} />
         </div>
-
-        <p style={styles.loadingText}>
-          Loading your dashboard...
-        </p>
+        <p style={s.loadingText}>Loading your dashboard...</p>
       </div>
     )
   }
 
   return (
-    <div ref={containerRef} style={styles.container}>
+    <DashboardShell
+      brandLabel="STUDENT"
+      accent="#6366F1"
+      navItems={navItems}
+      profile={{ full_name: profile?.full_name || 'Student', role_label: 'Student account' }}
+      onLogout={handleLogout}
+      logoMark={<Sparkles size={18} color="#fff" />}
+    >
+      <div ref={containerRef} style={s.container}>
+        {/* Background effects */}
+        <div style={s.backgroundEffects}>
+          <div style={s.glowOrb1} />
+          <div style={s.glowOrb2} />
+          <div style={s.gridPattern} />
+        </div>
 
-      {/* ============================================
-          🌟 BACKGROUND EFFECTS
-      ============================================ */}
-      <div style={styles.backgroundEffects}>
-        <div style={styles.glowOrb1} />
-        <div style={styles.glowOrb2} />
-        <div style={styles.glowOrb3} />
-        <div style={styles.gridPattern} />
-      </div>
-
-      {/* ============================================
-          🚀 WELCOME SECTION
-      ============================================ */}
-      <div style={styles.welcomeSection}>
-        <div style={styles.welcomeContent}>
-
-          <div style={styles.welcomeBadge}>
-            <Sparkles
-              size={14}
-              color={DESIGN.colors.primary[500]}
-            />
-            Welcome back
+        {/* Welcome */}
+        <div style={s.welcomeSection}>
+          <div style={s.welcomeContent}>
+            <div style={s.welcomeBadge}><Sparkles size={14} color="#6366F1" /> Welcome back</div>
+            <h1 style={s.welcomeTitle}>
+              Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {profile?.full_name?.split(' ')[0] || 'Student'} 👋
+            </h1>
+            <p style={s.welcomeSubtitle}>Here's what's happening with your job search today.</p>
           </div>
-
-          <h1 style={styles.welcomeTitle}>
-            Good {
-              new Date().getHours() < 12
-                ? 'Morning'
-                : new Date().getHours() < 18
-                  ? 'Afternoon'
-                  : 'Evening'
-            }, {profile?.full_name?.split(' ')[0] || 'Student'} 👋
-          </h1>
-
-          <p style={styles.welcomeSubtitle}>
-            Here's what's happening with your job search today.
-          </p>
-
+          <div style={s.welcomeActions}>
+            <button style={s.primaryButton} onClick={() => navigate('/student/browse-jobs')}>
+              <Search size={18} /> Browse Jobs <ChevronRight size={16} />
+            </button>
+            <button style={s.secondaryButton} onClick={() => navigate('/student/profile')}>
+              <UserCircle size={18} /> Profile
+            </button>
+          </div>
         </div>
 
-        <div style={styles.welcomeActions}>
-
-          <button
-            style={styles.primaryButton}
-            onClick={() => handleTabChange('browse')}
-          >
-            <Search size={18} />
-            Browse Jobs
-            <ChevronRight size={16} />
-          </button>
-
-          <button
-            style={styles.secondaryButton}
-            onClick={() => handleTabChange('profile')}
-          >
-            <UserCircle size={18} />
-            Profile
-          </button>
-
-        </div>
-      </div>
-
-      {/* ============================================
-          💎 METRICS CARDS
-      ============================================ */}
-      <div style={styles.metricsGrid}>
-
-        {metrics.map((metric, index) => (
-
-          <div
-            key={index}
-            style={styles.metricCard}
-            className="metric-card"
-          >
-
-            <div style={styles.metricGlow} />
-
-            <div style={styles.metricContent}>
-
-              <div style={styles.metricHeader}>
-
-                <div
-                  style={{
-                    ...styles.metricIcon,
-                    background: metric.iconBg,
-                    color: metric.iconColor
-                  }}
-                >
-                  <metric.Icon size={20} />
+        {/* Metrics */}
+        <div style={s.metricsGrid}>
+          {metrics.map((m, i) => (
+            <div key={i} style={s.metricCard} className="sd-metric">
+              <div style={s.metricHeader}>
+                <div style={{ ...s.metricIcon, background: m.iconBg, color: m.iconColor }}>
+                  <m.Icon size={20} />
                 </div>
-
-                {metric.change && (
-                  <span
-                    style={{
-                      ...styles.metricChange,
-                      color:
-                        metric.changeType === 'up'
-                          ? DESIGN.colors.success
-                          : DESIGN.colors.danger
-                    }}
-                  >
-                    {metric.changeType === 'up' ? '↑' : '↓'} {metric.change}
+                {m.change && (
+                  <span style={{ ...s.metricChange, color: m.changeType === 'up' ? '#10B981' : '#EF4444' }}>
+                    {m.changeType === 'up' ? '↑' : '↓'} {m.change}
                   </span>
                 )}
-
               </div>
-
-              <div style={styles.metricValue}>
-                {metric.val}
-              </div>
-
-              <div style={styles.metricLabel}>
-                {metric.label}
-              </div>
-
-              <div style={styles.metricDescription}>
-                {metric.description}
-              </div>
-
-              <div
-                style={{
-                  ...styles.metricBar,
-                  background: metric.gradient
-                }}
-              />
-
+              <div style={s.metricValue}>{m.val}</div>
+              <div style={s.metricLabel}>{m.label}</div>
             </div>
-          </div>
+          ))}
+        </div>
 
-        ))}
-
-      </div>
-
-      {/* ============================================
-          📊 MAIN CONTENT
-      ============================================ */}
-      <div style={styles.mainGrid}>
-
-        {/* ============================================
-            LEFT COLUMN
-        ============================================ */}
-        <div style={styles.leftColumn}>
-
-          {/* ============================================
-              🎯 RECOMMENDED JOBS
-          ============================================ */}
-          <div style={styles.card}>
-
-            <div style={styles.cardHeader}>
-
-              <div style={styles.cardTitleGroup}>
-
-                <div style={styles.cardIcon}>
-                  <Sparkles
-                    size={18}
-                    color={DESIGN.colors.primary[500]}
-                  />
+        {/* Main grid */}
+        <div style={{ ...s.mainGrid, gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr' }}>
+          {/* Left column */}
+          <div style={s.leftColumn}>
+            {/* Recommended */}
+            <div style={s.card}>
+              <div style={s.cardHeader}>
+                <div style={s.cardTitleGroup}>
+                  <div style={s.cardIcon}><Sparkles size={18} color="#6366F1" /></div>
+                  <div>
+                    <h3 style={s.cardTitle}>Recommended for You</h3>
+                    <p style={s.cardSubtitle}>Smart matches based on your skills</p>
+                  </div>
                 </div>
-
-                <div>
-                  <h3 style={styles.cardTitle}>
-                    Recommended for You
-                  </h3>
-
-                  <p style={styles.cardSubtitle}>
-                    Smart matches based on your skills
-                  </p>
-                </div>
-
-              </div>
-
-              {recommendedJobs.length > 0 && (
-                <button
-                  style={styles.viewAllBtn}
-                  onClick={() => handleTabChange('recommended')}
-                >
-                  View all
-                  <ChevronRight size={14} />
-                </button>
-              )}
-
-            </div>
-
-            {recommendedJobs.length === 0 ? (
-
-              <div style={styles.emptyState}>
-
-                <div style={styles.emptyStateIcon}>
-                  🎯
-                </div>
-
-                <p style={styles.emptyStateTitle}>
-                  No recommendations yet
-                </p>
-
-                <p style={styles.emptyStateSub}>
-                  Add skills to your profile to get personalized job matches
-                </p>
-
-                <button
-                  style={styles.emptyStateBtn}
-                  onClick={() => handleTabChange('profile')}
-                >
-                  Add Skills
-                </button>
-
-              </div>
-
-            ) : (
-
-              <div style={styles.jobsGrid}>
-
-                {recommendedJobs.map((job) => {
-
-                  const { color, bg } = getScoreColor(job.score)
-
-                  return (
-
-                    <div
-                      key={job.id}
-                      style={styles.jobCard}
-                      className="job-card"
-                      onClick={() => handleTabChange('browse')}
-                      onMouseEnter={() => setIsHovering(job.id)}
-                      onMouseLeave={() => setIsHovering(null)}
-                    >
-
-                      <div style={styles.jobCardTop}>
-
-                        <div style={styles.jobCompanyIcon}>
-                          {job.company?.charAt(0) || 'J'}
-                        </div>
-
-                        <div
-                          style={{
-                            ...styles.matchScore,
-                            background: bg,
-                            color
-                          }}
-                        >
-                          {job.score}%
-                        </div>
-
-                      </div>
-
-                      <h4 style={styles.jobTitle}>
-                        {job.title}
-                      </h4>
-
-                      <p style={styles.jobCompany}>
-                        {job.company}
-                      </p>
-
-                      <p style={styles.jobLocation}>
-                        <MapPin size={12} />
-                        {job.location}
-                      </p>
-
-                      <div style={styles.jobSkills}>
-
-                        {job.matched
-                          ?.slice(0, 3)
-                          .map((skill, i) => (
-
-                            <span
-                              key={i}
-                              style={styles.jobSkill}
-                            >
-                              <Check size={10} />
-                              {skill}
-                            </span>
-
-                          ))}
-
-                      </div>
-
-                    </div>
-
-                  )
-                })}
-
-              </div>
-
-            )}
-
-          </div>
-
-          {/* ============================================
-              🤖 AI CAREER INSIGHTS
-          ============================================ */}
-          <div
-            style={{
-              ...styles.card,
-              marginTop: '20px',
-              overflow: 'hidden',
-              position: 'relative'
-            }}
-          >
-
-            {/* AI decorative glow */}
-            <div style={styles.aiCardGlow} />
-
-            <div
-              style={{
-                ...styles.cardHeader,
-                position: 'relative',
-                zIndex: 1
-              }}
-            >
-
-              <div style={styles.cardTitleGroup}>
-
-                <div style={styles.aiIcon}>
-                  <Sparkles size={19} color="#fff" />
-                </div>
-
-                <div>
-                  <h3 style={styles.cardTitle}>
-                    AI Career Insights
-                  </h3>
-
-                  <p style={styles.cardSubtitle}>
-                    Personalized advice powered by CareerBridge AI
-                  </p>
-                </div>
-
-              </div>
-
-              {recommendedJobs.length > 0 && (
-                <button
-                  style={{
-                    ...styles.aiRefreshButton,
-                    opacity: aiLoading ? 0.6 : 1,
-                    cursor: aiLoading ? 'not-allowed' : 'pointer'
-                  }}
-                  onClick={refreshAIAnalysis}
-                  disabled={aiLoading}
-                  title="Refresh AI analysis"
-                >
-                  <RefreshCw
-                    size={15}
-                    className={aiLoading ? 'ai-spin' : ''}
-                  />
-                </button>
-              )}
-
-            </div>
-
-            {/* AI LOADING */}
-            {aiLoading ? (
-
-              <div style={styles.aiLoadingContainer}>
-
-                <div style={styles.aiLoadingIcon}>
-                  <Sparkles size={24} />
-                </div>
-
-                <div>
-                  <p style={styles.aiLoadingTitle}>
-                    Analyzing your career profile...
-                  </p>
-
-                  <p style={styles.aiLoadingText}>
-                    CareerBridge AI is comparing your skills with your recommended opportunities.
-                  </p>
-                </div>
-
-              </div>
-
-            ) : aiError ? (
-
-              <div style={styles.aiErrorContainer}>
-
-                <div style={styles.aiErrorIcon}>
-                  ⚠️
-                </div>
-
-                <div>
-                  <p style={styles.aiErrorTitle}>
-                    AI analysis unavailable
-                  </p>
-
-                  <p style={styles.aiErrorText}>
-                    {aiError}
-                  </p>
-
-                  <button
-                    style={styles.aiRetryButton}
-                    onClick={refreshAIAnalysis}
-                    disabled={aiLoading}
-                  >
-                    Try Again
+                {recommendedJobs.length > 0 && (
+                  <button style={s.viewAllBtn} onClick={() => navigate('/student/browse-jobs')}>
+                    View all <ChevronRight size={14} />
                   </button>
-                </div>
-
+                )}
               </div>
 
-            ) : aiAnalysis ? (
-
-              <div style={styles.aiAnalysisContainer}>
-
-                <div style={styles.aiResponseBadge}>
-                  <Sparkles size={13} />
-                  Personalized for you
+              {recommendedJobs.length === 0 ? (
+                <div style={s.emptyState}>
+                  <div style={s.emptyStateIcon}>🎯</div>
+                  <p style={s.emptyStateTitle}>No recommendations yet</p>
+                  <p style={s.emptyStateSub}>Add skills to your profile to get personalized matches</p>
+                  <button style={s.emptyStateBtn} onClick={() => navigate('/student/profile')}>Add Skills</button>
                 </div>
-
-                <div style={styles.aiAnalysisText}>
-                  {aiAnalysis.split('\n').map((line, index) => {
-
-                    const trimmedLine = line.trim()
-
-                    if (!trimmedLine) {
-                      return (
-                        <div
-                          key={index}
-                          style={{ height: '8px' }}
-                        />
-                      )
-                    }
-
-                    const isHeading =
-                      trimmedLine.startsWith('1.') ||
-                      trimmedLine.startsWith('2.') ||
-                      trimmedLine.startsWith('3.') ||
-                      trimmedLine.startsWith('4.') ||
-                      trimmedLine.startsWith('5.') ||
-                      trimmedLine.endsWith(':')
-
-                    const isBullet =
-                      trimmedLine.startsWith('-') ||
-                      trimmedLine.startsWith('•') ||
-                      trimmedLine.startsWith('*')
-
-                    if (isHeading) {
-                      return (
-                        <div
-                          key={index}
-                          style={styles.aiHeading}
-                        >
-                          {trimmedLine}
-                        </div>
-                      )
-                    }
-
-                    if (isBullet) {
-                      return (
-                        <div
-                          key={index}
-                          style={styles.aiBullet}
-                        >
-                          <span style={styles.aiBulletDot}>
-                            •
-                          </span>
-
-                          <span>
-                            {trimmedLine
-                              .replace(/^[-•*]\s*/, '')}
-                          </span>
-                        </div>
-                      )
-                    }
-
+              ) : (
+                <div style={{ ...s.jobsGrid, gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)' }}>
+                  {recommendedJobs.map(job => {
+                    const { color, bg } = getScoreColor(job.score)
                     return (
-                      <p
-                        key={index}
-                        style={styles.aiParagraph}
-                      >
-                        {trimmedLine}
-                      </p>
+                      <div key={job.id} style={s.jobCard} onClick={() => navigate('/student/browse-jobs')}>
+                        <div style={s.jobCardTop}>
+                          <div style={s.jobCompanyIcon}>{job.company?.charAt(0) || 'J'}</div>
+                          <div style={{ ...s.matchScore, background: bg, color }}>{job.score}%</div>
+                        </div>
+                        <h4 style={s.jobTitle}>{job.title}</h4>
+                        <p style={s.jobCompany}>{job.company}</p>
+                        <p style={s.jobLocation}><MapPin size={12} /> {job.location}</p>
+                        <div style={s.jobSkills}>
+                          {job.matched?.slice(0, 3).map((skill, i) => (
+                            <span key={i} style={s.jobSkill}><Check size={10} /> {skill}</span>
+                          ))}
+                        </div>
+                      </div>
                     )
                   })}
                 </div>
-
-                <div style={styles.aiFooter}>
-                  <div style={styles.aiFooterLeft}>
-                    <Sparkles size={13} />
-                    Generated by CareerBridge AI
-                  </div>
-
-                  <span style={styles.aiFooterDisclaimer}>
-                    AI insights may not always be perfect
-                  </span>
-                </div>
-
-              </div>
-
-            ) : recommendedJobs.length === 0 ? (
-
-              <div style={styles.aiEmptyState}>
-
-                <div style={styles.aiEmptyIcon}>
-                  ✨
-                </div>
-
-                <p style={styles.aiEmptyTitle}>
-                  Build your profile to unlock AI insights
-                </p>
-
-                <p style={styles.aiEmptyText}>
-                  Add your skills, course and bio so CareerBridge AI can provide personalized career guidance.
-                </p>
-
-                <button
-                  style={styles.aiProfileButton}
-                  onClick={() => handleTabChange('profile')}
-                >
-                  Complete Profile
-                  <ArrowRight size={15} />
-                </button>
-
-              </div>
-
-            ) : (
-
-              <div style={styles.aiEmptyState}>
-
-                <div style={styles.aiEmptyIcon}>
-                  ✨
-                </div>
-
-                <p style={styles.aiEmptyTitle}>
-                  AI insights are being prepared
-                </p>
-
-                <p style={styles.aiEmptyText}>
-                  We need some profile and job information before CareerBridge AI can analyze your opportunities.
-                </p>
-
-              </div>
-
-            )}
-
-          </div>
-
-          {/* ============================================
-              📝 RECENT APPLICATIONS
-          ============================================ */}
-          <div
-            style={{
-              ...styles.card,
-              marginTop: '20px'
-            }}
-          >
-
-            <div style={styles.cardHeader}>
-
-              <div style={styles.cardTitleGroup}>
-
-                <div
-                  style={{
-                    ...styles.cardIcon,
-                    background: 'rgba(16, 185, 129, 0.12)'
-                  }}
-                >
-                  <ListChecks
-                    size={18}
-                    color={DESIGN.colors.success}
-                  />
-                </div>
-
-                <div>
-                  <h3 style={styles.cardTitle}>
-                    Recent Applications
-                  </h3>
-
-                  <p style={styles.cardSubtitle}>
-                    Your latest activity and status
-                  </p>
-                </div>
-
-              </div>
-
-              {applications.length > 0 && (
-                <button
-                  style={styles.viewAllBtn}
-                  onClick={() => handleTabChange('applications')}
-                >
-                  View all
-                  <ChevronRight size={14} />
-                </button>
               )}
-
             </div>
 
-            {applications.length === 0 ? (
-
-              <div style={styles.emptyState}>
-
-                <div style={styles.emptyStateIcon}>
-                  📝
+            {/* AI */}
+            <div style={{ ...s.card, marginTop: 20 }}>
+              <div style={s.cardHeader}>
+                <div style={s.cardTitleGroup}>
+                  <div style={s.aiIcon}><Sparkles size={19} color="#fff" /></div>
+                  <div>
+                    <h3 style={s.cardTitle}>AI Career Insights</h3>
+                    <p style={s.cardSubtitle}>Personalized advice powered by CareerBridge AI</p>
+                  </div>
                 </div>
-
-                <p style={styles.emptyStateTitle}>
-                  No applications yet
-                </p>
-
-                <p style={styles.emptyStateSub}>
-                  Start browsing jobs and apply to opportunities
-                </p>
-
-                <button
-                  style={styles.emptyStateBtn}
-                  onClick={() => handleTabChange('browse')}
-                >
-                  Browse Jobs
-                </button>
-
+                {recommendedJobs.length > 0 && (
+                  <button style={s.aiRefreshButton} onClick={refreshAIAnalysis} disabled={aiLoading} aria-label="Refresh AI insights">
+                    <RefreshCw size={15} className={aiLoading ? 'sd-spin' : ''} />
+                  </button>
+                )}
               </div>
 
-            ) : (
+              {aiLoading ? (
+                <div style={s.aiLoading}>
+                  <div style={s.aiLoadingIcon}><Sparkles size={24} /></div>
+                  <div>
+                    <p style={s.aiLoadingTitle}>Analyzing your profile...</p>
+                    <p style={s.aiLoadingText}>Comparing your skills with opportunities.</p>
+                  </div>
+                </div>
+              ) : aiError ? (
+                <div style={s.aiError}>
+                  <div style={s.aiErrorIcon}>⚠️</div>
+                  <div>
+                    <p style={s.aiErrorTitle}>AI analysis unavailable</p>
+                    <p style={s.aiErrorText}>{aiError}</p>
+                    <button style={s.aiRetryButton} onClick={refreshAIAnalysis}>Try Again</button>
+                  </div>
+                </div>
+              ) : aiAnalysis ? (
+                <div style={s.aiAnalysisText}>
+                  {aiAnalysis.split('\n').map((line, i) => {
+                    const t = line.trim()
+                    if (!t) return <div key={i} style={{ height: 8 }} />
+                    const isHeading = /^[1-5]\./.test(t) || t.endsWith(':')
+                    const isBullet = /^[-•*]/.test(t)
+                    if (isHeading) return <div key={i} style={s.aiHeading}>{t}</div>
+                    if (isBullet) return (
+                      <div key={i} style={s.aiBullet}>
+                        <span style={s.aiBulletDot}>•</span>
+                        <span>{t.replace(/^[-•*]\s*/, '')}</span>
+                      </div>
+                    )
+                    return <p key={i} style={s.aiParagraph}>{t}</p>
+                  })}
+                </div>
+              ) : (
+                <div style={s.aiEmptyState}>
+                  <div style={s.aiEmptyIcon}>✨</div>
+                  <p style={s.aiEmptyTitle}>
+                    {recommendedJobs.length === 0
+                      ? 'Build your profile to unlock AI insights'
+                      : 'AI insights are being prepared'}
+                  </p>
+                  <p style={s.aiEmptyText}>
+                    {recommendedJobs.length === 0
+                      ? 'Add your skills, course and bio so CareerBridge AI can provide personalized guidance.'
+                      : 'We need a moment to analyze your opportunities.'}
+                  </p>
+                  {recommendedJobs.length === 0 && (
+                    <button style={s.aiProfileButton} onClick={() => navigate('/student/profile')}>
+                      Complete Profile <ArrowRight size={15} />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
 
-              <div style={styles.applicationsList}>
+            {/* Applications */}
+            <div style={{ ...s.card, marginTop: 20 }}>
+              <div style={s.cardHeader}>
+                <div style={s.cardTitleGroup}>
+                  <div style={{ ...s.cardIcon, background: 'rgba(16,185,129,.12)' }}>
+                    <ListChecks size={18} color="#10B981" />
+                  </div>
+                  <div>
+                    <h3 style={s.cardTitle}>Recent Applications</h3>
+                    <p style={s.cardSubtitle}>Your latest activity and status</p>
+                  </div>
+                </div>
+                {applications.length > 0 && (
+                  <button style={s.viewAllBtn} onClick={() => navigate('/student/my-applications')}>
+                    View all <ChevronRight size={14} />
+                  </button>
+                )}
+              </div>
 
-                {applications
-                  .slice(0, 4)
-                  .map((app) => {
-
+              {applications.length === 0 ? (
+                <div style={s.emptyState}>
+                  <div style={s.emptyStateIcon}>📝</div>
+                  <p style={s.emptyStateTitle}>No applications yet</p>
+                  <p style={s.emptyStateSub}>Start browsing jobs and apply to opportunities</p>
+                  <button style={s.emptyStateBtn} onClick={() => navigate('/student/browse-jobs')}>Browse Jobs</button>
+                </div>
+              ) : (
+                <div style={s.applicationsList}>
+                  {applications.slice(0, 4).map(app => {
                     const st = getStatusStyle(app.status)
-
                     return (
-
-                      <div
-                        key={app.id}
-                        style={styles.applicationItem}
-                        className="application-item"
-                      >
-
-                        <div style={styles.applicationLeft}>
-
-                          <div
-                            style={{
-                              ...styles.applicationAvatar,
-                              background: st.bg,
-                              color: st.color
-                            }}
-                          >
+                      <div key={app.id} style={s.applicationItem}>
+                        <div style={s.applicationLeft}>
+                          <div style={{ ...s.applicationAvatar, background: st.bg, color: st.color }}>
                             {app.jobs?.company?.charAt(0) || 'J'}
                           </div>
-
                           <div>
-
-                            <div style={styles.applicationTitle}>
-                              {app.jobs?.title}
-                            </div>
-
-                            <div style={styles.applicationMeta}>
-                              {app.jobs?.company} · {app.jobs?.location}
-                            </div>
-
-                            <div style={styles.applicationDate}>
-                              <Clock size={12} />
-                              {formatDate(app.created_at)}
-                            </div>
-
+                            <div style={s.applicationTitle}>{app.jobs?.title}</div>
+                            <div style={s.applicationMeta}>{app.jobs?.company} · {app.jobs?.location}</div>
+                            <div style={s.applicationDate}><Clock size={12} /> {formatDate(app.created_at)}</div>
                           </div>
-
                         </div>
-
-                        <div
-                          style={{
-                            ...styles.statusBadge,
-                            background: st.bg,
-                            color: st.color
-                          }}
-                        >
-                          <span
-                            style={{
-                              ...styles.statusDot,
-                              background: st.dot
-                            }}
-                          />
-
+                        <div style={{ ...s.statusBadge, background: st.bg, color: st.color }}>
+                          <span style={{ ...s.statusDot, background: st.dot }} />
                           {st.label}
                         </div>
-
                       </div>
-
                     )
                   })}
-
-              </div>
-
-            )}
-
-          </div>
-
-        </div>
-
-        {/* ============================================
-            RIGHT COLUMN
-        ============================================ */}
-        <div style={styles.rightColumn}>
-
-          {/* ============================================
-              👤 PROFILE CARD
-          ============================================ */}
-          <div style={styles.card}>
-
-            <div style={styles.profileCard}>
-
-              <div style={styles.profileAvatarWrapper}>
-
-                <div style={styles.profileAvatarRing} />
-
-                <div style={styles.profileAvatar}>
-                  {profile?.full_name?.charAt(0) || 'S'}
                 </div>
-
-              </div>
-
-              <h3 style={styles.profileName}>
-                {profile?.full_name || 'Student'}
-              </h3>
-
-              <p style={styles.profileRole}>
-                Student
-              </p>
-
-              <div style={styles.profileStrength}>
-
-                <div style={styles.strengthHeader}>
-
-                  <span style={styles.strengthLabel}>
-                    Profile Strength
-                  </span>
-
-                  <span
-                    style={{
-                      ...styles.strengthPercent,
-                      color: strengthColor
-                    }}
-                  >
-                    {strength}%
-                  </span>
-
-                </div>
-
-                <div style={styles.strengthBar}>
-
-                  <div
-                    style={{
-                      ...styles.strengthFill,
-                      width: `${strength}%`,
-                      background: strengthColor
-                    }}
-                  />
-
-                </div>
-
-                <p style={styles.strengthLevel}>
-                  {strengthLevel}
-                </p>
-
-              </div>
-
-              <div style={styles.profileDetails}>
-
-                <div style={styles.profileDetail}>
-
-                  <span style={styles.profileDetailLabel}>
-                    University
-                  </span>
-
-                  <span style={styles.profileDetailValue}>
-                    {profile?.university || 'Not set'}
-                  </span>
-
-                </div>
-
-                <div style={styles.profileDetail}>
-
-                  <span style={styles.profileDetailLabel}>
-                    Course
-                  </span>
-
-                  <span style={styles.profileDetailValue}>
-                    {profile?.course || 'Not set'}
-                  </span>
-
-                </div>
-
-                <div
-                  style={{
-                    ...styles.profileDetail,
-                    borderBottom: 'none'
-                  }}
-                >
-
-                  <span style={styles.profileDetailLabel}>
-                    Graduation
-                  </span>
-
-                  <span style={styles.profileDetailValue}>
-                    {profile?.graduation_year || 'Not set'}
-                  </span>
-
-                </div>
-
-              </div>
-
-              {profile?.skills && (
-
-                <div style={styles.skillsSection}>
-
-                  <p style={styles.skillsLabel}>
-                    Skills
-                  </p>
-
-                  <div style={styles.skillsChips}>
-
-                    {profile.skills
-                      .split(',')
-                      .slice(0, 5)
-                      .map((skill, i) => (
-
-                        <span
-                          key={i}
-                          style={styles.skillChip}
-                        >
-                          {skill.trim()}
-                        </span>
-
-                      ))}
-
-                  </div>
-
-                </div>
-
               )}
-
-              <button
-                style={styles.editProfileBtn}
-                onClick={() => handleTabChange('profile')}
-              >
-                <Pencil size={14} />
-                Edit Profile
-              </button>
-
             </div>
-
           </div>
 
-          {/* ============================================
-              ⚡ QUICK ACTIONS
-          ============================================ */}
-          <div
-            style={{
-              ...styles.card,
-              marginTop: '16px'
-            }}
-          >
+          {/* Right column */}
+          <div style={s.rightColumn}>
+            <div style={s.card}>
+              <div style={s.profileCard}>
+                <div style={s.profileAvatarWrapper}>
+                  <div style={s.profileAvatarRing} />
+                  <div style={s.profileAvatar}>{profile?.full_name?.charAt(0) || 'S'}</div>
+                </div>
+                <h3 style={s.profileName}>{profile?.full_name || 'Student'}</h3>
+                <p style={s.profileRole}>Student</p>
 
-            <h3 style={styles.quickActionsTitle}>
-              Quick Actions
-            </h3>
-
-            <div style={styles.quickActionsGrid}>
-
-              <div
-                style={styles.quickAction}
-                onClick={() => handleTabChange('browse')}
-              >
-
-                <div
-                  style={{
-                    ...styles.quickActionIcon,
-                    background: 'rgba(99, 102, 241, 0.12)',
-                    color: DESIGN.colors.primary[500]
-                  }}
-                >
-                  <Search size={20} />
+                <div style={s.profileStrength}>
+                  <div style={s.strengthHeader}>
+                    <span style={s.strengthLabel}>Profile Strength</span>
+                    <span style={{ ...s.strengthPercent, color: strengthColor }}>{strength}%</span>
+                  </div>
+                  <div style={s.strengthBar}>
+                    <div style={{ ...s.strengthFill, width: `${strength}%`, background: strengthColor }} />
+                  </div>
+                  <p style={s.strengthLevel}>{strengthLevel}</p>
                 </div>
 
-                <span style={styles.quickActionLabel}>
-                  Browse Jobs
-                </span>
-
-              </div>
-
-              <div
-                style={styles.quickAction}
-                onClick={() => handleTabChange('profile')}
-              >
-
-                <div
-                  style={{
-                    ...styles.quickActionIcon,
-                    background: 'rgba(245, 158, 11, 0.12)',
-                    color: '#F59E0B'
-                  }}
-                >
-                  <Pencil size={20} />
+                <div style={s.profileDetails}>
+                  <div style={s.profileDetail}>
+                    <span style={s.profileDetailLabel}>University</span>
+                    <span style={s.profileDetailValue}>{profile?.university || 'Not set'}</span>
+                  </div>
+                  <div style={s.profileDetail}>
+                    <span style={s.profileDetailLabel}>Course</span>
+                    <span style={s.profileDetailValue}>{profile?.course || 'Not set'}</span>
+                  </div>
+                  <div style={{ ...s.profileDetail, borderBottom: 'none' }}>
+                    <span style={s.profileDetailLabel}>Graduation</span>
+                    <span style={s.profileDetailValue}>{profile?.graduation_year || 'Not set'}</span>
+                  </div>
                 </div>
 
-                <span style={styles.quickActionLabel}>
-                  Edit Profile
-                </span>
+                {profile?.skills && (
+                  <div style={s.skillsSection}>
+                    <p style={s.skillsLabel}>Skills</p>
+                    <div style={s.skillsChips}>
+                      {profile.skills.split(',').slice(0, 5).map((skill, i) => (
+                        <span key={i} style={s.skillChip}>{skill.trim()}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
+                <button style={s.editProfileBtn} onClick={() => navigate('/student/profile')}>
+                  <Pencil size={14} /> Edit Profile
+                </button>
               </div>
-
-              <div
-                style={styles.quickAction}
-                onClick={() => handleTabChange('applications')}
-              >
-
-                <div
-                  style={{
-                    ...styles.quickActionIcon,
-                    background: 'rgba(16, 185, 129, 0.12)',
-                    color: '#10B981'
-                  }}
-                >
-                  <ListChecks size={20} />
-                </div>
-
-                <span style={styles.quickActionLabel}>
-                  Applications
-                </span>
-
-              </div>
-
-              <div
-                style={styles.quickAction}
-                onClick={() => handleTabChange('resume')}
-              >
-
-                <div
-                  style={{
-                    ...styles.quickActionIcon,
-                    background: 'rgba(59, 130, 246, 0.12)',
-                    color: '#3B82F6'
-                  }}
-                >
-                  <FileText size={20} />
-                </div>
-
-                <span style={styles.quickActionLabel}>
-                  Resume
-                </span>
-
-              </div>
-
             </div>
 
-          </div>
-
-          {/* ============================================
-              📈 QUICK STATS
-          ============================================ */}
-          <div
-            style={{
-              ...styles.card,
-              marginTop: '16px'
-            }}
-          >
-
-            <div style={styles.quickStatsGrid}>
-
-              <div style={styles.quickStat}>
-
-                <div style={styles.quickStatValue}>
-                  92%
+            <div style={{ ...s.card, marginTop: 16 }}>
+              <h3 style={s.quickActionsTitle}>Quick Actions</h3>
+              <div style={s.quickActionsGrid}>
+                <div style={s.quickAction} onClick={() => navigate('/student/browse-jobs')}>
+                  <div style={{ ...s.quickActionIcon, background: 'rgba(99,102,241,.12)', color: '#6366F1' }}><Search size={20} /></div>
+                  <span style={s.quickActionLabel}>Browse Jobs</span>
                 </div>
-
-                <div style={styles.quickStatLabel}>
-                  Application Success Rate
+                <div style={s.quickAction} onClick={() => navigate('/student/profile')}>
+                  <div style={{ ...s.quickActionIcon, background: 'rgba(245,158,11,.12)', color: '#F59E0B' }}><Pencil size={20} /></div>
+                  <span style={s.quickActionLabel}>Edit Profile</span>
                 </div>
-
+                <div style={s.quickAction} onClick={() => navigate('/student/my-applications')}>
+                  <div style={{ ...s.quickActionIcon, background: 'rgba(16,185,129,.12)', color: '#10B981' }}><ListChecks size={20} /></div>
+                  <span style={s.quickActionLabel}>Applications</span>
+                </div>
+                <div style={s.quickAction} onClick={() => navigate('/student/resume-builder')}>
+                  <div style={{ ...s.quickActionIcon, background: 'rgba(59,130,246,.12)', color: '#3B82F6' }}><FileText size={20} /></div>
+                  <span style={s.quickActionLabel}>Resume</span>
+                </div>
               </div>
-
-              <div style={styles.quickStat}>
-
-                <div style={styles.quickStatValue}>
-                  4.8
-                </div>
-
-                <div style={styles.quickStatLabel}>
-                  Average Rating
-                </div>
-
-              </div>
-
             </div>
-
           </div>
-
         </div>
       </div>
 
-      {/* ============================================
-          🎨 STYLES
-      ============================================ */}
       <style>{`
-
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
-        * {
-          box-sizing: border-box;
+        @keyframes sd-spin { to { transform: rotate(360deg); } }
+        .sd-spin { animation: sd-spin 1s linear infinite; }
+        .sd-metric { transition: transform .3s ease, box-shadow .3s ease; }
+        @media (hover: hover) {
+          .sd-metric:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(99,102,241,.12); }
         }
-
-        body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          background: #F8FAFC;
-          margin: 0;
-        }
-
-        @keyframes fadeUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px) scale(0.98);
-          }
-
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        @keyframes pulse-ring {
-          0% {
-            transform: scale(1);
-            opacity: 0.8;
-          }
-
-          50% {
-            transform: scale(1.05);
-            opacity: 0.4;
-          }
-
-          100% {
-            transform: scale(1);
-            opacity: 0.8;
-          }
-        }
-
-        @keyframes orbit {
-          0% {
-            transform: rotate(0deg);
-          }
-
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes glow-pulse {
-          0%, 100% {
-            opacity: 0.6;
-            transform: scale(1);
-          }
-
-          50% {
-            opacity: 1;
-            transform: scale(1.1);
-          }
-        }
-
-        @keyframes ai-spin {
-          from {
-            transform: rotate(0deg);
-          }
-
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        .ai-spin {
-          animation: ai-spin 1s linear infinite;
-        }
-
-        .metric-card {
-          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-          cursor: default;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .metric-card:hover {
-          transform: translateY(-6px) scale(1.02);
-          box-shadow:
-            0 20px 40px rgba(99, 102, 241, 0.15),
-            0 0 60px rgba(99, 102, 241, 0.05);
-        }
-
-        .job-card {
-          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-          cursor: pointer;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .job-card:hover {
-          transform: translateY(-6px) scale(1.01);
-          box-shadow: 0 20px 40px rgba(99, 102, 241, 0.12);
-          border-color: #6366F1;
-        }
-
-        .application-item {
-          transition: all 0.3s ease;
-          cursor: default;
-        }
-
-        .application-item:hover {
-          background: #F8FAFC;
-          border-color: #CBD5E1;
-          transform: translateX(4px);
-        }
-
-        @media (max-width: 1200px) {
-
-          .mainGrid {
-            grid-template-columns: 1fr !important;
-          }
-
-          .rightColumn {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-          }
-        }
-
-        @media (max-width: 768px) {
-
-          .metricsGrid {
-            grid-template-columns: 1fr 1fr !important;
-            gap: 12px !important;
-          }
-
-          .rightColumn {
-            grid-template-columns: 1fr !important;
-          }
-
-          .jobsGrid {
-            grid-template-columns: 1fr !important;
-          }
-
-          .welcomeSection {
-            flex-direction: column !important;
-            align-items: stretch !important;
-            gap: 16px !important;
-          }
-
-          .welcomeActions {
-            flex-direction: column !important;
-          }
-
-          .primaryButton,
-          .secondaryButton {
-            width: 100% !important;
-            justify-content: center !important;
-          }
-
-          .container {
-            padding: 16px !important;
-          }
-
-          .metricCard {
-            padding: 16px !important;
-          }
-
-          .card {
-            padding: 16px !important;
-          }
-
-          .aiFooter {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 6px !important;
-          }
-        }
-
       `}</style>
-
-    </div>
+    </DashboardShell>
   )
 }
 
-// ============================================
-// 🎨 STYLES
-// ============================================
-const styles = {
-
-  container: {
-    padding: '24px 32px',
-    maxWidth: '1440px',
-    margin: '0 auto',
-    fontFamily: "'Inter', -apple-system, sans-serif",
-    position: 'relative',
-  },
-
-  // ============================================
-  // BACKGROUND
-  // ============================================
-
-  backgroundEffects: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    pointerEvents: 'none',
-    zIndex: 0,
-    overflow: 'hidden',
-  },
-
-  glowOrb1: {
-    position: 'absolute',
-    top: '-20%',
-    right: '-10%',
-    width: '600px',
-    height: '600px',
-    borderRadius: '50%',
-    background:
-      'radial-gradient(circle, rgba(99, 102, 241, 0.08), transparent 70%)',
-    animation: 'glow-pulse 8s ease-in-out infinite',
-  },
-
-  glowOrb2: {
-    position: 'absolute',
-    bottom: '-20%',
-    left: '-10%',
-    width: '500px',
-    height: '500px',
-    borderRadius: '50%',
-    background:
-      'radial-gradient(circle, rgba(16, 185, 129, 0.06), transparent 70%)',
-    animation: 'glow-pulse 10s ease-in-out infinite reverse',
-  },
-
-  glowOrb3: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    width: '400px',
-    height: '400px',
-    borderRadius: '50%',
-    background:
-      'radial-gradient(circle, rgba(245, 158, 11, 0.04), transparent 70%)',
-    animation: 'glow-pulse 12s ease-in-out infinite',
-  },
-
-  gridPattern: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundImage:
-      'radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.05) 1px, transparent 0)',
-    backgroundSize: '40px 40px',
-  },
-
-  // ============================================
-  // LOADING
-  // ============================================
-
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '400px',
-    gap: '24px',
-    position: 'relative',
-    zIndex: 1,
-  },
-
-  loadingOrbit: {
-    position: 'relative',
-    width: '60px',
-    height: '60px',
-  },
-
-  loadingOrbitRing: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    border: '3px solid transparent',
-    borderRadius: '50%',
-    borderTopColor: DESIGN.colors.primary[500],
-    animation: 'orbit 1.2s linear infinite',
-  },
-
-  loadingCenter: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '12px',
-    height: '12px',
-    borderRadius: '50%',
-    background: DESIGN.colors.gradients.cosmic,
-  },
-
-  loadingText: {
-    fontSize: '14px',
-    color: DESIGN.colors.gray[500],
-    fontWeight: '500',
-  },
-
-  // ============================================
-  // WELCOME
-  // ============================================
-
-  welcomeSection: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '28px',
-    position: 'relative',
-    zIndex: 1,
-  },
-
-  welcomeContent: {
-    flex: 1,
-  },
-
-  welcomeBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '4px 14px',
-    background: 'rgba(99, 102, 241, 0.08)',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '600',
-    color: DESIGN.colors.primary[500],
-    marginBottom: '8px',
-  },
-
-  welcomeTitle: {
-    fontSize: '32px',
-    fontWeight: '800',
-    color: DESIGN.colors.gray[900],
-    margin: 0,
-    letterSpacing: '-0.5px',
-    background: DESIGN.colors.gradients.cosmic,
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-  },
-
-  welcomeSubtitle: {
-    fontSize: '15px',
-    color: DESIGN.colors.gray[500],
-    margin: '4px 0 0 0',
-  },
-
-  welcomeActions: {
-    display: 'flex',
-    gap: '12px',
-  },
-
-  primaryButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '12px 28px',
-    background: DESIGN.colors.gradients.cosmic,
-    color: '#fff',
-    border: 'none',
-    borderRadius: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    fontSize: '14px',
-    transition: 'all 0.3s ease',
-    whiteSpace: 'nowrap',
-    boxShadow: '0 4px 20px rgba(99, 102, 241, 0.3)',
-  },
-
-  secondaryButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '12px 24px',
-    background: 'rgba(255, 255, 255, 0.8)',
-    color: DESIGN.colors.gray[700],
-    border: '1px solid #E2E8F0',
-    borderRadius: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    fontSize: '14px',
-    transition: 'all 0.3s ease',
-    whiteSpace: 'nowrap',
-    backdropFilter: 'blur(10px)',
-  },
-
-  // ============================================
-  // METRICS
-  // ============================================
-
-  metricsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '16px',
-    marginBottom: '28px',
-    position: 'relative',
-    zIndex: 1,
-  },
-
-  metricCard: {
-    background: 'rgba(255, 255, 255, 0.9)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '16px',
-    padding: '20px 24px',
-    border: '1px solid rgba(226, 232, 240, 0.6)',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-
-  metricGlow: {
-    position: 'absolute',
-    top: '-50%',
-    right: '-50%',
-    width: '100%',
-    height: '100%',
-    background:
-      'radial-gradient(circle, rgba(99, 102, 241, 0.03), transparent 70%)',
-    pointerEvents: 'none',
-  },
-
-  metricContent: {
-    position: 'relative',
-    zIndex: 1,
-  },
-
-  metricHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '12px',
-  },
-
-  metricIcon: {
-    width: '44px',
-    height: '44px',
-    borderRadius: '12px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'transform 0.3s ease',
-  },
-
-  metricChange: {
-    fontSize: '12px',
-    fontWeight: '600',
-    padding: '2px 10px',
-    borderRadius: '12px',
-    background: 'rgba(255, 255, 255, 0.8)',
-  },
-
-  metricValue: {
-    fontSize: '28px',
-    fontWeight: '800',
-    color: DESIGN.colors.gray[900],
-    letterSpacing: '-0.5px',
-  },
-
-  metricLabel: {
-    fontSize: '13px',
-    color: DESIGN.colors.gray[500],
-    fontWeight: '500',
-    marginTop: '2px',
-  },
-
-  metricDescription: {
-    fontSize: '11px',
-    color: DESIGN.colors.gray[400],
-    marginTop: '2px',
-  },
-
-  metricBar: {
-    height: '3px',
-    width: '40px',
-    borderRadius: '2px',
-    marginTop: '12px',
-  },
-
-  // ============================================
-  // MAIN GRID
-  // ============================================
-
-  mainGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1.6fr 1fr',
-    gap: '20px',
-    position: 'relative',
-    zIndex: 1,
-  },
-
-  leftColumn: {},
-
-  rightColumn: {},
-
-  // ============================================
-  // CARDS
-  // ============================================
-
-  card: {
-    background: 'rgba(255, 255, 255, 0.9)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '16px',
-    padding: '24px',
-    border: '1px solid rgba(226, 232, 240, 0.6)',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-  },
-
-  cardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-  },
-
-  cardTitleGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-
-  cardIcon: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '10px',
-    background: 'rgba(99, 102, 241, 0.08)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  cardTitle: {
-    fontSize: '16px',
-    fontWeight: '700',
-    color: DESIGN.colors.gray[900],
-    margin: 0,
-  },
-
-  cardSubtitle: {
-    fontSize: '13px',
-    color: DESIGN.colors.gray[500],
-    margin: 0,
-  },
-
-  viewAllBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    background: 'none',
-    border: 'none',
-    color: DESIGN.colors.primary[500],
-    fontWeight: '600',
-    fontSize: '13px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-
-  // ============================================
-  // JOBS
-  // ============================================
-
-  jobsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '12px',
-  },
-
-  jobCard: {
-    padding: '16px',
-    borderRadius: '12px',
-    border: '1px solid #F1F5F9',
-    background: 'rgba(255, 255, 255, 0.8)',
-    backdropFilter: 'blur(5px)',
-  },
-
-  jobCardTop: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '10px',
-  },
-
-  jobCompanyIcon: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '10px',
-    background:
-      'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))',
-    color: DESIGN.colors.primary[500],
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: '700',
-    fontSize: '14px',
-  },
-
-  matchScore: {
-    padding: '2px 10px',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: '700',
-  },
-
-  jobTitle: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: DESIGN.colors.gray[900],
-    margin: '0 0 2px 0',
-  },
-
-  jobCompany: {
-    fontSize: '13px',
-    color: DESIGN.colors.gray[500],
-    margin: '0 0 4px 0',
-  },
-
-  jobLocation: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    fontSize: '12px',
-    color: DESIGN.colors.gray[400],
-    margin: '0 0 8px 0',
-  },
-
-  jobSkills: {
-    display: 'flex',
-    gap: '4px',
-    flexWrap: 'wrap',
-  },
-
-  jobSkill: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '3px',
-    padding: '2px 10px',
-    borderRadius: '12px',
-    fontSize: '11px',
-    fontWeight: '500',
-    background: 'rgba(99, 102, 241, 0.06)',
-    color: DESIGN.colors.primary[600],
-  },
-
-  // ============================================
-  // 🤖 AI CAREER INSIGHTS
-  // ============================================
-
-  aiCardGlow: {
-    position: 'absolute',
-    top: '-120px',
-    right: '-100px',
-    width: '300px',
-    height: '300px',
-    borderRadius: '50%',
-    background:
-      'radial-gradient(circle, rgba(139, 92, 246, 0.12), transparent 70%)',
-    pointerEvents: 'none',
-  },
-
-  aiIcon: {
-    width: '38px',
-    height: '38px',
-    borderRadius: '11px',
-    background: DESIGN.colors.gradients.cosmic,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 6px 20px rgba(99, 102, 241, 0.25)',
-  },
-
-  aiRefreshButton: {
-    width: '34px',
-    height: '34px',
-    borderRadius: '10px',
-    border: '1px solid #E2E8F0',
-    background: '#fff',
-    color: DESIGN.colors.primary[500],
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.2s ease',
-  },
-
-  aiLoadingContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    padding: '22px',
-    borderRadius: '14px',
-    background:
-      'linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(139, 92, 246, 0.04))',
-    border: '1px solid rgba(99, 102, 241, 0.1)',
-  },
-
-  aiLoadingIcon: {
-    width: '46px',
-    height: '46px',
-    flexShrink: 0,
-    borderRadius: '14px',
-    background: 'rgba(99, 102, 241, 0.1)',
-    color: DESIGN.colors.primary[500],
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    animation: 'glow-pulse 1.8s ease-in-out infinite',
-  },
-
-  aiLoadingTitle: {
-    margin: '0 0 4px 0',
-    fontSize: '14px',
-    fontWeight: '700',
-    color: DESIGN.colors.gray[800],
-  },
-
-  aiLoadingText: {
-    margin: 0,
-    fontSize: '12px',
-    lineHeight: 1.5,
-    color: DESIGN.colors.gray[500],
-  },
-
-  aiErrorContainer: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '14px',
-    padding: '18px',
-    borderRadius: '14px',
-    background: '#FEF2F2',
-    border: '1px solid #FECACA',
-  },
-
-  aiErrorIcon: {
-    width: '38px',
-    height: '38px',
-    flexShrink: 0,
-    borderRadius: '10px',
-    background: '#FEE2E2',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  aiErrorTitle: {
-    margin: '0 0 4px 0',
-    fontSize: '14px',
-    fontWeight: '700',
-    color: '#991B1B',
-  },
-
-  aiErrorText: {
-    margin: '0 0 10px 0',
-    fontSize: '12px',
-    lineHeight: 1.5,
-    color: '#B91C1C',
-  },
-
-  aiRetryButton: {
-    border: 'none',
-    background: '#EF4444',
-    color: '#fff',
-    padding: '7px 14px',
-    borderRadius: '8px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-
-  aiAnalysisContainer: {
-    position: 'relative',
-    zIndex: 1,
-  },
-
-  aiResponseBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '5px 10px',
-    borderRadius: '20px',
-    background: 'rgba(99, 102, 241, 0.08)',
-    color: DESIGN.colors.primary[600],
-    fontSize: '11px',
-    fontWeight: '700',
-    marginBottom: '16px',
-  },
-
-  aiAnalysisText: {
-    padding: '18px',
-    borderRadius: '14px',
-    background: '#F8FAFC',
-    border: '1px solid #EEF2F7',
-  },
-
-  aiHeading: {
-    fontSize: '13px',
-    fontWeight: '800',
-    color: DESIGN.colors.gray[900],
-    margin: '12px 0 7px 0',
-  },
-
-  aiParagraph: {
-    fontSize: '13px',
-    lineHeight: 1.65,
-    color: DESIGN.colors.gray[600],
-    margin: '5px 0',
-  },
-
-  aiBullet: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '8px',
-    fontSize: '13px',
-    lineHeight: 1.6,
-    color: DESIGN.colors.gray[600],
-    margin: '5px 0',
-  },
-
-  aiBulletDot: {
-    color: DESIGN.colors.primary[500],
-    fontWeight: '900',
-    fontSize: '16px',
-    lineHeight: 1.3,
-  },
-
-  aiFooter: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: '14px',
-    paddingTop: '12px',
-    borderTop: '1px solid #EEF2F7',
-  },
-
-  aiFooterLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '5px',
-    color: DESIGN.colors.primary[500],
-    fontSize: '11px',
-    fontWeight: '600',
-  },
-
-  aiFooterDisclaimer: {
-    fontSize: '10px',
-    color: DESIGN.colors.gray[400],
-  },
-
-  aiEmptyState: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '30px 20px',
-    textAlign: 'center',
-    borderRadius: '14px',
-    background:
-      'linear-gradient(135deg, rgba(99, 102, 241, 0.04), rgba(139, 92, 246, 0.03))',
-  },
-
-  aiEmptyIcon: {
-    width: '52px',
-    height: '52px',
-    borderRadius: '16px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '25px',
-    background: 'rgba(99, 102, 241, 0.08)',
-    marginBottom: '12px',
-  },
-
-  aiEmptyTitle: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: DESIGN.colors.gray[800],
-    margin: 0,
-  },
-
-  aiEmptyText: {
-    maxWidth: '520px',
-    fontSize: '12px',
-    lineHeight: 1.6,
-    color: DESIGN.colors.gray[500],
-    margin: '5px 0 15px 0',
-  },
-
-  aiProfileButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '7px',
-    padding: '9px 18px',
-    border: 'none',
-    borderRadius: '9px',
-    background: DESIGN.colors.gradients.cosmic,
-    color: '#fff',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    boxShadow: '0 5px 15px rgba(99, 102, 241, 0.2)',
-  },
-
-  // ============================================
-  // APPLICATIONS
-  // ============================================
-
-  applicationsList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-
-  applicationItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 14px',
-    borderRadius: '12px',
-    border: '1px solid #F1F5F9',
-    transition: 'all 0.3s ease',
-  },
-
-  applicationLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-
-  applicationAvatar: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: '700',
-    fontSize: '14px',
-    flexShrink: 0,
-  },
-
-  applicationTitle: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: DESIGN.colors.gray[900],
-  },
-
-  applicationMeta: {
-    fontSize: '13px',
-    color: DESIGN.colors.gray[500],
-  },
-
-  applicationDate: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    fontSize: '12px',
-    color: DESIGN.colors.gray[400],
-  },
-
-  statusBadge: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '4px 14px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '600',
-    whiteSpace: 'nowrap',
-  },
-
-  statusDot: {
-    width: '6px',
-    height: '6px',
-    borderRadius: '50%',
-  },
-
-  // ============================================
-  // PROFILE
-  // ============================================
-
-  profileCard: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center',
-  },
-
-  profileAvatarWrapper: {
-    position: 'relative',
-    marginBottom: '12px',
-  },
-
-  profileAvatarRing: {
-    position: 'absolute',
-    inset: '-4px',
-    borderRadius: '50%',
-    background: DESIGN.colors.gradients.cosmic,
-    opacity: 0.3,
-    animation: 'pulse-ring 2s ease-in-out infinite',
-  },
-
-  profileAvatar: {
-    width: '80px',
-    height: '80px',
-    borderRadius: '50%',
-    background: DESIGN.colors.gradients.cosmic,
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '32px',
-    fontWeight: '700',
-    position: 'relative',
-    zIndex: 1,
-    boxShadow: '0 8px 30px rgba(99, 102, 241, 0.3)',
-  },
-
-  profileName: {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: DESIGN.colors.gray[900],
-    margin: 0,
-  },
-
-  profileRole: {
-    fontSize: '14px',
-    color: DESIGN.colors.gray[500],
-    margin: '0 0 16px 0',
-  },
-
-  profileStrength: {
-    width: '100%',
-    marginBottom: '16px',
-  },
-
-  strengthHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '4px',
-  },
-
-  strengthLabel: {
-    fontSize: '12px',
-    fontWeight: '500',
-    color: DESIGN.colors.gray[500],
-  },
-
-  strengthPercent: {
-    fontSize: '14px',
-    fontWeight: '700',
-  },
-
-  strengthBar: {
-    height: '6px',
-    background: '#F1F5F9',
-    borderRadius: '3px',
-    overflow: 'hidden',
-  },
-
-  strengthFill: {
-    height: '100%',
-    borderRadius: '3px',
-    transition: 'width 1s ease',
-  },
-
-  strengthLevel: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: DESIGN.colors.gray[500],
-    margin: '4px 0 0 0',
-  },
-
-  profileDetails: {
-    width: '100%',
-    textAlign: 'left',
-    marginTop: '12px',
-  },
-
-  profileDetail: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '8px 0',
-    borderBottom: '1px solid #F1F5F9',
-  },
-
-  profileDetailLabel: {
-    fontSize: '13px',
-    color: DESIGN.colors.gray[500],
-  },
-
-  profileDetailValue: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: DESIGN.colors.gray[800],
-    textAlign: 'right',
-    maxWidth: '60%',
-  },
-
-  skillsSection: {
-    width: '100%',
-    textAlign: 'left',
-    marginTop: '12px',
-  },
-
-  skillsLabel: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: DESIGN.colors.gray[500],
-    margin: '0 0 8px 0',
-  },
-
-  skillsChips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '6px',
-  },
-
-  skillChip: {
-    padding: '4px 14px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '500',
-    background: 'rgba(99, 102, 241, 0.08)',
-    color: DESIGN.colors.primary[600],
-  },
-
-  editProfileBtn: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    padding: '10px',
-    marginTop: '16px',
-    background: 'rgba(255, 255, 255, 0.8)',
-    border: '1px solid #E2E8F0',
-    borderRadius: '10px',
-    color: DESIGN.colors.gray[700],
-    fontWeight: '600',
-    fontSize: '14px',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-  },
-
-  // ============================================
-  // QUICK ACTIONS
-  // ============================================
-
-  quickActionsTitle: {
-    fontSize: '15px',
-    fontWeight: '700',
-    color: DESIGN.colors.gray[900],
-    margin: '0 0 16px 0',
-  },
-
-  quickActionsGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '12px',
-  },
-
-  quickAction: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '16px 12px',
-    borderRadius: '12px',
-    border: '1px solid #F1F5F9',
-    background: 'rgba(255, 255, 255, 0.8)',
-    backdropFilter: 'blur(5px)',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-  },
-
-  quickActionIcon: {
-    width: '44px',
-    height: '44px',
-    borderRadius: '12px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  quickActionLabel: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: DESIGN.colors.gray[600],
-  },
-
-  // ============================================
-  // QUICK STATS
-  // ============================================
-
-  quickStatsGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '12px',
-  },
-
-  quickStat: {
-    textAlign: 'center',
-    padding: '12px',
-  },
-
-  quickStatValue: {
-    fontSize: '24px',
-    fontWeight: '800',
-    color: DESIGN.colors.gray[900],
-    background: DESIGN.colors.gradients.cosmic,
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-  },
-
-  quickStatLabel: {
-    fontSize: '12px',
-    color: DESIGN.colors.gray[500],
-    marginTop: '4px',
-  },
-
-  // ============================================
-  // EMPTY STATE
-  // ============================================
-
-  emptyState: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '32px 20px',
-    textAlign: 'center',
-  },
-
-  emptyStateIcon: {
-    fontSize: '40px',
-    marginBottom: '12px',
-  },
-
-  emptyStateTitle: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: DESIGN.colors.gray[800],
-    margin: 0,
-  },
-
-  emptyStateSub: {
-    fontSize: '13px',
-    color: DESIGN.colors.gray[500],
-    margin: '4px 0 16px 0',
-  },
-
-  emptyStateBtn: {
-    padding: '8px 24px',
-    background: DESIGN.colors.gradients.cosmic,
-    color: '#fff',
-    border: 'none',
-    borderRadius: '10px',
-    fontWeight: '600',
-    fontSize: '13px',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)',
-  },
+// ────────────────────────────────────────────────────────────
+// STYLES
+// ────────────────────────────────────────────────────────────
+const s = {
+  container: { padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1440, margin: '0 auto', position: 'relative' },
+
+  backgroundEffects: { position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' },
+  glowOrb1: { position: 'absolute', top: '-20%', right: '-10%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,.08), transparent 70%)' },
+  glowOrb2: { position: 'absolute', bottom: '-20%', left: '-10%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,.06), transparent 70%)' },
+  gridPattern: { position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(99,102,241,.05) 1px, transparent 0)', backgroundSize: '40px 40px' },
+
+  loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 24 },
+  loadingOrbit: { position: 'relative', width: 60, height: 60 },
+  loadingOrbitRing: { position: 'absolute', inset: 0, border: '3px solid transparent', borderRadius: '50%', borderTopColor: '#6366F1', animation: 'sd-spin 1.2s linear infinite' },
+  loadingCenter: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 12, height: 12, borderRadius: '50%', background: 'linear-gradient(135deg,#6366F1,#8B5CF6)' },
+  loadingText: { fontSize: 14, color: '#64748B', fontWeight: 500 },
+
+  welcomeSection: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 28, position: 'relative', zIndex: 1 },
+  welcomeContent: { flex: '1 1 260px', minWidth: 0 },
+  welcomeBadge: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 14px', background: 'rgba(99,102,241,.08)', borderRadius: 20, fontSize: 12, fontWeight: 600, color: '#6366F1', marginBottom: 8 },
+  welcomeTitle: { fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.5px' },
+  welcomeSubtitle: { fontSize: 'clamp(13px, 1.4vw, 15px)', color: '#64748B', margin: '4px 0 0 0' },
+  welcomeActions: { display: 'flex', flexWrap: 'wrap', gap: 12 },
+  primaryButton: { display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 600, cursor: 'pointer', fontSize: 14, minHeight: 44, boxShadow: '0 4px 20px rgba(99,102,241,.3)' },
+  secondaryButton: { display: 'flex', alignItems: 'center', gap: 8, padding: '12px 22px', background: 'rgba(255,255,255,.8)', color: '#334155', border: '1px solid #E2E8F0', borderRadius: 12, fontWeight: 600, cursor: 'pointer', fontSize: 14, minHeight: 44 },
+
+  metricsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 28, position: 'relative', zIndex: 1 },
+  metricCard: { background: 'rgba(255,255,255,.9)', backdropFilter: 'blur(10px)', borderRadius: 16, padding: 'clamp(16px, 2vw, 22px)', border: '1px solid rgba(226,232,240,.6)', position: 'relative' },
+  metricHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  metricIcon: { width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  metricChange: { fontSize: 12, fontWeight: 600, padding: '2px 10px', borderRadius: 12, background: 'rgba(255,255,255,.8)' },
+  metricValue: { fontSize: 'clamp(22px, 2.4vw, 28px)', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.5px' },
+  metricLabel: { fontSize: 13, color: '#64748B', fontWeight: 500, marginTop: 2 },
+
+  mainGrid: { display: 'grid', gap: 20, position: 'relative', zIndex: 1 },
+  leftColumn: { minWidth: 0 },
+  rightColumn: { minWidth: 0 },
+
+  card: { background: 'rgba(255,255,255,.9)', backdropFilter: 'blur(10px)', borderRadius: 16, padding: 'clamp(16px, 2.5vw, 24px)', border: '1px solid rgba(226,232,240,.6)' },
+  cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 20, flexWrap: 'wrap' },
+  cardTitleGroup: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 },
+  cardIcon: { width: 36, height: 36, borderRadius: 10, background: 'rgba(99,102,241,.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  cardTitle: { fontSize: 16, fontWeight: 700, color: '#0F172A', margin: 0 },
+  cardSubtitle: { fontSize: 13, color: '#64748B', margin: 0 },
+  viewAllBtn: { display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', color: '#6366F1', fontWeight: 600, fontSize: 13, cursor: 'pointer', padding: 0 },
+
+  jobsGrid: { display: 'grid', gap: 12 },
+  jobCard: { padding: 16, borderRadius: 12, border: '1px solid #F1F5F9', background: 'rgba(255,255,255,.8)', cursor: 'pointer' },
+  jobCardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
+  jobCompanyIcon: { width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,.1), rgba(139,92,246,.1))', color: '#6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14 },
+  matchScore: { padding: '2px 10px', borderRadius: 12, fontSize: 12, fontWeight: 700 },
+  jobTitle: { fontSize: 14, fontWeight: 600, color: '#0F172A', margin: '0 0 2px 0', overflow: 'hidden', textOverflow: 'ellipsis' },
+  jobCompany: { fontSize: 13, color: '#64748B', margin: '0 0 4px 0' },
+  jobLocation: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#94A3B8', margin: '0 0 8px 0' },
+  jobSkills: { display: 'flex', gap: 4, flexWrap: 'wrap' },
+  jobSkill: { display: 'flex', alignItems: 'center', gap: 3, padding: '2px 10px', borderRadius: 12, fontSize: 11, fontWeight: 500, background: 'rgba(99,102,241,.06)', color: '#4F46E5' },
+
+  aiIcon: { width: 38, height: 38, borderRadius: 11, background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(99,102,241,.25)' },
+  aiRefreshButton: { width: 40, height: 40, borderRadius: 10, border: '1px solid #E2E8F0', background: '#fff', color: '#6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
+  aiLoading: { display: 'flex', alignItems: 'center', gap: 16, padding: 22, borderRadius: 14, background: 'linear-gradient(135deg, rgba(99,102,241,.06), rgba(139,92,246,.04))', border: '1px solid rgba(99,102,241,.1)' },
+  aiLoadingIcon: { width: 46, height: 46, flexShrink: 0, borderRadius: 14, background: 'rgba(99,102,241,.1)', color: '#6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  aiLoadingTitle: { margin: '0 0 4px 0', fontSize: 14, fontWeight: 700, color: '#1E293B' },
+  aiLoadingText: { margin: 0, fontSize: 12, lineHeight: 1.5, color: '#64748B' },
+  aiError: { display: 'flex', alignItems: 'flex-start', gap: 14, padding: 18, borderRadius: 14, background: '#FEF2F2', border: '1px solid #FECACA' },
+  aiErrorIcon: { width: 38, height: 38, flexShrink: 0, borderRadius: 10, background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  aiErrorTitle: { margin: '0 0 4px 0', fontSize: 14, fontWeight: 700, color: '#991B1B' },
+  aiErrorText: { margin: '0 0 10px 0', fontSize: 12, lineHeight: 1.5, color: '#B91C1C' },
+  aiRetryButton: { border: 'none', background: '#EF4444', color: '#fff', padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' },
+  aiAnalysisText: { padding: 18, borderRadius: 14, background: '#F8FAFC', border: '1px solid #EEF2F7' },
+  aiHeading: { fontSize: 13, fontWeight: 800, color: '#0F172A', margin: '12px 0 7px 0' },
+  aiParagraph: { fontSize: 13, lineHeight: 1.65, color: '#475569', margin: '5px 0' },
+  aiBullet: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, lineHeight: 1.6, color: '#475569', margin: '5px 0' },
+  aiBulletDot: { color: '#6366F1', fontWeight: 900, fontSize: 16, lineHeight: 1.3 },
+  aiEmptyState: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', textAlign: 'center', borderRadius: 14, background: 'linear-gradient(135deg, rgba(99,102,241,.04), rgba(139,92,246,.03))' },
+  aiEmptyIcon: { width: 52, height: 52, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 25, background: 'rgba(99,102,241,.08)', marginBottom: 12 },
+  aiEmptyTitle: { fontSize: 14, fontWeight: 700, color: '#1E293B', margin: 0 },
+  aiEmptyText: { maxWidth: 520, fontSize: 12, lineHeight: 1.6, color: '#64748B', margin: '5px 0 15px 0' },
+  aiProfileButton: { display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', border: 'none', borderRadius: 9, background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' },
+
+  applicationsList: { display: 'flex', flexDirection: 'column', gap: 8 },
+  applicationItem: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 12, border: '1px solid #F1F5F9' },
+  applicationLeft: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 200px' },
+  applicationAvatar: { width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, flexShrink: 0 },
+  applicationTitle: { fontSize: 14, fontWeight: 600, color: '#0F172A' },
+  applicationMeta: { fontSize: 12.5, color: '#64748B' },
+  applicationDate: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#94A3B8' },
+  statusBadge: { display: 'flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' },
+  statusDot: { width: 6, height: 6, borderRadius: '50%' },
+
+  profileCard: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' },
+  profileAvatarWrapper: { position: 'relative', marginBottom: 12 },
+  profileAvatarRing: { position: 'absolute', inset: -4, borderRadius: '50%', background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', opacity: 0.3 },
+  profileAvatar: { width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, fontWeight: 700, position: 'relative' },
+  profileName: { fontSize: 18, fontWeight: 700, color: '#0F172A', margin: 0 },
+  profileRole: { fontSize: 14, color: '#64748B', margin: '0 0 16px 0' },
+  profileStrength: { width: '100%', marginBottom: 16 },
+  strengthHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  strengthLabel: { fontSize: 12, fontWeight: 500, color: '#64748B' },
+  strengthPercent: { fontSize: 14, fontWeight: 700 },
+  strengthBar: { height: 6, background: '#F1F5F9', borderRadius: 3, overflow: 'hidden' },
+  strengthFill: { height: '100%', borderRadius: 3, transition: 'width 1s ease' },
+  strengthLevel: { fontSize: 12, fontWeight: 600, color: '#64748B', margin: '4px 0 0 0' },
+  profileDetails: { width: '100%', textAlign: 'left', marginTop: 12 },
+  profileDetail: { display: 'flex', justifyContent: 'space-between', gap: 12, padding: '8px 0', borderBottom: '1px solid #F1F5F9' },
+  profileDetailLabel: { fontSize: 13, color: '#64748B' },
+  profileDetailValue: { fontSize: 13, fontWeight: 600, color: '#1E293B', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis' },
+  skillsSection: { width: '100%', textAlign: 'left', marginTop: 12 },
+  skillsLabel: { fontSize: 12, fontWeight: 600, color: '#64748B', margin: '0 0 8px 0' },
+  skillsChips: { display: 'flex', flexWrap: 'wrap', gap: 6 },
+  skillChip: { padding: '4px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500, background: 'rgba(99,102,241,.08)', color: '#4F46E5' },
+  editProfileBtn: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 12, marginTop: 16, background: 'rgba(255,255,255,.8)', border: '1px solid #E2E8F0', borderRadius: 10, color: '#334155', fontWeight: 600, fontSize: 14, cursor: 'pointer', minHeight: 44 },
+
+  quickActionsTitle: { fontSize: 15, fontWeight: 700, color: '#0F172A', margin: '0 0 16px 0' },
+  quickActionsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
+  quickAction: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 12px', borderRadius: 12, border: '1px solid #F1F5F9', background: 'rgba(255,255,255,.8)', cursor: 'pointer' },
+  quickActionIcon: { width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  quickActionLabel: { fontSize: 12, fontWeight: 600, color: '#475569' },
+
+  emptyState: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 20px', textAlign: 'center' },
+  emptyStateIcon: { fontSize: 40, marginBottom: 12 },
+  emptyStateTitle: { fontSize: 16, fontWeight: 600, color: '#1E293B', margin: 0 },
+  emptyStateSub: { fontSize: 13, color: '#64748B', margin: '4px 0 16px 0' },
+  emptyStateBtn: { padding: '10px 24px', background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer', minHeight: 44 },
 }

@@ -1,3 +1,4 @@
+// src/pages/Landing.jsx
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef, useCallback } from 'react'
 
@@ -14,7 +15,6 @@ export default function Landing() {
     const onScroll = () => setScrolled(window.scrollY > 10)
     window.addEventListener('scroll', onScroll)
 
-    // Mouse tracker for Spotlight effect
     const onMouseMove = (e) => {
       if (heroRef.current) {
         const rect = heroRef.current.getBoundingClientRect()
@@ -24,17 +24,19 @@ export default function Landing() {
         })
       }
     }
-    window.addEventListener('mousemove', onMouseMove)
+    // Only bind mouse tracking on devices with hover
+    const supportsHover = window.matchMedia('(hover: hover)').matches
+    if (supportsHover) window.addEventListener('mousemove', onMouseMove)
 
     const obs = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) setVisible(p => ({ ...p, [e.target.dataset.k]: true })) })
     }, { threshold: 0.12 })
     Object.values(refs.current).forEach(el => el && obs.observe(el))
 
-    return () => { 
-      window.removeEventListener('scroll', onScroll) 
+    return () => {
+      window.removeEventListener('scroll', onScroll)
       window.removeEventListener('mousemove', onMouseMove)
-      obs.disconnect() 
+      obs.disconnect()
     }
   }, [])
 
@@ -45,77 +47,72 @@ export default function Landing() {
     <div style={S.page}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap');
-        
         * { box-sizing: border-box; }
-        
-        @keyframes fadeUp{from{opacity:0;transform:translateY(20px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-        @keyframes floatPanel{0%,100%{transform:translateY(0px) rotate(0deg)}50%{transform:translateY(-12px) rotate(2deg)}}
+
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes floatPanel{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-12px) rotate(2deg)}}
         @keyframes drift{0%,100%{transform:translate(0,0)}33%{transform:translate(15px,-15px)}66%{transform:translate(-10px,10px)}}
         @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-        
-        .reveal{opacity:0; transform: translateY(20px); transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);}
-        .reveal.show{opacity:1; transform: translateY(0);}
-        
-        .navLink{position:relative;padding:4px 0;transition:color .2s ease;cursor:pointer;font-weight:500;}
-        .navLink:hover{color:#0F172A!important}
-        .navLink::after{content:'';position:absolute;left:0;right:0;bottom:-4px;height:2px;background:#EA4E1B;border-radius:2px;transform:scaleX(0);transition:transform .2s ease;}
+
+        .reveal{opacity:0;transform:translateY(20px);transition:all .7s cubic-bezier(.16,1,.3,1);}
+        .reveal.show{opacity:1;transform:translateY(0);}
+
+        .navLink{position:relative;padding:4px 0;transition:color .2s;cursor:pointer;font-weight:500;}
+        .navLink:hover{color:#0F172A}
+        .navLink::after{content:'';position:absolute;left:0;right:0;bottom:-4px;height:2px;background:#EA4E1B;border-radius:2px;transform:scaleX(0);transition:transform .2s;}
         .navLink:hover::after{transform:scaleX(1);}
-        
-        .btnGhost{transition:all .2s ease;border: 1px solid transparent;}
-        .btnGhost:hover{background:#F1F5F9!important;border-color:#E2E8F0;}
-        
-        .btnDark{transition:all .2s ease;}
-        .btnDark:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(15,23,42,.25);}
-        
-        .ctaPrimary{transition:all .2s ease;}
-        .ctaPrimary:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(234,78,27,.4);}
-        
-        .roleBtn{transition:all .15s ease;cursor:pointer}
-        .roleBtn:hover:not(.active){background:#F1F5F9!important}
-        
-        .floaty{transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);}
-        .floaty:hover{transform: scale(1.05) translateY(-5px)!important;}
-        
-        .featureCard{transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid #E2E8F0;}
-        .featureCard:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 20px 40px rgba(15,23,42,.06);border-color:#EA4E1B;}
-        
-        .testiCard{transition:all .3s ease; border: 1px solid #E2E8F0;}
-        .testiCard:hover{transform:translateY(-6px);box-shadow:0 16px 32px rgba(15,23,42,.06);border-color:#0F172A;}
-        
-        .footerLink{transition:color .2s ease;cursor:pointer}
-        .footerLink:hover{color:#EA4E1B!important}
-        
-        .ctaWhite{transition:transform .15s ease,box-shadow .15s ease}
-        .ctaWhite:hover{transform:scale(1.02);box-shadow:0 8px 20px rgba(255,255,255,.2);}
-        
-        .ctaOutline{transition: all .2s ease;}
-        .ctaOutline:hover{background:rgba(255,255,255,.1);border-color:#fff;}
+
+        .btnGhost{transition:all .2s;}
+        .btnGhost:hover{background:#F1F5F9}
+        .btnDark{transition:all .2s;}
+        .btnDark:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(15,23,42,.25)}
+        .ctaPrimary{transition:all .2s;}
+        .ctaPrimary:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(234,78,27,.4)}
+        .roleBtn{transition:all .15s;cursor:pointer}
+        .roleBtn:hover:not(.active){background:#F1F5F9}
+        .floaty{transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+        .floaty:hover{transform:scale(1.05) translateY(-5px)}
+        .featureCard{transition:all .4s cubic-bezier(.34,1.56,.64,1);border:1px solid #E2E8F0;}
+        .featureCard:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 20px 40px rgba(15,23,42,.06);border-color:#EA4E1B}
+        .testiCard{transition:all .3s;border:1px solid #E2E8F0;}
+        .testiCard:hover{transform:translateY(-6px);box-shadow:0 16px 32px rgba(15,23,42,.06);border-color:#0F172A}
+        .footerLink{transition:color .2s;cursor:pointer}
+        .footerLink:hover{color:#EA4E1B}
+        .ctaWhite{transition:transform .15s,box-shadow .15s}
+        .ctaWhite:hover{transform:scale(1.02);box-shadow:0 8px 20px rgba(255,255,255,.2)}
+        .ctaOutline{transition:all .2s;}
+        .ctaOutline:hover{background:rgba(255,255,255,.1);border-color:#fff}
 
         @media(max-width:1024px){
-          .heroInner{grid-template-columns:1fr!important; gap: 40px!important;}
+          .heroInner{grid-template-columns:1fr!important;gap:40px!important}
           .featuresGrid{grid-template-columns:1fr 1fr!important}
           .stepsGrid{grid-template-columns:1fr 1fr!important;row-gap:36px!important}
           .stepsLine{display:none!important}
           .testimonialGrid{grid-template-columns:1fr!important}
-          .footerGrid{grid-template-columns:1fr 1fr!important; gap: 40px!important;}
+          .footerGrid{grid-template-columns:1fr 1fr!important;gap:40px!important}
         }
         @media(max-width:768px){
           .navCenter{display:none!important}
-          .h1{font-size:36px!important;letter-spacing:-1px!important}
+          .h1{font-size:clamp(28px, 7vw, 40px)!important;letter-spacing:-1px!important}
+          .h2{font-size:clamp(22px, 5vw, 30px)!important}
           .featuresGrid{grid-template-columns:1fr!important}
           .stepsGrid{grid-template-columns:1fr!important}
-          .searchRow{flex-direction:column!important; align-items: stretch!important;}
-          .searchBox{width: 100%!important;}
+          .searchRow{flex-direction:column!important;align-items:stretch!important}
+          .searchBox{width:100%!important}
           .miniMockup{display:none!important}
           .floaty{display:none!important}
-          .impactContent{flex-direction:column!important;align-items:flex-start!important; gap: 20px!important;}
+          .impactContent{flex-direction:column!important;align-items:flex-start!important;gap:20px!important}
           .statsGrid{grid-template-columns:1fr 1fr!important}
-          .statDivider{border-right: none!important; border-bottom: 1px solid #E2E8F0;}
+          .statDivider{border-right:none!important;border-bottom:1px solid #E2E8F0}
+          .heroSection{padding:60px 20px 60px!important}
+          .sectionEl{padding:56px 20px!important}
+          .testiSectionEl{padding:56px 20px!important}
+          .footerEl{padding:40px 20px 24px!important}
+          .navEl{padding:14px 20px!important}
         }
       `}</style>
 
-      {/* Navigation */}
-      <nav style={{...S.nav, ...(scrolled ? S.navScrolled : {})}}>
+      <nav className="navEl" style={{...S.nav, ...(scrolled ? S.navScrolled : {})}}>
         <div style={S.logoRow}>
           <div style={S.logoMark}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -139,25 +136,19 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <section ref={heroRef} style={S.hero}>
-        {/* Dynamic glowing spotlight effect */}
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-          background: `radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(234, 78, 27, 0.08), transparent 40%)`
-        }} />
-        
-        <div className="blob" style={S.blob1}></div>
-        <div className="blob" style={{...S.blob2, animationDelay: '3s'}}></div>
+      <section ref={heroRef} className="heroSection" style={S.hero}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', background: `radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(234,78,27,.08), transparent 40%)` }} />
+        <div style={S.blob1}></div>
+        <div style={{ ...S.blob2, animationDelay: '3s' }}></div>
         <div style={S.gridBg}></div>
 
         <div style={S.heroInner} className="heroInner">
-          <div style={{position: 'relative', zIndex: 1}}>
+          <div style={{ position: 'relative', zIndex: 1, minWidth: 0 }}>
             <div style={S.eyebrow}>
               <span style={S.dots}>
-                <span style={{...S.dot, opacity: .5}}></span>
-                <span style={{...S.dot, opacity: .8}}></span>
-                <span style={{...S.dot, opacity: 1}}></span>
+                <span style={{ ...S.dot, opacity: .5 }}></span>
+                <span style={{ ...S.dot, opacity: .8 }}></span>
+                <span style={{ ...S.dot, opacity: 1 }}></span>
               </span>
               Trusted by 500+ universities
             </div>
@@ -179,12 +170,10 @@ export default function Landing() {
               I am a:
               <div style={S.segmented}>
                 {['Student', 'University', 'Employer'].map(role => (
-                  <span
-                    key={role}
+                  <span key={role}
                     className={`roleBtn ${userRole === role ? 'active' : ''}`}
                     onClick={() => setUserRole(role)}
-                    style={{...S.segBtn, ...(userRole === role ? S.segBtnActive : {})}}
-                  >
+                    style={{ ...S.segBtn, ...(userRole === role ? S.segBtnActive : {}) }}>
                     {role}
                   </span>
                 ))}
@@ -192,15 +181,12 @@ export default function Landing() {
             </div>
           </div>
 
-          <div style={{...S.photoWrap, position: 'relative', zIndex: 1}}>
+          <div style={{ ...S.photoWrap, position: 'relative', zIndex: 1 }}>
             <div className="floaty" style={S.floaty1}>
-              <span style={{...S.floatyDot, background: '#0E9C8F'}}></span> 92% placement rate
+              <span style={{ ...S.floatyDot, background: '#0E9C8F' }}></span> 92% placement rate
             </div>
-            <img
-              style={S.heroPhoto}
-              alt="Students collaborating on laptops"
-              src="https://images.unsplash.com/photo-1758270705290-62b6294dd044?fm=jpg&q=70&w=900&auto=format&fit=crop"
-            />
+            <img style={S.heroPhoto} alt="Students collaborating on laptops"
+              src="https://images.unsplash.com/photo-1758270705290-62b6294dd044?fm=jpg&q=70&w=900&auto=format&fit=crop" />
             <div className="miniMockup" style={S.miniMockup}>
               <div style={S.mmTop}>
                 <span style={S.mmLabel}>Match rate</span>
@@ -208,19 +194,18 @@ export default function Landing() {
               </div>
               <div style={S.mmBars}>
                 {[35, 55, 40, 70, 60, 85, 95].map((h, i) => (
-                  <div key={i} style={{...S.mmBar, height: `${h}%`, animationDelay: `${i * 0.1}s`}}></div>
+                  <div key={i} style={{ ...S.mmBar, height: `${h}%`, animationDelay: `${i * 0.1}s` }}></div>
                 ))}
               </div>
             </div>
             <div className="floaty" style={S.floaty2}>
-              <span style={{...S.floatyDot, background: '#EA4E1B'}}></span> AI-matched today
+              <span style={{ ...S.floatyDot, background: '#EA4E1B' }}></span> AI-matched today
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section style={S.statsSection}>
+      <section style={S.statsSection} className="statsSection">
         <div style={S.statsGrid} className="statsGrid">
           {[
             { n: '2.4M+', l: 'Active job listings' },
@@ -228,7 +213,8 @@ export default function Landing() {
             { n: '18K', l: 'Hiring employers' },
             { n: '92%', l: 'Placement rate' },
           ].map((s, i) => (
-            <div key={i} className={`reveal ${v('stats')}`} ref={i === 0 ? setRef('stats') : null} data-k="stats" style={{...S.stat, ...(i < 3 ? S.statDivider : {})}}>
+            <div key={i} className={`reveal ${v('stats')}`} ref={i === 0 ? setRef('stats') : null} data-k="stats"
+              style={{ ...S.stat, ...(i < 3 ? S.statDivider : {}) }}>
               <div style={S.statNum}>{s.n}</div>
               <div style={S.statLabel}>{s.l}</div>
             </div>
@@ -236,10 +222,9 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features */}
-      <section style={S.section}>
+      <section className="sectionEl" style={S.section}>
         <div className={`reveal ${v('feat')}`} ref={setRef('feat')} data-k="feat" style={S.sectionHead}>
-          <h2 style={S.h2}>Everything you need to bridge the gap</h2>
+          <h2 style={S.h2} className="h2">Everything you need to bridge the gap</h2>
           <p style={S.sectionSub}>A single platform bringing together job discovery, partnerships, and insight.</p>
         </div>
 
@@ -250,8 +235,8 @@ export default function Landing() {
             { icon: '💼', bg: '#FEF7E9', color: '#F0A93A', t: 'Employer connections', d: 'Post roles, screen verified candidates and build a pipeline directly from campus.' },
             { icon: '📊', bg: '#FFF1EA', color: '#EA4E1B', t: 'Powerful analytics', d: 'Real-time reporting on applications, placements and hiring trends across your network.' },
           ].map((f, i) => (
-            <div key={i} className={`featureCard reveal ${v('feat')}`} style={{...S.featureCard, animationDelay: `${i * .1}s`}}>
-              <div style={{...S.featureIcon, background: f.bg, color: f.color}}>{f.icon}</div>
+            <div key={i} className={`featureCard reveal ${v('feat')}`} style={{ ...S.featureCard, animationDelay: `${i * .1}s` }}>
+              <div style={{ ...S.featureIcon, background: f.bg, color: f.color }}>{f.icon}</div>
               <div style={S.featureTitle}>{f.t}</div>
               <div style={S.featureDesc}>{f.d}</div>
             </div>
@@ -259,10 +244,9 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* How it works */}
-      <section style={{...S.section, paddingTop: 0}}>
+      <section className="sectionEl" style={{ ...S.section, paddingTop: 0 }}>
         <div className={`reveal ${v('steps')}`} ref={setRef('steps')} data-k="steps" style={S.sectionHead}>
-          <h2 style={S.h2}>How it works</h2>
+          <h2 style={S.h2} className="h2">How it works</h2>
           <p style={S.sectionSub}>From profile to placement in four seamless steps.</p>
         </div>
 
@@ -275,8 +259,8 @@ export default function Landing() {
               { n: 3, bg: '#0E9C8F', t: 'Apply with confidence', d: 'See exactly which skills to highlight, and which to build.' },
               { n: 4, bg: '#F0A93A', t: 'Get placed', d: 'Track every application through to an offer.' },
             ].map((s, i) => (
-              <div key={i} className={`reveal ${v('steps')}`} style={{...S.step, animationDelay: `${i * .1}s`}}>
-                <div style={{...S.stepNum, background: s.bg}}>{s.n}</div>
+              <div key={i} className={`reveal ${v('steps')}`} style={{ ...S.step, animationDelay: `${i * .1}s` }}>
+                <div style={{ ...S.stepNum, background: s.bg }}>{s.n}</div>
                 <h4 style={S.stepTitle}>{s.t}</h4>
                 <p style={S.stepDesc}>{s.d}</p>
               </div>
@@ -285,11 +269,10 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section style={S.testiSection}>
+      <section className="testiSectionEl" style={S.testiSection}>
         <div style={S.wrap}>
           <div className={`reveal ${v('testi')}`} ref={setRef('testi')} data-k="testi" style={S.sectionHead}>
-            <h2 style={S.h2}>Loved by the whole community</h2>
+            <h2 style={S.h2} className="h2">Loved by the whole community</h2>
             <p style={S.sectionSub}>Students, coordinators and recruiters share why they choose CareerBridge.</p>
           </div>
 
@@ -299,12 +282,12 @@ export default function Landing() {
               { name: 'Daniel Rivers', role: 'University Coordinator', text: "Managing 300 placements used to be a spreadsheet nightmare. Now it's all in one place.", bg: '#0B3B57' },
               { name: 'Priya Sharma', role: 'Talent Acquisition Lead', text: 'The quality of pre-verified candidates from partner universities cut our hiring time in half.', bg: '#0E9C8F' },
             ].map((t, i) => (
-              <div key={i} className={`testiCard reveal ${v('testi')}`} style={{...S.testiCard, animationDelay: `${i * .1}s`}}>
+              <div key={i} className={`testiCard reveal ${v('testi')}`} style={{ ...S.testiCard, animationDelay: `${i * .1}s` }}>
                 <div style={S.stars}>★★★★★</div>
                 <p style={S.testiQuote}>"{t.text}"</p>
                 <div style={S.testiPerson}>
-                  <div style={{...S.testiAvatar, background: t.bg}}>{t.name.split(' ').map(n => n[0]).join('')}</div>
-                  <div>
+                  <div style={{ ...S.testiAvatar, background: t.bg }}>{t.name.split(' ').map(n => n[0]).join('')}</div>
+                  <div style={{ minWidth: 0 }}>
                     <div style={S.testiName}>{t.name}</div>
                     <div style={S.testiRole}>{t.role}</div>
                   </div>
@@ -315,14 +298,10 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Impact band */}
-      <section style={{...S.section, paddingBottom: 0}}>
+      <section className="sectionEl" style={{ ...S.section, paddingBottom: 0 }}>
         <div className={`reveal ${v('impact')}`} ref={setRef('impact')} data-k="impact" style={S.impactBand}>
-          <img
-            style={S.impactImg}
-            alt="Group of graduates celebrating, throwing caps in the air"
-            src="https://images.unsplash.com/photo-1695425173758-37e9c23b962a?fm=jpg&q=70&w=1600&auto=format&fit=crop"
-          />
+          <img style={S.impactImg} alt="Group of graduates celebrating, throwing caps in the air"
+            src="https://images.unsplash.com/photo-1695425173758-37e9c23b962a?fm=jpg&q=70&w=1600&auto=format&fit=crop" />
           <div style={S.impactOverlay}></div>
           <div style={S.impactContent} className="impactContent">
             <h3 style={S.impactTitle}>Every year, thousands of students turn their degree into a first offer here.</h3>
@@ -334,8 +313,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section style={{...S.section, paddingTop: '40px'}}>
+      <section className="sectionEl" style={{ ...S.section, paddingTop: 40 }}>
         <div className={`reveal ${v('cta')}`} ref={setRef('cta')} data-k="cta" style={S.ctaBlock}>
           <div style={S.ctaGlow}></div>
           <h2 style={S.ctaTitle}>Ready to bridge your career?</h2>
@@ -347,8 +325,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={S.footer}>
+      <footer className="footerEl" style={S.footer}>
         <div style={S.footerGrid} className="footerGrid">
           <div>
             <div style={S.logoRow}>
@@ -399,127 +376,116 @@ export default function Landing() {
 }
 
 const S = {
-  page: { fontFamily: "'Inter', -apple-system, sans-serif", overflowX: 'hidden', color: '#0F172A', background: '#FFFFFF' },
-  wrap: { maxWidth: '1180px', margin: '0 auto' },
+  page: { fontFamily: "'Inter', -apple-system, sans-serif", color: '#0F172A', background: '#FFFFFF', overflowX: 'clip' },
+  wrap: { maxWidth: 1180, margin: '0 auto' },
 
-  /* Nav */
-  nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 48px', position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,.75)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #F1F5F9' },
-  navScrolled: { boxShadow: '0 4px 20px rgba(0,0,0,0.03)' },
-  logoRow: { display: 'flex', alignItems: 'center', gap: '10px' },
-  logoMark: { width: '32px', height: '32px', borderRadius: '10px', background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(15,23,42,0.15)' },
-  logoText: { fontWeight: '800', fontSize: '18px', letterSpacing: '-.4px', color: '#0F172A' },
-  navCenter: { display: 'flex', gap: '32px', alignItems: 'center' },
-  navLink: { fontSize: '14px', fontWeight: '600', color: '#64748B' },
-  navRight: { display: 'flex', alignItems: 'center', gap: '10px' },
-  loginBtn: { padding: '10px 18px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '700', borderRadius: '10px', color: '#0F172A' },
-  signupBtn: { padding: '10px 20px', background: '#0F172A', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '700' },
+  nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 48px', position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid #F1F5F9', gap: 12, flexWrap: 'wrap' },
+  navScrolled: { boxShadow: '0 4px 20px rgba(0,0,0,.03)' },
+  logoRow: { display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 },
+  logoMark: { width: 32, height: 32, borderRadius: 10, background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  logoText: { fontWeight: 800, fontSize: 18, letterSpacing: -0.4, color: '#0F172A' },
+  navCenter: { display: 'flex', gap: 32, alignItems: 'center' },
+  navLink: { fontSize: 14, fontWeight: 600, color: '#64748B' },
+  navRight: { display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 },
+  loginBtn: { padding: '10px 16px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, borderRadius: 10, color: '#0F172A', minHeight: 44 },
+  signupBtn: { padding: '10px 18px', background: '#0F172A', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 700, minHeight: 44 },
 
-  /* Hero */
-  hero: { position: 'relative', overflow: 'hidden', padding: '80px 48px 80px' },
-  gridBg: { position: 'absolute', inset: 0, zIndex: 0, opacity: 0.4, backgroundImage: `radial-gradient(#E2E8F0 1px, transparent 1px)`, backgroundSize: '32px 32px' },
-  blob1: { position: 'absolute', width: '500px', height: '500px', borderRadius: '50%', filter: 'blur(80px)', opacity: .15, background: '#EA4E1B', top: '-180px', right: '-160px', zIndex: 0, animation: 'drift 16s ease-in-out infinite' },
-  blob2: { position: 'absolute', width: '400px', height: '400px', borderRadius: '50%', filter: 'blur(80px)', opacity: .1, background: '#0E9C8F', bottom: '-160px', right: '200px', zIndex: 0, animation: 'drift 14s ease-in-out infinite' },
-  heroInner: { position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: '1.1fr .9fr', gap: '60px', alignItems: 'center', maxWidth: '1180px', margin: '0 auto' },
+  hero: { position: 'relative', overflow: 'hidden', padding: '80px 48px' },
+  gridBg: { position: 'absolute', inset: 0, zIndex: 0, opacity: .4, backgroundImage: 'radial-gradient(#E2E8F0 1px, transparent 1px)', backgroundSize: '32px 32px' },
+  blob1: { position: 'absolute', width: 500, height: 500, borderRadius: '50%', filter: 'blur(80px)', opacity: .15, background: '#EA4E1B', top: -180, right: -160, zIndex: 0, animation: 'drift 16s ease-in-out infinite' },
+  blob2: { position: 'absolute', width: 400, height: 400, borderRadius: '50%', filter: 'blur(80px)', opacity: .1, background: '#0E9C8F', bottom: -160, right: 200, zIndex: 0, animation: 'drift 14s ease-in-out infinite' },
+  heroInner: { position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: '1.1fr .9fr', gap: 60, alignItems: 'center', maxWidth: 1180, margin: '0 auto' },
 
-  eyebrow: { display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '12px', fontWeight: '700', letterSpacing: '.05em', color: '#64748B', textTransform: 'uppercase', marginBottom: '20px' },
-  dots: { display: 'flex', gap: '5px' },
-  dot: { width: '6px', height: '6px', borderRadius: '50%', background: '#EA4E1B' },
+  eyebrow: { display: 'inline-flex', alignItems: 'center', gap: 10, fontSize: 12, fontWeight: 700, letterSpacing: '.05em', color: '#64748B', textTransform: 'uppercase', marginBottom: 20 },
+  dots: { display: 'flex', gap: 5 },
+  dot: { width: 6, height: 6, borderRadius: '50%', background: '#EA4E1B' },
 
-  h1: { fontSize: '54px', lineHeight: '1.05', fontWeight: '900', letterSpacing: '-2px', marginBottom: '24px', color: '#0F172A' },
+  h1: { fontSize: 'clamp(32px, 5vw, 54px)', lineHeight: 1.08, fontWeight: 900, letterSpacing: '-1.5px', marginBottom: 24, color: '#0F172A' },
   h1Accent: { color: '#EA4E1B' },
-  lead: { fontSize: '17px', lineHeight: '1.6', color: '#64748B', maxWidth: '480px', marginBottom: '32px' },
+  lead: { fontSize: 'clamp(14px, 1.4vw, 17px)', lineHeight: 1.6, color: '#64748B', maxWidth: 480, marginBottom: 32 },
 
-  searchRow: { display: 'flex', gap: '12px', marginBottom: '24px', maxWidth: '540px' },
-  searchBox: { flex: 1, display: 'flex', alignItems: 'center', gap: '12px', background: '#fff', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '0 16px', boxShadow: '0 2px 10px rgba(15,23,42,.02)' },
+  searchRow: { display: 'flex', gap: 12, marginBottom: 24, maxWidth: 540 },
+  searchBox: { flex: 1, display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: '1.5px solid #E2E8F0', borderRadius: 14, padding: '0 16px', minHeight: 48 },
   searchIcon: { display: 'flex', flexShrink: 0 },
-  searchInput: { border: 'none', outline: 'none', padding: '15px 0', fontSize: '15px', fontFamily: 'inherit', flex: 1, color: '#0F172A', background: 'transparent', width: '100%' },
-  ctaPrimary: { padding: '15px 28px', background: '#EA4E1B', color: '#fff', border: 'none', borderRadius: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 6px 20px rgba(234,78,27,.25)', whiteSpace: 'nowrap' },
+  searchInput: { border: 'none', outline: 'none', padding: '14px 0', fontSize: 15, fontFamily: 'inherit', flex: 1, color: '#0F172A', background: 'transparent', width: '100%', minWidth: 0 },
+  ctaPrimary: { padding: '14px 24px', background: '#EA4E1B', color: '#fff', border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', minHeight: 48 },
 
-  whoRow: { display: 'flex', alignItems: 'center', gap: '16px', fontSize: '13px', fontWeight: '600', color: '#64748B', marginBottom: '10px' },
-  segmented: { display: 'inline-flex', gap: '4px', background: '#F1F5F9', padding: '4px', borderRadius: '12px' },
-  segBtn: { padding: '8px 18px', borderRadius: '9px', fontSize: '13px', fontWeight: '700', color: '#64748B' },
-  segBtnActive: { background: '#0F172A', color: '#fff', boxShadow: '0 2px 8px rgba(15,23,42,0.1)' },
-  heroHint: { fontSize: '13px', color: '#94A3B8', marginTop: '14px' },
+  whoRow: { display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, fontWeight: 600, color: '#64748B', flexWrap: 'wrap' },
+  segmented: { display: 'inline-flex', gap: 4, background: '#F1F5F9', padding: 4, borderRadius: 12, flexWrap: 'wrap' },
+  segBtn: { padding: '8px 16px', borderRadius: 9, fontSize: 13, fontWeight: 700, color: '#64748B', minHeight: 36 },
+  segBtnActive: { background: '#0F172A', color: '#fff' },
 
   photoWrap: { position: 'relative' },
-  heroPhoto: { width: '100%', aspectRatio: '4 / 5', objectFit: 'cover', borderRadius: '28px', boxShadow: '0 40px 70px -20px rgba(15,23,42,.25)' },
-  miniMockup: { position: 'absolute', left: '-10%', bottom: '-8%', width: '65%', minWidth: '230px', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.6)', boxShadow: '0 24px 48px rgba(15,23,42,.15)', padding: '16px 18px' },
-  mmTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' },
-  mmLabel: { fontSize: '11px', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: '.05em' },
-  mmPct: { fontSize: '24px', fontWeight: '900', color: '#EA4E1B' },
-  mmBars: { display: 'flex', alignItems: 'flex-end', gap: '5px', height: '40px' },
-  mmBar: { flex: 1, background: 'linear-gradient(180deg,#EA4E1B,#f97316)', borderRadius: '3px 3px 0 0', animation: 'shimmer 2s infinite', backgroundSize: '200% 100%' },
-  floaty1: { position: 'absolute', top: '6%', left: '-12%', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '14px', boxShadow: '0 16px 32px rgba(15,23,42,.08)', padding: '12px 18px', fontSize: '13px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '10px', color: '#0F172A' },
-  floaty2: { position: 'absolute', bottom: '6%', right: '-14%', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '14px', boxShadow: '0 16px 32px rgba(15,23,42,.08)', padding: '12px 18px', fontSize: '13px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '10px', color: '#0F172A' },
-  floatyDot: { width: '10px', height: '10px', borderRadius: '50%' },
+  heroPhoto: { width: '100%', aspectRatio: '4 / 5', minHeight: 260, maxHeight: 480, objectFit: 'cover', borderRadius: 28, boxShadow: '0 40px 70px -20px rgba(15,23,42,.25)' },
+  miniMockup: { position: 'absolute', left: '-10%', bottom: '-8%', width: '65%', minWidth: 230, background: 'rgba(255,255,255,.9)', backdropFilter: 'blur(12px)', borderRadius: 18, border: '1px solid rgba(255,255,255,.6)', boxShadow: '0 24px 48px rgba(15,23,42,.15)', padding: '16px 18px' },
+  mmTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  mmLabel: { fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '.05em' },
+  mmPct: { fontSize: 24, fontWeight: 900, color: '#EA4E1B' },
+  mmBars: { display: 'flex', alignItems: 'flex-end', gap: 5, height: 40 },
+  mmBar: { flex: 1, background: 'linear-gradient(180deg,#EA4E1B,#f97316)', borderRadius: '3px 3px 0 0', backgroundSize: '200% 100%' },
+  floaty1: { position: 'absolute', top: '6%', left: '-12%', background: 'rgba(255,255,255,.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,.4)', borderRadius: 14, boxShadow: '0 16px 32px rgba(15,23,42,.08)', padding: '12px 18px', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, color: '#0F172A' },
+  floaty2: { position: 'absolute', bottom: '6%', right: '-14%', background: 'rgba(255,255,255,.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,.4)', borderRadius: 14, boxShadow: '0 16px 32px rgba(15,23,42,.08)', padding: '12px 18px', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10, color: '#0F172A' },
+  floatyDot: { width: 10, height: 10, borderRadius: '50%' },
 
-  /* Stats */
   statsSection: { background: '#F8FAFC', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0', padding: '32px 48px' },
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', maxWidth: '1180px', margin: '0 auto' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', maxWidth: 1180, margin: '0 auto', gap: 8 },
   stat: { textAlign: 'center', padding: '8px 16px', position: 'relative' },
   statDivider: { borderRight: '1px solid #E2E8F0' },
-  statNum: { fontSize: '32px', fontWeight: '900', letterSpacing: '-1px', color: '#0F172A' },
-  statLabel: { fontSize: '13px', color: '#64748B', fontWeight: '600', marginTop: '4px' },
+  statNum: { fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 900, letterSpacing: -1, color: '#0F172A' },
+  statLabel: { fontSize: 13, color: '#64748B', fontWeight: 600, marginTop: 4 },
 
-  /* Shared section */
-  section: { maxWidth: '1180px', margin: '0 auto', padding: '88px 48px' },
-  sectionHead: { textAlign: 'center', maxWidth: '560px', margin: '0 auto 48px' },
-  h2: { fontSize: '36px', fontWeight: '900', letterSpacing: '-1px', marginBottom: '10px', color: '#0F172A' },
-  sectionSub: { fontSize: '15px', color: '#64748B' },
+  section: { maxWidth: 1180, margin: '0 auto', padding: '88px 48px' },
+  sectionHead: { textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' },
+  h2: { fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 900, letterSpacing: -1, marginBottom: 10, color: '#0F172A' },
+  sectionSub: { fontSize: 15, color: '#64748B' },
 
-  /* Features */
-  featuresGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' },
-  featureCard: { background: '#fff', borderRadius: '20px', padding: '28px 24px' },
-  featureIcon: { width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '18px', fontSize: '22px' },
-  featureTitle: { fontSize: '16px', fontWeight: '800', marginBottom: '6px', color: '#0F172A' },
-  featureDesc: { fontSize: '14px', color: '#64748B', lineHeight: '1.6' },
+  featuresGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20 },
+  featureCard: { background: '#fff', borderRadius: 20, padding: '28px 24px' },
+  featureIcon: { width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18, fontSize: 22 },
+  featureTitle: { fontSize: 16, fontWeight: 800, marginBottom: 6, color: '#0F172A' },
+  featureDesc: { fontSize: 14, color: '#64748B', lineHeight: 1.6 },
 
-  /* Steps */
   stepsWrap: { position: 'relative' },
-  stepsLine: { position: 'absolute', top: '22px', left: '12.5%', right: '12.5%', height: '2px', background: 'repeating-linear-gradient(to right, #E2E8F0 0 8px, transparent 8px 16px)' },
-  stepsGrid: { position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' },
+  stepsLine: { position: 'absolute', top: 22, left: '12.5%', right: '12.5%', height: 2, background: 'repeating-linear-gradient(to right, #E2E8F0 0 8px, transparent 8px 16px)' },
+  stepsGrid: { position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 },
   step: { position: 'relative', textAlign: 'center' },
-  stepNum: { width: '44px', height: '44px', borderRadius: '50%', color: '#fff', fontWeight: '800', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', position: 'relative', zIndex: 1, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' },
-  stepTitle: { fontSize: '16px', fontWeight: '800', marginBottom: '6px', color: '#0F172A' },
-  stepDesc: { fontSize: '13px', color: '#64748B', lineHeight: '1.6', maxWidth: '200px', margin: '0 auto' },
+  stepNum: { width: 44, height: 44, borderRadius: '50%', color: '#fff', fontWeight: 800, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', position: 'relative', zIndex: 1, boxShadow: '0 4px 12px rgba(0,0,0,.15)' },
+  stepTitle: { fontSize: 16, fontWeight: 800, marginBottom: 6, color: '#0F172A' },
+  stepDesc: { fontSize: 13, color: '#64748B', lineHeight: 1.6, maxWidth: 200, margin: '0 auto' },
 
-  /* Testimonials */
   testiSection: { background: '#F8FAFC', padding: '88px 48px' },
-  testimonialGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' },
-  testiCard: { background: '#fff', borderRadius: '20px', padding: '28px 24px', boxShadow: '0 2px 10px rgba(15,23,42,.02)' },
-  stars: { color: '#F0A93A', fontSize: '14px', letterSpacing: '2px', marginBottom: '12px' },
-  testiQuote: { fontSize: '14px', lineHeight: '1.6', color: '#0F172A', marginBottom: '20px' },
-  testiPerson: { display: 'flex', alignItems: 'center', gap: '12px' },
-  testiAvatar: { width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '800', fontSize: '14px', flexShrink: 0 },
-  testiName: { fontSize: '14px', fontWeight: '700', color: '#0F172A' },
-  testiRole: { fontSize: '12px', color: '#64748B' },
+  testimonialGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 },
+  testiCard: { background: '#fff', borderRadius: 20, padding: '28px 24px' },
+  stars: { color: '#F0A93A', fontSize: 14, letterSpacing: 2, marginBottom: 12 },
+  testiQuote: { fontSize: 14, lineHeight: 1.6, color: '#0F172A', marginBottom: 20 },
+  testiPerson: { display: 'flex', alignItems: 'center', gap: 12 },
+  testiAvatar: { width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 14, flexShrink: 0 },
+  testiName: { fontSize: 14, fontWeight: 700, color: '#0F172A' },
+  testiRole: { fontSize: 12, color: '#64748B' },
 
-  /* Impact band */
-  impactBand: { position: 'relative', borderRadius: '28px', overflow: 'hidden', minHeight: '340px', display: 'flex', alignItems: 'flex-end' },
+  impactBand: { position: 'relative', borderRadius: 28, overflow: 'hidden', minHeight: 340, display: 'flex', alignItems: 'flex-end' },
   impactImg: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 },
   impactOverlay: { position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(11,20,33,.92) 10%, rgba(11,20,33,.2) 60%, rgba(11,20,33,0))', zIndex: 1 },
-  impactContent: { position: 'relative', zIndex: 2, padding: '40px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%', gap: '24px', flexWrap: 'wrap' },
-  impactTitle: { color: '#fff', fontSize: '26px', fontWeight: '900', letterSpacing: '-.5px', maxWidth: '420px', lineHeight: '1.25' },
-  impactStats: { display: 'flex', gap: '32px' },
-  impactStatN: { color: '#fff', fontSize: '28px', fontWeight: '900' },
-  impactStatL: { color: '#CBD5E1', fontSize: '12px', fontWeight: '600' },
+  impactContent: { position: 'relative', zIndex: 2, padding: '40px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%', gap: 24, flexWrap: 'wrap' },
+  impactTitle: { color: '#fff', fontSize: 'clamp(20px, 2.4vw, 26px)', fontWeight: 900, letterSpacing: -0.5, maxWidth: 420, lineHeight: 1.25 },
+  impactStats: { display: 'flex', gap: 32, flexWrap: 'wrap' },
+  impactStatN: { color: '#fff', fontSize: 28, fontWeight: 900 },
+  impactStatL: { color: '#CBD5E1', fontSize: 12, fontWeight: 600 },
 
-  /* CTA */
-  ctaBlock: { background: '#0F172A', borderRadius: '28px', padding: '72px 40px', textAlign: 'center', position: 'relative', overflow: 'hidden' },
-  ctaGlow: { position: 'absolute', width: '400px', height: '400px', background: '#EA4E1B', opacity: .15, filter: 'blur(80px)', borderRadius: '50%', top: '-150px', left: '-100px' },
-  ctaTitle: { position: 'relative', fontSize: '42px', fontWeight: '900', color: '#fff', letterSpacing: '-1px', maxWidth: '560px', margin: '0 auto 14px', lineHeight: '1.15' },
-  ctaSub: { position: 'relative', fontSize: '15px', color: '#94A3B8', marginBottom: '32px', maxWidth: '560px', marginLeft: 'auto', marginRight: 'auto' },
-  ctaButtons: { position: 'relative', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' },
-  ctaWhite: { padding: '14px 28px', background: '#fff', color: '#0F172A', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' },
-  ctaOutline: { padding: '14px 28px', background: 'transparent', color: '#fff', border: '1.5px solid rgba(255,255,255,.15)', borderRadius: '12px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' },
+  ctaBlock: { background: '#0F172A', borderRadius: 28, padding: 'clamp(40px, 6vw, 72px) clamp(20px, 4vw, 40px)', textAlign: 'center', position: 'relative', overflow: 'hidden' },
+  ctaGlow: { position: 'absolute', width: 400, height: 400, background: '#EA4E1B', opacity: .15, filter: 'blur(80px)', borderRadius: '50%', top: -150, left: -100 },
+  ctaTitle: { position: 'relative', fontSize: 'clamp(26px, 4vw, 42px)', fontWeight: 900, color: '#fff', letterSpacing: -1, maxWidth: 560, margin: '0 auto 14px', lineHeight: 1.15 },
+  ctaSub: { position: 'relative', fontSize: 15, color: '#94A3B8', marginBottom: 32, maxWidth: 560, marginLeft: 'auto', marginRight: 'auto' },
+  ctaButtons: { position: 'relative', display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' },
+  ctaWhite: { padding: '14px 28px', background: '#fff', color: '#0F172A', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer', minHeight: 48 },
+  ctaOutline: { padding: '14px 28px', background: 'transparent', color: '#fff', border: '1.5px solid rgba(255,255,255,.15)', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer', minHeight: 48 },
 
-  /* Footer */
   footer: { borderTop: '1px solid #E2E8F0', padding: '56px 48px 28px' },
-  footerGrid: { display: 'grid', gridTemplateColumns: '1.4fr repeat(3, 1fr)', gap: '40px', maxWidth: '1180px', margin: '0 auto 48px' },
-  footerTag: { fontSize: '14px', color: '#64748B', lineHeight: '1.6', maxWidth: '240px', marginTop: '12px' },
-  footerHead: { fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '.05em', color: '#64748B', marginBottom: '16px' },
-  footerLink: { display: 'block', fontSize: '14px', color: '#0F172A', fontWeight: '500', marginBottom: '10px', cursor: 'pointer' },
-  footerBottom: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '28px', borderTop: '1px solid #E2E8F0', fontSize: '13px', color: '#64748B', flexWrap: 'wrap', gap: '12px', maxWidth: '1180px', margin: '0 auto' },
-  socials: { display: 'flex', gap: '10px' },
-  socialIc: { width: '36px', height: '36px', borderRadius: '10px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', transition: 'all 0.2s', cursor: 'pointer' },
+  footerGrid: { display: 'grid', gridTemplateColumns: '1.4fr repeat(3, 1fr)', gap: 40, maxWidth: 1180, margin: '0 auto 48px' },
+  footerTag: { fontSize: 14, color: '#64748B', lineHeight: 1.6, maxWidth: 240, marginTop: 12 },
+  footerHead: { fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em', color: '#64748B', marginBottom: 16 },
+  footerLink: { display: 'block', fontSize: 14, color: '#0F172A', fontWeight: 500, marginBottom: 10, cursor: 'pointer' },
+  footerBottom: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 28, borderTop: '1px solid #E2E8F0', fontSize: 13, color: '#64748B', flexWrap: 'wrap', gap: 12, maxWidth: 1180, margin: '0 auto' },
+  socials: { display: 'flex', gap: 10 },
+  socialIc: { width: 36, height: 36, borderRadius: 10, background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', cursor: 'pointer' },
 }

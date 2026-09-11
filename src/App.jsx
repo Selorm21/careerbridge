@@ -1,3 +1,4 @@
+// src/App.tsx
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
@@ -108,31 +109,26 @@ function App() {
 
   if (loading) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          gap: '12px',
-          padding: '40px',
-          textAlign: 'center',
-          fontFamily: 'Inter, sans-serif',
-          color: '#94A3B8',
-          background: '#F8FAFC',
-        }}
-      >
-        <div
-          style={{
-            width: '38px',
-            height: '38px',
-            border: '4px solid #E2E8F0',
-            borderTop: '4px solid #6366F1',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite',
-          }}
-        />
+      <div className="vh-full" style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: '12px',
+        padding: '40px',
+        textAlign: 'center',
+        fontFamily: 'Inter, sans-serif',
+        color: '#94A3B8',
+        background: '#F8FAFC',
+      }}>
+        <div style={{
+          width: '38px',
+          height: '38px',
+          border: '4px solid #E2E8F0',
+          borderTop: '4px solid #6366F1',
+          borderRadius: '50%',
+          animation: 'spin 0.8s linear infinite',
+        }} />
         <div>Loading your account...</div>
         <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -154,27 +150,24 @@ function App() {
       <Route path="/" element={!session ? <Landing /> : <Navigate to={getDashboardPath()} replace />} />
       <Route path="/login" element={!session ? <Login /> : <Navigate to={getDashboardPath()} replace />} />
       <Route path="/signup" element={!session ? <Signup /> : <Navigate to={getDashboardPath()} replace />} />
-      
-      {/* ============================================
-          🎓 STUDENT ROUTES
-      ============================================ */}
+
+      {/* 🎓 STUDENT ROUTES */}
       <Route path="/student" element={session && role === 'student' ? <StudentLayout /> : <Navigate to={getDashboardPath()} replace />}>
         <Route index element={<StudentDashboard />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="browse-jobs" element={<BrowseJobs />} />
         <Route path="my-applications" element={<Applications />} />
+        <Route path="applications" element={<Applications />} />
         <Route path="profile" element={<StudentProfile />} />
         <Route path="resume-builder" element={<ResumeBuilder />} />
         <Route path="documents" element={<DocumentUpload />} />
       </Route>
 
-      {/* ============================================
-          👔 EMPLOYER ROUTES
-      ============================================ */}
+      {/* 👔 EMPLOYER ROUTES */}
       <Route path="/employer" element={session && role === 'employer' ? <EmployerLayout /> : <Navigate to={getDashboardPath()} replace />}>
         <Route index element={<EmployerDashboard />} />
         <Route path="post-job" element={<PostJob />} />
-        <Route path="my-jobs" element={<MyJobListings />} />  {/* ← FIXED: matches sidebar */}
+        <Route path="my-jobs" element={<MyJobListings />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="listings" element={<AllApplicants />} />
         <Route path="applicants" element={<AllApplicants />} />
@@ -182,28 +175,20 @@ function App() {
         <Route path="schedule/:applicationId" element={<ScheduleInterview />} />
       </Route>
 
-      {/* ============================================
-          🎯 COORDINATOR ROUTES
-      ============================================ */}
+      {/* 🎯 COORDINATOR */}
       <Route path="/coordinator" element={session && role === 'coordinator' ? <CoordinatorDashboard /> : <Navigate to={getDashboardPath()} replace />} />
 
-      {/* ============================================
-          👑 ADMIN ROUTES
-      ============================================ */}
+      {/* 👑 ADMIN */}
       <Route path="/admin" element={session && role === 'admin' ? <AdminDashboard /> : <Navigate to={getDashboardPath()} replace />} />
-      
-      {/* ============================================
-          🔀 REDIRECT ROUTES (for cleaner URLs)
-      ============================================ */}
+
+      {/* 🔀 REDIRECTS */}
       <Route path="/analytics" element={session && role === 'student' ? <Navigate to="/student/analytics" replace /> : <Navigate to={getDashboardPath()} replace />} />
       <Route path="/browse-jobs" element={session && role === 'student' ? <Navigate to="/student/browse-jobs" replace /> : <Navigate to={getDashboardPath()} replace />} />
       <Route path="/student-profile" element={session && role === 'student' ? <Navigate to="/student/profile" replace /> : <Navigate to={getDashboardPath()} replace />} />
       <Route path="/resume-builder" element={session && role === 'student' ? <Navigate to="/student/resume-builder" replace /> : <Navigate to={getDashboardPath()} replace />} />
       <Route path="/documents" element={session && role === 'student' ? <Navigate to="/student/documents" replace /> : <Navigate to={getDashboardPath()} replace />} />
-      
-      {/* ============================================
-          🚫 404 - CATCH ALL
-      ============================================ */}
+
+      {/* 🚫 404 */}
       <Route path="*" element={<Navigate to={session ? getDashboardPath() : '/'} replace />} />
     </Routes>
   )
