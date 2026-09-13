@@ -1,42 +1,11 @@
-import { useEffect, useState } from 'react'
+// src/pages/StudentProfile.jsx
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
-
-// ---------- inline icon set (shared visual language with Analytics / BrowseJobs) ----------
-const Icon = ({ path, size = 18, ...rest }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-    strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...rest}>
-    {path}
-  </svg>
-)
-const icons = {
-  grid: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>,
-  briefcase: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></>,
-  cap: <><path d="M2 9l10-5 10 5-10 5-10-5z" /><path d="M6 11v4c0 1.5 2.5 3 6 3s6-1.5 6-3v-4" /></>,
-  users: <><circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c0-3.3 3-6 6.5-6s6.5 2.7 6.5 6" /><path d="M16 8.2a3 3 0 1 1 3.6 3M21.5 20c0-2.6-1.8-4.8-4.3-5.6" /></>,
-  building: <><rect x="4" y="3" width="16" height="18" rx="1.5" /><path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1" /></>,
-  settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 13a7.7 7.7 0 0 0 0-2l2-1.6-2-3.4-2.4.6a7.7 7.7 0 0 0-1.8-1L14.6 3H9.4l-.6 2.6a7.7 7.7 0 0 0-1.8 1l-2.4-.6-2 3.4L4.6 11a7.7 7.7 0 0 0 0 2l-2 1.6 2 3.4 2.4-.6c.5.4 1.1.8 1.8 1l.6 2.6h5.2l.6-2.6c.7-.2 1.3-.6 1.8-1l2.4.6 2-3.4-2-1.6z" /></>,
-  alert: <><path d="M12 9v4M12 17h.01" /><path d="M10.3 3.9L2.5 17a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /></>,
-  check: <><circle cx="12" cy="12" r="9" /><path d="M8 12.5l2.5 2.5L16 9.5" /></>,
-  file: <><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" /><path d="M14 3v5h5" /></>,
-  save: <><path d="M5 3h11l3 3v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" /><path d="M8 3v6h8V3M8 13h8v7H8z" /></>,
-  bulb: <><path d="M9 18h6M10 22h4" /><path d="M12 2a6 6 0 0 0-3.5 10.9c.6.4.9 1.1.9 1.8v.3h5.2v-.3c0-.7.3-1.4.9-1.8A6 6 0 0 0 12 2z" /></>,
-  arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
-  idCard: <><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z" /><path d="M8 12h8M8 8h6M8 16h4" /></>,
-}
-
-const C = {
-  bg: '#F8FAFC',
-  ink: '#0F172A',
-  sub: '#64748B',
-  border: '#E2E8F0',
-  card: 'rgba(255, 255, 255, 0.75)',
-  navText: '#475569',
-  accent: '#EA4E1B',
-  teal: '#0E9C8F',
-  green: '#10B981',
-  red: '#DC2626',
-}
+import {
+  Save, AlertCircle, Check, File, Upload, User, Camera, X, RefreshCw
+} from 'lucide-react'
+import { compressImage } from '../lib/imageUtils'
 
 export default function StudentProfile() {
   const [loading, setLoading] = useState(false)
@@ -46,16 +15,18 @@ export default function StudentProfile() {
   const [university, setUniversity] = useState('')
   const [course, setCourse] = useState('')
   const [graduationYear, setGraduationYear] = useState('')
-  const [indexNumber, setIndexNumber] = useState('') // 🆕 NEW FIELD
+  const [indexNumber, setIndexNumber] = useState('')
   const [skills, setSkills] = useState('')
   const [bio, setBio] = useState('')
   const [cvUrl, setCvUrl] = useState('')
+  const [avatar, setAvatar] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [profile, setProfile] = useState(null)
   const [applicationsCount, setApplicationsCount] = useState(0)
   const [interviewsCount, setInterviewsCount] = useState(0)
-  const [recommendedCount, setRecommendedCount] = useState(0)
   const navigate = useNavigate()
+  const avatarInputRef = useRef(null)
 
   useEffect(() => {
     async function getProfile() {
@@ -69,63 +40,87 @@ export default function StudentProfile() {
         setUniversity(data.university || '')
         setCourse(data.course || '')
         setGraduationYear(data.graduation_year || '')
-        setIndexNumber(data.index_number || '') // 🆕 Load index number
+        setIndexNumber(data.index_number || '')
         setSkills(data.skills || '')
         setBio(data.bio || '')
         setCvUrl(data.cv_url || '')
+        setAvatar(data.avatar_url || '')
       }
 
-      const { data: appsData } = await supabase
-        .from('applications')
-        .select('job_id')
-        .eq('student_id', user.id)
-
+      const { data: appsData } = await supabase.from('applications').select('id').eq('student_id', user.id)
       setApplicationsCount(appsData?.length || 0)
 
-      const { data: interviewsData } = await supabase
-        .from('interviews')
-        .select('id')
-        .eq('student_id', user.id)
-
+      const { data: interviewsData } = await supabase.from('interviews').select('id').eq('student_id', user.id)
       setInterviewsCount(interviewsData?.length || 0)
-
-      // Keep the Recommended badge consistent with the dashboard.
-      if (data?.skills) {
-        const { data: jobsData } = await supabase.from('jobs').select('*')
-        const appliedIds = appsData?.map(a => a.job_id) || []
-        const skillsList = data.skills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean)
-
-        const count = (jobsData || [])
-          .filter(job => !appliedIds.includes(job.id))
-          .map(job => {
-            const jobSkills = job.skills?.toLowerCase().split(',').map(s => s.trim()).filter(Boolean) || []
-            const matched = jobSkills.filter(skill =>
-              skillsList.some(studentSkill =>
-                studentSkill.includes(skill) || skill.includes(studentSkill)
-              )
-            )
-            return jobSkills.length ? Math.round((matched.length / jobSkills.length) * 100) : 0
-          })
-          .filter(score => score > 0)
-          .length
-
-        setRecommendedCount(count > 4 ? 4 : count)
-      }
     }
     getProfile()
   }, [])
 
   async function handleCvUpload(file) {
     setUploading(true)
+    setError('')
     const { data: { user } } = await supabase.auth.getUser()
     const fileName = `${user.id}/cv.pdf`
-    const { error } = await supabase.storage.from('cvs').upload(fileName, file, { upsert: true })
-    if (error) { setError('CV upload failed: ' + error.message); setUploading(false); return }
+    const { error: upError } = await supabase.storage.from('cvs').upload(fileName, file, { upsert: true })
+    if (upError) { setError('CV upload failed: ' + upError.message); setUploading(false); return }
     const { data } = supabase.storage.from('cvs').getPublicUrl(fileName)
     setCvUrl(data.publicUrl)
+
+    await supabase.from('profiles').update({ cv_url: data.publicUrl }).eq('id', user.id)
     setUploading(false)
     setSuccess('CV uploaded successfully!')
     setTimeout(() => setSuccess(''), 3000)
+  }
+
+  async function handleAvatarUpload(file) {
+    if (!file) return
+    if (!file.type.startsWith('image/')) { setError('Please pick a valid image file.'); return }
+    if (file.size > 5 * 1024 * 1024) { setError('Image too large (max 5 MB).'); return }
+
+    setUploadingAvatar(true)
+    setError('')
+
+    try {
+      // Compress to a 400x400 square
+      const compressed = await compressImage(file, 400, 400, 0.88)
+      const dataUrl = compressed.dataUrl
+
+      const { data: { user } } = await supabase.auth.getUser()
+      const fileName = `${user.id}/avatar.jpg`
+
+      // Upload to a storage bucket called 'avatars' (create it in Supabase if you don't have it)
+      const { error: upError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, dataUrlToBlob(dataUrl), { upsert: true, contentType: 'image/jpeg' })
+
+      let publicUrl = dataUrl
+      if (!upError) {
+        const { data } = supabase.storage.from('avatars').getPublicUrl(fileName)
+        publicUrl = data.publicUrl
+      } else {
+        // Fallback: store data URL directly (larger but works)
+        console.warn('Avatar storage upload failed, using data URL:', upError.message)
+      }
+
+      setAvatar(publicUrl)
+      await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id)
+      setSuccess('Profile photo updated!')
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      console.error(err)
+      setError('Failed to process image.')
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
+
+  function dataUrlToBlob(dataUrl) {
+    const [meta, base64] = dataUrl.split(',')
+    const mime = meta.match(/:(.*?);/)[1]
+    const bin = atob(base64)
+    const arr = new Uint8Array(bin.length)
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i)
+    return new Blob([arr], { type: mime })
   }
 
   async function handleSave(e) {
@@ -133,20 +128,24 @@ export default function StudentProfile() {
     setLoading(true)
     setError('')
     setSuccess('')
+
     const { data: { user } } = await supabase.auth.getUser()
-    const { error } = await supabase.from('profiles').update({
-      full_name: fullName, 
-      university, 
+    const { error: upError } = await supabase.from('profiles').update({
+      full_name: fullName,
+      university,
       course,
-      graduation_year: graduationYear, 
-      index_number: indexNumber, // 🆕 Save index number
-      skills, 
+      graduation_year: graduationYear,
+      index_number: indexNumber,
+      skills,
       bio,
-      cv_url: cvUrl || undefined
+      cv_url: cvUrl || undefined,
+      avatar_url: avatar || undefined,
     }).eq('id', user.id)
-    if (error) setError(error.message)
+
+    if (upError) setError(upError.message)
     else setSuccess('Profile saved successfully!')
     setLoading(false)
+    setTimeout(() => setSuccess(''), 3000)
   }
 
   function profileStrength() {
@@ -154,392 +153,282 @@ export default function StudentProfile() {
     if (fullName) score += 16
     if (university) score += 16
     if (course) score += 16
-    if (indexNumber) score += 16 // 🆕 Index number counts toward strength
+    if (indexNumber) score += 16
     if (skills) score += 16
     if (bio) score += 20
     return score
   }
 
+  const strength = profileStrength()
+  const strengthColor = strength >= 80 ? '#10B981' : strength >= 60 ? '#F59E0B' : strength >= 40 ? '#F59E0B' : '#EF4444'
+
   const initials = (name) => (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 
   return (
-    <div style={S.app}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        @keyframes fadeUp{from{opacity:0;transform:translateY(20px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-        @keyframes pulseGlow{0%,100%{opacity:0.3}50%{opacity:0.6}}
-        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-        
-        .pageIn{animation:fadeUp .6s cubic-bezier(.16,1,.3,1) forwards}
-        .glowPulse{animation:pulseGlow 6s ease-in-out infinite}
-        
-        .cardIn{transition:all 0.4s cubic-bezier(.34,1.56,.64,1);}
-        .cardIn:hover{box-shadow:0 20px 40px rgba(15,23,42,0.06)!important;border-color:rgba(234,78,27,0.2)!important;}
-        
-        .inputF{transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease; background: rgba(255,255,255,0.6);}
-        .inputF:focus{outline:none;border-color:${C.accent}!important;box-shadow:0 0 0 4px rgba(234,78,27,0.12)!important;transform:translateY(-1px); background: #FFFFFF;}
-        
-        .saveBtn{transition:all 0.3s cubic-bezier(.34,1.56,.64,1);}
-        .saveBtn:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 12px 24px rgba(234,78,27,0.35)!important;}
-        
-        .uploadArea{transition:all .3s ease;cursor:pointer}
-        .uploadArea:hover{border-color:${C.accent}!important;background:rgba(234,78,27,0.04)!important; transform: scale(1.01);}
-        .progressBar{background:linear-gradient(90deg,${C.accent},#FF8552,${C.accent});background-size:200% 100%;animation:shimmer 2s linear infinite; border-radius: 4px;}
-        
-        @media(max-width:1000px){.mainEl{padding-left:24px!important;padding-right:24px!important}}
-        @media(max-width:900px){.layoutGrid{grid-template-columns:1fr!important}}
-        @media(max-width:768px){.grid2El{grid-template-columns:1fr!important};.mainEl{padding:20px 16px!important}}
-      `}</style>
-
-      {/* 🌟 Ambient Glowing Background */}
-      <div style={S.bgEffects}>
-        <div style={S.glowOrb1} className="glowPulse"></div>
-        <div style={S.glowOrb2} className="glowPulse"></div>
-        <div style={S.gridPattern}></div>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto animate-fade-up space-y-6">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">My Profile</h1>
+        <p className="text-sm text-slate-500 mt-1">Complete your profile to get better matches and impress employers</p>
       </div>
 
-      {/* ---------------- Main ---------------- */}
-      <div className="pageIn mainEl" style={S.main}>
-        <div style={S.pageHead}>
-          <h1 style={S.heading}>My Profile</h1>
-          <p style={S.headSub}>Complete your profile to get better job matches and impress employers</p>
+      {error && (
+        <div className="flex items-center gap-2 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm font-semibold">
+          <AlertCircle size={16} /> {error}
         </div>
+      )}
+      {success && (
+        <div className="flex items-center gap-2 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold">
+          <Check size={16} /> {success}
+        </div>
+      )}
 
-        <div className="layoutGrid" style={S.layout}>
-          <div style={S.formCol}>
-            {error && <div style={S.error}><Icon path={icons.alert} size={16} /> {error}</div>}
-            {success && <div style={S.successBox}><Icon path={icons.check} size={16} /> {success}</div>}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+        {/* LEFT — form */}
+        <form onSubmit={handleSave} className="space-y-5">
+          {/* Personal Info */}
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-subtle space-y-5">
+            <h2 className="text-base font-bold text-slate-900">Personal Information</h2>
 
-            <form onSubmit={handleSave}>
-              
-              {/* --- PERSONAL INFO CARD --- */}
-              <div className="cardIn" style={S.card}>
-                <div style={S.cardTitle}>Personal Information</div>
-                <div className="grid2El" style={S.grid2}>
-                  <div style={S.field}>
-                    <label style={S.label}>Full name <span style={S.required}>*</span></label>
-                    <input className="inputF" style={S.input} type="text" placeholder="Your full name" value={fullName} onChange={e => setFullName(e.target.value)} required />
-                  </div>
-                  <div style={S.field}>
-                    <label style={S.label}>University / School</label>
-                    <input className="inputF" style={S.input} type="text" placeholder="e.g. University of Ghana" value={university} onChange={e => setUniversity(e.target.value)} />
-                  </div>
-                  <div style={S.field}>
-                    <label style={S.label}>Course / Programme</label>
-                    <input className="inputF" style={S.input} type="text" placeholder="e.g. BSc Computer Science" value={course} onChange={e => setCourse(e.target.value)} />
-                  </div>
-                  <div style={S.field}>
-                    <label style={S.label}>Expected graduation year</label>
-                    <select className="inputF" style={S.input} value={graduationYear} onChange={e => setGraduationYear(e.target.value)}>
-                      <option value="">Select year</option>
-                      <option>2025</option>
-                      <option>2026</option>
-                      <option>2027</option>
-                      <option>2028</option>
-                      <option>2029</option>
-                      <option>2030</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* 🆕 INDEX NUMBER - NEW FIELD */}
-                <div style={{ ...S.field, marginTop: '16px' }}>
-                  <label style={S.label}>Index Number / Student ID</label>
-                  <input 
-                    className="inputF" 
-                    style={S.input} 
-                    type="text" 
-                    placeholder="e.g. UG202312345" 
-                    value={indexNumber} 
-                    onChange={e => setIndexNumber(e.target.value)} 
-                  />
-                  <div style={S.hint}>Your student ID or index number for identification by coordinators</div>
-                </div>
-              </div>
-
-              {/* --- SKILLS & BIO CARD --- */}
-              <div className="cardIn" style={{ ...S.card, marginTop: '20px' }}>
-                <div style={S.cardTitle}>Skills & Bio</div>
-                <div style={S.field}>
-                  <label style={S.label}>Your skills</label>
-                  <input className="inputF" style={S.input} type="text" placeholder="e.g. Python, React, SQL, Machine Learning" value={skills} onChange={e => setSkills(e.target.value)} />
-                  <div style={S.hint}>Separate skills with commas — these are used by the AI to match you to jobs</div>
-                </div>
-                {skills && (
-                  <div style={S.skillsPreview}>
-                    {skills.split(',').filter(s => s.trim()).map((s, i) => (
-                      <span key={i} style={S.skillChip}>{s.trim()}</span>
-                    ))}
+            {/* Avatar upload */}
+            <div className="flex flex-col sm:flex-row items-center gap-5 p-5 rounded-2xl bg-gradient-to-br from-brand-50/50 to-slate-50 border border-brand-100">
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                className="relative w-24 h-24 rounded-3xl overflow-hidden bg-brand-50 border-2 border-white shadow-md flex-shrink-0 group"
+              >
+                {avatar ? (
+                  <img src={avatar} alt={fullName || 'Avatar'} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-2xl font-black text-brand-500">
+                    {initials(fullName) || <User size={28} className="text-brand-500" />}
                   </div>
                 )}
-                <div style={{ ...S.field, marginTop: '16px' }}>
-                  <label style={S.label}>Short bio</label>
-                  <textarea className="inputF" style={{ ...S.input, height: '110px', resize: 'vertical' }} placeholder="Tell employers about yourself, your goals and experience..." value={bio} onChange={e => setBio(e.target.value)} />
-                  <div style={S.hint}>{bio.length}/300 characters</div>
+                <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  {uploadingAvatar ? <RefreshCw size={20} className="text-white animate-spin" /> : <Camera size={20} className="text-white" />}
+                </div>
+              </button>
+
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="text-sm font-bold text-slate-900">Profile Photo</h3>
+                <p className="text-xs text-slate-500 mt-1">JPG, PNG, or WEBP. We'll compress it to a square.</p>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition disabled:opacity-50"
+                  >
+                    <Upload size={14} /> {uploadingAvatar ? 'Optimizing...' : 'Upload Photo'}
+                  </button>
+                  {avatar && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setAvatar('')
+                        const { data: { user } } = await supabase.auth.getUser()
+                        await supabase.from('profiles').update({ avatar_url: null }).eq('id', user.id)
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold transition"
+                    >
+                      <X size={14} /> Remove
+                    </button>
+                  )}
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={(e) => e.target.files[0] && handleAvatarUpload(e.target.files[0])}
+                    className="hidden"
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* --- CV UPLOAD CARD --- */}
-              <div className="cardIn" style={{ ...S.card, marginTop: '20px' }}>
-                <div style={S.cardTitle}>CV / Resume</div>
-                <label className="uploadArea" style={{ ...S.uploadArea, ...(cvUrl ? S.uploadAreaDone : {}) }}>
-                  <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => e.target.files[0] && handleCvUpload(e.target.files[0])} />
-                  {uploading ? (
-                    <div style={S.uploadContent}>
-                      <div style={S.uploadIconWrap}>⏳</div>
-                      <div style={S.uploadText}>Uploading your CV...</div>
-                    </div>
-                  ) : cvUrl ? (
-                    <div style={S.uploadContent}>
-                      <div style={{ ...S.uploadIconWrap, background: 'rgba(16, 185, 129, 0.1)', color: C.teal }}><Icon path={icons.check} size={24} /></div>
-                      <div style={S.uploadText}>CV uploaded successfully</div>
-                      <div style={S.uploadSub}>Click to replace · <a href={cvUrl} target="_blank" rel="noreferrer" style={S.viewLink} onClick={e => e.stopPropagation()}>View CV →</a></div>
-                    </div>
-                  ) : (
-                    <div style={S.uploadContent}>
-                      <div style={{ ...S.uploadIconWrap, background: 'rgba(234, 78, 27, 0.08)', color: C.accent }}><Icon path={icons.file} size={24} /></div>
-                      <div style={S.uploadText}>Upload your CV</div>
-                      <div style={S.uploadSub}>Click to browse · PDF only · Max 5MB</div>
-                    </div>
-                  )}
-                </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Full name <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  required
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                />
               </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">University / School</label>
+                <input
+                  type="text"
+                  value={university}
+                  onChange={e => setUniversity(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Course / Programme</label>
+                <input
+                  type="text"
+                  value={course}
+                  onChange={e => setCourse(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Expected graduation year</label>
+                <select
+                  value={graduationYear}
+                  onChange={e => setGraduationYear(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                >
+                  <option value="">Select year</option>
+                  {[2025, 2026, 2027, 2028, 2029, 2030].map(y => <option key={y} value={String(y)}>{y}</option>)}
+                </select>
+              </div>
+            </div>
 
-              <button className="saveBtn" style={S.saveBtn} type="submit" disabled={loading}>
-                <Icon path={icons.save} size={16} /> {loading ? 'Saving...' : 'Save profile'}
-              </button>
-            </form>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Index Number / Student ID</label>
+              <input
+                type="text"
+                value={indexNumber}
+                onChange={e => setIndexNumber(e.target.value)}
+                placeholder="e.g. UG202312345"
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+              />
+            </div>
           </div>
 
-          <div style={S.sideCol}>
-            
-            {/* --- PROFILE STRENGTH CARD --- */}
-            <div className="cardIn" style={S.strengthCard}>
-              <div style={S.strengthTitle}>Profile strength</div>
-              <div style={S.strengthPct}>{profileStrength()}%</div>
-              <div style={S.strengthTrack}>
-                <div className="progressBar" style={{ ...S.strengthFill, width: `${profileStrength()}%` }}></div>
-              </div>
-              <div style={S.strengthItems}>
-                {[
-                  { label: 'Full name', done: !!fullName },
-                  { label: 'University', done: !!university },
-                  { label: 'Course', done: !!course },
-                  { label: 'Index Number', done: !!indexNumber }, // 🆕 New item
-                  { label: 'Skills', done: !!skills },
-                  { label: 'Bio', done: !!bio },
-                ].map((item, i) => (
-                  <div key={i} style={S.strengthItem}>
-                    <span style={{ ...S.strengthDot, background: item.done ? C.green : '#E2E8F0' }}>
-                      {item.done ? '✓' : ''}
-                    </span>
-                    <span style={{ ...S.strengthItemLabel, color: item.done ? C.ink : C.sub }}>{item.label}</span>
-                  </div>
-                ))}
-              </div>
+          {/* Skills & Bio */}
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-subtle space-y-5">
+            <h2 className="text-base font-bold text-slate-900">Skills & Bio</h2>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Your skills</label>
+              <input
+                type="text"
+                value={skills}
+                onChange={e => setSkills(e.target.value)}
+                placeholder="e.g. Python, React, SQL, Machine Learning"
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+              />
+              <p className="text-xs text-slate-500 mt-1.5">Separate with commas — used for AI matching</p>
             </div>
 
-            {/* --- TIPS CARD --- */}
-            <div className="cardIn" style={{ ...S.strengthCard, marginTop: '20px', background: 'rgba(245, 158, 11, 0.06)', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-              <div style={{ ...S.strengthTitle, color: '#D97706', display: 'flex', alignItems: 'center', gap: '7px' }}>
-                <Icon path={icons.bulb} size={16} /> Tips
+            {skills && (
+              <div className="flex flex-wrap gap-1.5">
+                {skills.split(',').filter(s => s.trim()).map((s, i) => (
+                  <span key={i} className="px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200">
+                    {s.trim()}
+                  </span>
+                ))}
               </div>
-              <div style={S.tipItem}>Add all your technical skills</div>
-              <div style={S.tipItem}>Upload an up-to-date CV</div>
-              <div style={S.tipItem}>Write a compelling bio</div>
-              <div style={S.tipItem}>A complete profile gets 3x more matches</div>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Short bio</label>
+              <textarea
+                value={bio}
+                onChange={e => setBio(e.target.value)}
+                placeholder="Tell employers about yourself, your goals, and experience..."
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 min-h-[110px] resize-y"
+              />
             </div>
+          </div>
+
+          {/* CV Upload */}
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-subtle">
+            <h2 className="text-base font-bold text-slate-900 mb-4">CV / Resume</h2>
+            <label className="block border-2 border-dashed border-slate-300 hover:border-brand-400 rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition bg-slate-50/50 hover:bg-brand-50/30">
+              <input
+                type="file"
+                accept=".pdf"
+                className="hidden"
+                onChange={e => e.target.files[0] && handleCvUpload(e.target.files[0])}
+              />
+              {uploading ? (
+                <div className="space-y-2">
+                  <RefreshCw size={26} className="mx-auto text-brand-500 animate-spin" />
+                  <p className="text-sm font-bold text-slate-700">Uploading your CV...</p>
+                </div>
+              ) : cvUrl ? (
+                <div className="space-y-2">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 mx-auto flex items-center justify-center">
+                    <Check size={22} />
+                  </div>
+                  <p className="text-sm font-bold text-slate-900">CV uploaded</p>
+                  <p className="text-xs text-slate-500">
+                    Click to replace ·{' '}
+                    <a href={cvUrl} target="_blank" rel="noreferrer" className="text-brand-600 underline font-bold" onClick={e => e.stopPropagation()}>
+                      View CV →
+                    </a>
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-500 mx-auto flex items-center justify-center">
+                    <File size={22} />
+                  </div>
+                  <p className="text-sm font-bold text-slate-900">Upload your CV</p>
+                  <p className="text-xs text-slate-500">Click to browse · PDF only · Max 5 MB</p>
+                </div>
+              )}
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition shadow-brand active:scale-95 inline-flex items-center justify-center gap-2"
+          >
+            <Save size={16} /> {loading ? 'Saving...' : 'Save Profile'}
+          </button>
+        </form>
+
+        {/* RIGHT — strength */}
+        <div className="space-y-4">
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-subtle">
+            <h3 className="text-sm font-bold text-slate-900 mb-3">Profile strength</h3>
+            <div className="text-4xl font-black mb-3" style={{ color: strengthColor }}>{strength}%</div>
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-4">
+              <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${strength}%`, background: strengthColor }} />
+            </div>
+
+            <div className="space-y-2.5">
+              {[
+                { label: 'Full name', done: !!fullName },
+                { label: 'University', done: !!university },
+                { label: 'Course', done: !!course },
+                { label: 'Index Number', done: !!indexNumber },
+                { label: 'Skills', done: !!skills },
+                { label: 'Bio', done: !!bio },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <span
+                    className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                      item.done ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'
+                    }`}
+                  >
+                    {item.done ? '✓' : ''}
+                  </span>
+                  <span className={`text-xs ${item.done ? 'text-slate-800 font-semibold' : 'text-slate-500'}`}>
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-amber-50 rounded-3xl border border-amber-200 p-6">
+            <h3 className="text-sm font-bold text-amber-700 mb-3">💡 Tips</h3>
+            <ul className="text-xs text-amber-800 space-y-2 leading-relaxed">
+              <li>• Add all your technical skills</li>
+              <li>• Upload an up-to-date CV</li>
+              <li>• Write a compelling bio</li>
+              <li>• A complete profile gets 3× more matches</li>
+            </ul>
           </div>
         </div>
       </div>
     </div>
   )
-}
-
-// ============================================================
-// 🎨 PREMIUM STYLES
-// ============================================================
-const S = {
-  app: { minHeight: '100vh', background: C.bg, fontFamily: "'Inter', -apple-system, sans-serif", position: 'relative' },
-
-  // Ambient Background Effects
-  bgEffects: {
-    position: 'fixed',
-    inset: 0,
-    zIndex: 0,
-    pointerEvents: 'none',
-    overflow: 'hidden',
-  },
-  glowOrb1: {
-    position: 'absolute',
-    top: '-20%',
-    right: '-10%',
-    width: '600px',
-    height: '600px',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(99, 102, 241, 0.06), transparent 70%)',
-  },
-  glowOrb2: {
-    position: 'absolute',
-    bottom: '-20%',
-    left: '-10%',
-    width: '500px',
-    height: '500px',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.04), transparent 70%)',
-  },
-  gridPattern: {
-    position: 'absolute',
-    inset: 0,
-    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,0,0,0.03) 1px, transparent 0)',
-    backgroundSize: '32px 32px',
-  },
-
-  main: { 
-    position: 'relative',
-    zIndex: 1,
-    flex: 1, 
-    minWidth: 0, 
-    padding: '32px 40px 60px' 
-  },
-  pageHead: { marginBottom: '28px' },
-  heading: { fontSize: '32px', fontWeight: '900', color: C.ink, marginBottom: '8px', letterSpacing: '-1px' },
-  headSub: { fontSize: '15px', color: C.sub },
-
-  layout: { display: 'grid', gridTemplateColumns: '1fr 280px', gap: '24px' },
-  formCol: {},
-  sideCol: {},
-  
-  // Form Cards
-  card: { 
-    background: 'rgba(255, 255, 255, 0.7)', 
-    backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
-    borderRadius: '20px', 
-    padding: '26px', 
-    border: '1px solid rgba(255, 255, 255, 0.8)', 
-    boxShadow: '0 4px 20px rgba(15,23,42,0.03)' 
-  },
-  cardTitle: { fontSize: '16px', fontWeight: '800', color: C.ink, marginBottom: '20px' },
-  grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
-  field: { marginBottom: '6px' },
-  label: { display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '7px', color: C.navText },
-  required: { color: C.red },
-  hint: { fontSize: '12px', color: C.sub, marginTop: '6px' },
-  input: { 
-    width: '100%', 
-    padding: '12px 14px', 
-    border: `1.5px solid ${C.border}`, 
-    borderRadius: '12px', 
-    fontSize: '14px', 
-    boxSizing: 'border-box', 
-    fontFamily: 'inherit', 
-    color: C.ink,
-    transition: 'all 0.2s ease'
-  },
-  
-  skillsPreview: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' },
-  skillChip: { background: 'rgba(234, 78, 27, 0.08)', color: C.accent, padding: '5px 14px', borderRadius: '20px', fontSize: '12.5px', fontWeight: '600' },
-  
-  // CV Upload
-  uploadArea: { 
-    display: 'block', 
-    border: '2px dashed rgba(148, 163, 184, 0.4)', 
-    borderRadius: '14px', 
-    padding: '32px 20px', 
-    textAlign: 'center',
-    background: 'rgba(255,255,255,0.5)'
-  },
-  uploadAreaDone: { border: '2px dashed rgba(16, 185, 129, 0.4)', background: 'rgba(16, 185, 129, 0.04)' },
-  uploadContent: {},
-  uploadIconWrap: { 
-    width: '56px', 
-    height: '56px', 
-    borderRadius: '16px', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    margin: '0 auto 14px', 
-    fontSize: '24px' 
-  },
-  uploadText: { fontSize: '15px', fontWeight: '700', color: C.navText, marginBottom: '6px' },
-  uploadSub: { fontSize: '13px', color: C.sub },
-  viewLink: { color: C.accent, fontWeight: '700', textDecoration: 'none' },
-  
-  // Buttons & Alerts
-  saveBtn: { 
-    width: '100%', 
-    padding: '14px', 
-    background: 'linear-gradient(135deg, #EA4E1B, #F97316)',
-    color: '#fff', 
-    border: 'none', 
-    borderRadius: '12px', 
-    cursor: 'pointer', 
-    fontSize: '15px', 
-    fontWeight: '700', 
-    marginTop: '20px', 
-    boxShadow: '0 4px 16px rgba(234,78,27,0.3)', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    gap: '8px' 
-  },
-  error: { 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: '8px', 
-    background: 'rgba(239, 68, 68, 0.08)', 
-    color: C.red, 
-    padding: '13px 16px', 
-    borderRadius: '12px', 
-    fontSize: '13.5px', 
-    fontWeight: '600', 
-    marginBottom: '20px',
-    border: '1px solid rgba(239, 68, 68, 0.15)'
-  },
-  successBox: { 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: '8px', 
-    background: 'rgba(16, 185, 129, 0.08)', 
-    color: C.green, 
-    padding: '13px 16px', 
-    borderRadius: '12px', 
-    fontSize: '13.5px', 
-    fontWeight: '600', 
-    marginBottom: '20px',
-    border: '1px solid rgba(16, 185, 129, 0.15)'
-  },
-
-  // Strength Side Panel
-  strengthCard: { 
-    background: 'rgba(255, 255, 255, 0.7)', 
-    backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
-    borderRadius: '20px', 
-    padding: '24px', 
-    border: '1px solid rgba(255, 255, 255, 0.8)', 
-    boxShadow: '0 4px 20px rgba(15,23,42,0.03)' 
-  },
-  strengthTitle: { fontSize: '15px', fontWeight: '800', color: C.ink, marginBottom: '12px' },
-  strengthPct: { fontSize: '34px', fontWeight: '900', color: C.accent, marginBottom: '10px' },
-  strengthTrack: { height: '8px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden', marginBottom: '16px' },
-  strengthFill: { height: '100%', transition: 'width 1s ease' },
-  strengthItems: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  strengthItem: { display: 'flex', alignItems: 'center', gap: '10px' },
-  strengthDot: { 
-    width: '22px', 
-    height: '22px', 
-    borderRadius: '50%', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    fontSize: '12px', 
-    fontWeight: '800', 
-    color: '#fff', 
-    flexShrink: 0,
-    transition: 'background 0.3s ease'
-  },
-  strengthItemLabel: { fontSize: '13px', fontWeight: '600' },
-  tipItem: { fontSize: '13px', color: '#92400E', marginBottom: '8px', lineHeight: '1.5' }
 }

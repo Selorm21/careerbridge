@@ -1,22 +1,19 @@
 // src/components/DashboardShell.jsx
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';
+import { useLocation, useNavigate } from 'react-router-dom';
 import useMediaQuery from '../hooks/useMediaQuery';
 
 /**
  * Shared dashboard shell:
- *  - Desktop: hover-expand rail sidebar (preserves existing visual behavior)
- *  - Mobile: top bar + slide-in drawer, closes on route change / Esc / overlay click
+ *  - Desktop: hover-expand rail sidebar
+ *  - Mobile: top bar + slide-in drawer
  *
- * Props:
- *   brandLabel   — e.g. "EMPLOYER"
- *   accent       — hex, e.g. "#F59E0B"
- *   navItems     — [{ path, label, icon (ReactNode), badge?: number }]
- *   profile      — { full_name, role_label }
- *   onLogout     — () => void
- *   logoMark     — ReactNode (small icon shown at top of rail)
- *   children     — page content
+ * Nav item shape:
+ *   { path?, label, icon, badge?, exact?, active?, onClick? }
+ *
+ *   - If item.onClick is provided → calls it instead of navigating
+ *   - If item.active is provided → uses it directly (for tab-based nav)
+ *   - Otherwise → uses isActive(item.path) for route-based nav
  */
 export default function DashboardShell({
   brandLabel = 'CAREERBRIDGE',
@@ -49,7 +46,7 @@ export default function DashboardShell({
     return () => window.removeEventListener('keydown', onKey);
   }, [drawerOpen]);
 
-  // Lock scroll while drawer is open
+  // Lock body scroll while drawer is open
   useEffect(() => {
     if (!drawerOpen) return;
     const prev = document.body.style.overflow;
@@ -59,14 +56,24 @@ export default function DashboardShell({
     };
   }, [drawerOpen]);
 
+  // ---- Route-based active check ----
   const isActive = (path, exact = false) => {
+    // Items without a path (tab-based) are never route-active
+    if (!path) return false;
+    // Ignore hash-only "paths" used by tab nav
+    if (path.startsWith('#')) return false;
     if (exact) return location.pathname === path;
     if (path === '/' || path === '') return location.pathname === path;
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
-  const handleNavClick = (path) => {
-    navigate(path);
+  // ---- Item click handler ----
+  const handleNavClick = (item) => {
+    if (item.onClick) {
+      item.onClick();
+    } else if (item.path && !item.path.startsWith('#')) {
+      navigate(item.path);
+    }
     setDrawerOpen(false);
   };
 
@@ -83,6 +90,12 @@ export default function DashboardShell({
 
   const desktopWidth = isHovered ? 260 : 82;
   const contentMargin = isMobile ? 0 : desktopWidth;
+
+  // ---- Resolve active state for any item ----
+  const resolveActive = (item) => {
+    if (item.active !== undefined) return item.active;
+    return isActive(item.path, item.exact);
+  };
 
   return (
     <div style={styles.wrapper}>
@@ -141,13 +154,13 @@ export default function DashboardShell({
           </div>
 
           <nav style={styles.railNav}>
-            {navItems.map((item) => {
-              const active = isActive(item.path, item.exact);
+            {navItems.map((item, idx) => {
+              const active = resolveActive(item);
               return (
                 <button
-                  key={item.path}
+                  key={item.path || item.label || idx}
                   type="button"
-                  onClick={() => handleNavClick(item.path)}
+                  onClick={() => handleNavClick(item)}
                   style={{
                     ...styles.railItem,
                     justifyContent: isHovered ? 'flex-start' : 'center',
@@ -283,13 +296,13 @@ export default function DashboardShell({
             )}
 
             <nav style={styles.drawerNav}>
-              {navItems.map((item) => {
-                const active = isActive(item.path, item.exact);
+              {navItems.map((item, idx) => {
+                const active = resolveActive(item);
                 return (
                   <button
-                    key={item.path}
+                    key={item.path || item.label || idx}
                     type="button"
-                    onClick={() => handleNavClick(item.path)}
+                    onClick={() => handleNavClick(item)}
                     style={{
                       ...styles.drawerItem,
                       background: active ? `${accent}14` : 'transparent',
@@ -359,7 +372,7 @@ export default function DashboardShell({
         style={{
           ...styles.content,
           marginLeft: contentMargin,
-          paddingTop: isMobile ? 76 : 0, // leave room for mobile bar
+          paddingTop: isMobile ? 76 : 0,
         }}
       >
         {children}
